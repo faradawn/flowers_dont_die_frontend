@@ -86,7 +86,7 @@ export default function Courses({ navigation }){
                                 fontSize: 20,
                             }}
                         >
-                            Let's nurture your garden, 
+                            Let's grow your garden, 
                             <Text
                                 style={{
                                     color: '#26C250'

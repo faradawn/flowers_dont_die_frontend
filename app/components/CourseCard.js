@@ -5,6 +5,8 @@ import { images, colors } from '../globalStyles/globalStyles';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function Card({ item, height, width, pressHandler }){
+    const totalQuestionsDone = item.questions_done.length;
+    // console.log("Card item row num", item.row_num, "num question done", totalQuestionsDone);
     const getIndex = () => {
         return ( (item.row_num - 1 % 9) + 1 );
     }
@@ -69,17 +71,29 @@ export default function Card({ item, height, width, pressHandler }){
                     showsHorizontalScrollIndicator={false}
                     style={{ height: 0.18 }}
                 >
-                    {(item.questions_done).map((item, index) => (
-                        <View 
-                            key={index}
-                            style={{ 
-                                height: 0.17 * height,
-                                width: 0.17 * height,
-                                marginRight: 0.01 * width,
-                                backgroundColor: colors.id[getIndex()],
-                            }}
-                        />
-                    ))}
+                    {(item.questions_done).map((item, index) => {
+                        let squareColor;
+
+                        if (totalQuestionsDone <= 2) {
+                            squareColor = 'red';
+                        } else if (totalQuestionsDone <= 4) {
+                            squareColor = '#F8C660';
+                        } else {
+                            squareColor = 'green';
+                        }
+
+                        return (
+                            <View 
+                                key={index}
+                                style={{ 
+                                    height: 0.17 * height,
+                                    width: 0.17 * height,
+                                    marginRight: 0.01 * width,
+                                    backgroundColor: squareColor,
+                                }}
+                            />
+                        );
+                    })}
                 </ScrollView>
             </View>
 

@@ -30,7 +30,7 @@ const width = Dimensions.get('screen').width;
 const HomeTab = createBottomTabNavigator();
 function HomeTabNavigator() {
     return (
-        <SafeAreaView style={{ width: width, height: height }}>
+        <SafeAreaView style={{ width: width, height: height}}>
             <HomeTab.Navigator
                 screenOptions={({ route }) => ({
                     tabBarIcon: ({ focused, color }) => {
@@ -50,7 +50,7 @@ function HomeTabNavigator() {
                     tabBarInactiveTintColor: 'grey',
                     headerShown: false,
 
-                    tabBarStyle: { height: 0.1 * height }
+                    tabBarStyle: { height: 0.1 * height}
                 })}
                 initialRouteName='Courses'
             >

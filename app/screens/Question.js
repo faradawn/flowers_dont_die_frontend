@@ -296,14 +296,6 @@ export default function Question({ navigation, route }){
                                 width={width * 0.8} 
                                 height={height * 0.35}
                             />
-                            <Card
-                                handlePress={handleChooseOption}
-                                currentPressed={currentPressed}
-                                option={'D'}
-                                text={data.options[3]} 
-                                width={width * 0.8} 
-                                height={height * 0.35}
-                            />
                         </ScrollView>
 
                         {/* Next Button */}
