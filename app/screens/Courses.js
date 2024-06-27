@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { View, Dimensions, Text, FlatList, ActivityIndicator,
     TouchableOpacity,
 } from 'react-native';
@@ -41,9 +43,11 @@ export default function Courses({ navigation }){
         }
     }
 
-    useEffect(() => {
-        setTimeout(fetchTopics, 10);
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+          fetchTopics();
+        }, [])
+      );
 
     // navigation through clicking a specific topic
     const topicPress = (topic) => {
@@ -52,7 +56,7 @@ export default function Courses({ navigation }){
 
     // navigation through random question selection
     const randomSelect = () => {
-        navigation.navigate('Question', { topic: 'Array' })
+        navigation.navigate('Question', { topic: '' })
     }
 
     return (

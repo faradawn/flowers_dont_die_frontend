@@ -19,7 +19,7 @@ export default function Question({ navigation, route }){
     const fetchQuestions = async () => {
         try {
             const response = await fetch(
-              'http://129.114.24.200:8001/garden/get_question', {
+              'http://129.114.24.200:8001/get_question', {
                 method: 'POST',
                 headers: {
                   "Content-Type": "application/json",
@@ -83,21 +83,20 @@ export default function Question({ navigation, route }){
 
     // handling selection submit
     const handleNext = async() => {
-        if(seconds == 0){ navigation.navigate('HomeTab'); return; }
+        if(seconds <= 0){ navigation.navigate('HomeTab'); return; }
 
         try {
+            console.log("user answer", currentPressed, "correct answer", data.answer)
             const response = await fetch(
-                'http://129.114.24.200:8001/garden/submit_answer', {
+                'http://129.114.24.200:8001/submit_answer', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                         uid: state.uid,
-                        neighbor_uid: "Faradawn_2_a19480c7-d365-415b-a50d-bc71de51776c",
                         course_id: state.course_id,
                         topic: topic,
-                        difficulty: 'easy',
                         question_id: data.question_id,
                         response_time: (60 - seconds),
                         user_answer: currentPressed,
@@ -105,6 +104,9 @@ export default function Question({ navigation, route }){
                     })
                 }
             );
+
+            const response_data = await response.json();
+            console.log(response_data);
         } catch(error) {
             console.log('Error fetching data', error);
         } finally {
