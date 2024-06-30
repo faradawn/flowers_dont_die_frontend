@@ -62,7 +62,7 @@ export default function SignUp({ navigation }){
                 updateState( 'username', username )
                 navigation.navigate('HomeTab')
 
-            } else if (data.message == 'Username already exists') {
+            } else if (data.message == 'User already exists') {
                 setInfoCorrect(false);
                 setErrorMessage('Username already taken')
             } else {

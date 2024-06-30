@@ -9,7 +9,7 @@ import { useUser } from '../components/UserContext';
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
 
-export default function Question({ navigation, route }){
+export default function Question_MC({ navigation, route }){
     const [data, setData] = useState([])
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();

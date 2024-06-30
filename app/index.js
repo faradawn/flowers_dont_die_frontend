@@ -12,7 +12,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Login from './screens/Login';
 import SignUp from './screens/Signup';
 import Courses from './screens/Courses';
-import Question from './screens/Question';
+import Question_A from './screens/Question_Audio';
+import Question_MC from './screens/Question_MultipleChoice';
 import Profile from './screens/Profile';
 
 import { UserProvider } from './components/UserContext';
@@ -86,7 +87,7 @@ function RootStackNavigator() {
                 />
                 <RootStack.Screen 
                     name="Question" 
-                    component={Question}
+                    component={Question_A}
                     options={{headerShown: false}}
                 />
             </RootStack.Navigator>
