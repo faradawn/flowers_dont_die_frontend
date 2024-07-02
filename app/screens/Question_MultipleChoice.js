@@ -33,7 +33,6 @@ export default function Question_MC({ navigation, route }){
             );
       
             const response_data = await response.json();
-            console.log(response_data);
             setData(response_data);
         } catch(error) {
             console.log('Error fetching data: ', error);
@@ -86,7 +85,6 @@ export default function Question_MC({ navigation, route }){
         if(seconds <= 0){ navigation.navigate('HomeTab'); return; }
 
         try {
-            console.log("user answer", currentPressed, "correct answer", data.answer)
             const response = await fetch(
                 'http://129.114.24.200:8001/submit_answer', {
                     method: 'POST',
@@ -106,7 +104,6 @@ export default function Question_MC({ navigation, route }){
             );
 
             const response_data = await response.json();
-            console.log(response_data);
         } catch(error) {
             console.log('Error fetching data', error);
         } finally {

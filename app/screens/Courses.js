@@ -34,7 +34,6 @@ export default function Courses({ navigation }){
 
             const data = await response.json();
             setCourses(data);
-            console.log(data);
 
         } catch(error) {
             console.log('Error fetching data: ', error)

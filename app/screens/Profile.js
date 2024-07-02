@@ -26,7 +26,6 @@ export default function Profile({ navigation }){
             );
 
             const data = await response.json();
-            console.log(data);
 
         } catch(error) {
             console.log('Error deleting account: ', error);
