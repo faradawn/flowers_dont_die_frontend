@@ -63,3 +63,11 @@ export const colors = {
         '9': 'rosybrown',
     }
 }
+
+export const stars = {
+    grade: {
+        '1': require('../../assets/images/question_stars/green_star_1.png'),
+        '2': require('../../assets/images/question_stars/green_star_2.png'),
+        '3': require('../../assets/images/question_stars/green_star_3.png')
+    }
+}

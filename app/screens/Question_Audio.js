@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, ActivityIndicator, Dimensions, TouchableOpacity,
-    Modal
+    Modal, Image
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
@@ -8,6 +8,7 @@ import * as FileSystem from 'expo-file-system';
 
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext';
+import { stars } from '../globalStyles/globalStyles';
 
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
@@ -91,6 +92,8 @@ export default function Question_A({ navigation, route }){
 
     // function to determine when user starts / stop recording
     const handleRecord = () => {
+        if(submitted) { return; }
+
         if(recording) { stopRecording(); } 
         else { startRecording(); }
     }
@@ -232,7 +235,17 @@ export default function Question_A({ navigation, route }){
                                     }}
                                 >{answerResponse.feedback_title}</Text>
 
+                                {/* Image */}
+                                <Image
+                                    source={stars.grade[answerResponse.grade]}
+                                    style={{
+                                        height: 0.04 * height,
+                                        width: 0.3 * width,
 
+                                        marginTop: 0.01 * height,
+                                        marginBottom: 0.03 * height,
+                                    }}
+                                />
 
                                 {/* Body Text */}
                                 <Text
@@ -355,6 +368,7 @@ export default function Question_A({ navigation, route }){
                         </View>
 
                         <TouchableOpacity
+                            activeOpacity={ submitted ? 1 : 0.7 }
                             style={{
                                 height: 60,
                                 width: 60,
