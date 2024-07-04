@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, ActivityIndicator, Dimensions, TouchableOpacity,
-    Modal, Image
+    Modal, Image, TextInput
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
@@ -51,55 +51,12 @@ export default function Question_A({ navigation, route }){
     }, []);
 
     const [recording, setRecording] = useState();
-    const [outputURI, setOutputURI] = useState();
+    const [outputURI, setOutputURI] = useState('');
     const [permissionResponse, requestPermission] = Audio.usePermissions();
     const [allowSubmit, setAllowSubmit] = useState(false);
 
-    // function run when the user starts recording
-    async function startRecording() {
-        try {
-          if (permissionResponse.status !== 'granted') {
-            await requestPermission();
-          }
-          await Audio.setAudioModeAsync({
-            allowsRecordingIOS: true,
-            playsInSilentModeIOS: true,
-          });
-    
-          const { recording } = await Audio.Recording.createAsync( Audio.RecordingOptionsPresets.HIGH_QUALITY
-          );
-          setRecording(recording);
-        } catch (err) {
-          console.error('Failed to start recording', err);
-        }
-    }
-
-    // function run when the user stops recording 
-    async function stopRecording() {
-        setRecording(undefined);
-        await recording.stopAndUnloadAsync();
-        await Audio.setAudioModeAsync(
-            {
-                allowsRecordingIOS: false,
-            }
-        );
-
-        const uri = recording.getURI();
-        setOutputURI(uri);
-        setAllowSubmit(true);
-
-    }
-
-    // function to determine when user starts / stop recording
-    const handleRecord = () => {
-        if(submitted) { return; }
-
-        if(recording) { stopRecording(); } 
-        else { startRecording(); }
-    }
-
     const [answerResponse, setAnswerResponse] = useState(
-        { status: '', grade: 0, feedback_title: '', feedback_body: '' }
+        { status: '', grade: 0, feedback_title: '', feedback_body: '', text_from_audio: '' }
     );
     const [submitted, setSubmitted] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -118,6 +75,9 @@ export default function Question_A({ navigation, route }){
         formData.append('question', data.question);
         formData.append('audio_file', file);
 
+        console.log(formData);
+        console.log(file);
+
         try {
             const response = await fetch(
                 'http://129.114.24.200:8001/submit_audio_response', {
@@ -130,12 +90,80 @@ export default function Question_A({ navigation, route }){
             );
 
             const response_data = await response.json();
+            console.log(response_data);
 
             setAnswerResponse(response_data);
             
         } catch(error) {
             console.log("Error sending data: ", error)
         }
+    }
+
+    // function run when the user starts recording
+    const startRecording = async() => {
+        try {
+          if (permissionResponse.status !== 'granted') {
+            await requestPermission();
+          }
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: true,
+            playsInSilentModeIOS: true,
+          });
+    
+          const { recording } = await Audio.Recording.createAsync( Audio.RecordingOptionsPresets.HIGH_QUALITY
+          );
+          setRecording(recording);
+        } catch (err) {
+          console.error('Failed to start recording', err);
+        }
+    }
+
+    // function run when the user stops recording 
+    const stopRecording = async() => {
+        setRecording(undefined);
+        await recording.stopAndUnloadAsync();
+        await Audio.setAudioModeAsync(
+            {
+                allowsRecordingIOS: false,
+            }
+        );
+
+        const uri = recording.getURI();
+
+        // To indicate that the data is processing
+        setIsLoading(true);
+
+        // To be able to access the URI of the recording
+        setOutputURI(uri);
+    }
+
+    // Once the URI is successfully setup, we submit it to backend to translate
+    useEffect(() => {
+        if(outputURI != ''){ submitRecording();  }
+    }, [outputURI])
+
+    // Once we receive the answer response, we allow submission
+    useEffect(() => {
+        if(answerResponse.status == ''){ return; }
+
+        setIsLoading(false);
+
+        if(answerResponse.status == 'failed'){ 
+            setAllowSubmit(false);
+            setModalOpen(true);
+
+            return; 
+        }
+
+        setAllowSubmit(true);
+    }, [answerResponse])
+
+    // function to determine when user starts / stop recording
+    const handleRecord = () => {
+        if(submitted) { return; }
+
+        if(recording) { stopRecording(); } 
+        else { startRecording(); }
     }
 
     // handling submit and next
@@ -148,7 +176,16 @@ export default function Question_A({ navigation, route }){
             
         } else {
             // this happens when user presses submit button
+
+            // present the loading page to indicate that the response is sending
+            setIsLoading(true);
+
+            // submit the solution
             await submitRecording();
+
+            /* once solution has been successfully submitted 
+               present the finished page */
+            setIsLoading(false);
 
             await FileSystem.deleteAsync(outputURI, { idempotent: true });
 
@@ -233,27 +270,37 @@ export default function Question_A({ navigation, route }){
                                         fontFamily: 'Baloo2-Bold',
                                         fontSize: 30,
                                     }}
-                                >{answerResponse.feedback_title}</Text>
+                                >
+                                    {answerResponse.feedback_title}
+                                </Text>
+                                
+                                { answerResponse.status == 'failed' ? 
+                                    ( <View></View> ) : 
+                                    /* Image */
+                                    <View>
+                                        <Image
+                                            source={stars.grade[answerResponse.grade]}
+                                            style={{
+                                                height: 0.04 * height,
+                                                width: 0.3 * width,
 
-                                {/* Image */}
-                                <Image
-                                    source={stars.grade[answerResponse.grade]}
-                                    style={{
-                                        height: 0.04 * height,
-                                        width: 0.3 * width,
-
-                                        marginTop: 0.01 * height,
-                                        marginBottom: 0.03 * height,
-                                    }}
-                                />
+                                                marginTop: 0.01 * height,
+                                                marginBottom: 0.01 * height,
+                                            }}
+                                        />
+                                    </View>
+                                }
 
                                 {/* Body Text */}
                                 <Text
                                     style={{
                                         fontFamily: 'Baloo2-Regular',
                                         fontSize: 16,
+                                        padding: 0.05 * width,
                                     }}
-                                >{answerResponse.feedback_body}</Text>
+                                >
+                                    {answerResponse.feedback_body}
+                                </Text>
 
                             </View>
 
@@ -365,6 +412,16 @@ export default function Question_A({ navigation, route }){
                                 
                             }}
                         >
+                            <TextInput
+                                style={{
+                                    fontFamily: 'Baloo2-Regular',
+                                    fontSize: 15,
+                                    padding: 0.05 * width,
+                                }}
+                                multiline={true}
+                                scrollEnabled={true}
+                                value={answerResponse.text_from_audio}
+                            />
                         </View>
 
                         <TouchableOpacity
