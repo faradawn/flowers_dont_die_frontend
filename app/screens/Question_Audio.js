@@ -54,53 +54,16 @@ export default function Question_A({ navigation, route }){
     const [outputURI, setOutputURI] = useState('');
     const [permissionResponse, requestPermission] = Audio.usePermissions();
     const [allowSubmit, setAllowSubmit] = useState(false);
-
-    const [answerResponse, setAnswerResponse] = useState(
-        { status: '', grade: 0, feedback_title: '', feedback_body: '', text_from_audio: '' }
+    const [transcribedText, setTranscribedText] = useState(
+        { status: '', message: '', transcribed_text: '' }
     );
-    const [submitted, setSubmitted] = useState(false);
-    const [modalOpen, setModalOpen] = useState(false);
-
-    // submitting the recording to backend api
-    const submitRecording = async() => {
-        const file = {
-            uri: outputURI,
-            name: 'user_recording.m4a',
-            type: 'audio/m4a'
-        }
-
-        const formData = new FormData();
-        formData.append('uid', state.uid);
-        formData.append('question_id', data.question_id);
-        formData.append('question', data.question);
-        formData.append('audio_file', file);
-
-        console.log(formData);
-        console.log(file);
-
-        try {
-            const response = await fetch(
-                'http://129.114.24.200:8001/submit_audio_response', {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                    body: formData
-                }
-            );
-
-            const response_data = await response.json();
-            console.log(response_data);
-
-            setAnswerResponse(response_data);
-            
-        } catch(error) {
-            console.log("Error sending data: ", error)
-        }
-    }
 
     // function run when the user starts recording
     const startRecording = async() => {
+        if(outputURI != ''){
+            await FileSystem.deleteAsync(outputURI, { idempotent: true });
+        }
+
         try {
           if (permissionResponse.status !== 'granted') {
             await requestPermission();
@@ -137,33 +100,91 @@ export default function Question_A({ navigation, route }){
         setOutputURI(uri);
     }
 
-    // Once the URI is successfully setup, we submit it to backend to translate
-    useEffect(() => {
-        if(outputURI != ''){ submitRecording();  }
-    }, [outputURI])
-
-    // Once we receive the answer response, we allow submission
-    useEffect(() => {
-        if(answerResponse.status == ''){ return; }
-
-        setIsLoading(false);
-
-        if(answerResponse.status == 'failed'){ 
-            setAllowSubmit(false);
-            setModalOpen(true);
-
-            return; 
-        }
-
-        setAllowSubmit(true);
-    }, [answerResponse])
-
     // function to determine when user starts / stop recording
     const handleRecord = () => {
         if(submitted) { return; }
 
         if(recording) { stopRecording(); } 
         else { startRecording(); }
+    }
+
+    // convert audio file into text
+    const transcribeText = async() => {
+        const file = {
+            uri: outputURI,
+            name: 'user_recording.m4a',
+            type: 'audio/m4a'
+        }
+
+        const formData = new FormData();
+        formData.append('uid', state.uid);
+        formData.append('question_id', data.question_id);
+        formData.append('audio_file', file);
+
+        try {
+            const response = await fetch(
+                'http://129.114.24.200:8001/transcribe', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                    body: formData
+                }
+            )
+
+            const response_data = await response.json();
+            setTranscribedText(response_data);
+
+        } catch(error) {
+            console.log('Error transcribing text: ', error);
+        }
+    }
+
+    // Once the URI is successfully setup, we submit it to backend to translate
+    useEffect(() => {
+        if(outputURI != ''){ transcribeText();  }
+    }, [outputURI])
+
+     // Once we receive the answer response, we allow submission
+     useEffect(() => {
+        if(transcribedText.status == ''){ return; }
+
+        setIsLoading(false);
+        setAllowSubmit(true);
+    }, [transcribedText])
+
+    const [answerResponse, setAnswerResponse] = useState(
+        { status: '', grade: 0, feedback_title: '', feedback_body: '' }
+    );
+    const [submitted, setSubmitted] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+
+    // submitting the recording to backend api
+    const submitRecording = async() => {
+        try {
+            const response = await fetch(
+                'http://129.114.24.200:8001/submit_text_response', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        uid: state.uid,
+                        question_id: data.question_id,
+                        question: data.question,
+                        transcribed_text: transcribedText.transcribed_text,
+                    })
+                }
+            );
+
+            const response_data = await response.json();
+            console.log(response_data);
+
+            setAnswerResponse(response_data);
+            
+        } catch(error) {
+            console.log("Error sending data: ", error)
+        }
     }
 
     // handling submit and next
@@ -184,10 +205,12 @@ export default function Question_A({ navigation, route }){
             await submitRecording();
 
             /* once solution has been successfully submitted 
-               present the finished page */
+               present the finished page */     
             setIsLoading(false);
 
             await FileSystem.deleteAsync(outputURI, { idempotent: true });
+
+
 
             setSubmitted(true);
             setModalOpen(true);
@@ -274,7 +297,7 @@ export default function Question_A({ navigation, route }){
                                     {answerResponse.feedback_title}
                                 </Text>
                                 
-                                { answerResponse.status == 'failed' ? 
+                                { answerResponse.grade == 0 ? 
                                     ( <View></View> ) : 
                                     /* Image */
                                     <View>
@@ -420,7 +443,7 @@ export default function Question_A({ navigation, route }){
                                 }}
                                 multiline={true}
                                 scrollEnabled={true}
-                                value={answerResponse.text_from_audio}
+                                value={transcribedText.transcribed_text}
                             />
                         </View>
 
