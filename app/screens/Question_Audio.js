@@ -178,7 +178,6 @@ export default function Question_A({ navigation, route }){
             );
 
             const response_data = await response.json();
-            console.log(response_data);
 
             setAnswerResponse(response_data);
             

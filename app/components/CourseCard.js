@@ -59,7 +59,7 @@ export default function Card({ item, height, width, pressHandler }){
                     style={{ 
                         marginTop: 0.2 * height,
                         fontFamily: 'Baloo2-Regular',
-                        fontSize: 18,
+                        fontSize: 16,
                     }}
                 >
                     { item.topic }

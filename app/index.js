@@ -86,8 +86,13 @@ function RootStackNavigator() {
                     options={{headerShown: false}}
                 />
                 <RootStack.Screen 
-                    name="Question" 
+                    name="Question_A" 
                     component={Question_A}
+                    options={{headerShown: false}}
+                />
+                <RootStack.Screen 
+                    name="Question_MC" 
+                    component={Question_MC}
                     options={{headerShown: false}}
                 />
             </RootStack.Navigator>

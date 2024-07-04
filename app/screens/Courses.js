@@ -6,6 +6,7 @@ import { View, Dimensions, Text, FlatList, ActivityIndicator,
 } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
+import SwitchButton from '../components/SwitchButton';
 import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
 
@@ -14,9 +15,11 @@ const width = Dimensions.get('screen').width;
 
 export default function Courses({ navigation }){
     const [isLoading, setIsLoading] = useState(true);
-    const [courses, setCourses] = useState([])
+    const [courses, setCourses] = useState([]);
+    const [mode, setMode] = useState(0);
     const { state } = useUser();
 
+    // fetching the topics from the backend api
     const fetchTopics = async() => {
         try {
             const response = await fetch(
@@ -50,7 +53,11 @@ export default function Courses({ navigation }){
 
     // navigation through clicking a specific topic
     const topicPress = (topic) => {
-        navigation.navigate('Question', { topic: topic })
+        if(mode == 0){
+            navigation.navigate('Question_MC', { topic: topic })
+        } else if(mode == 1){
+            navigation.navigate('Question_A', { topic: topic })
+        } 
     }
 
     // navigation through random question selection
@@ -72,8 +79,9 @@ export default function Courses({ navigation }){
                     {/* Message At The Top */}
                     <View
                         style={{
-                            height: height * 0.1,
+                            height: height * 0.06,
                             width: width,
+
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}
@@ -82,7 +90,7 @@ export default function Courses({ navigation }){
                             style={{
                                 
                                 fontFamily: 'Baloo2-Bold',
-                                fontSize: 20,
+                                fontSize: 22,
                             }}
                         >
                             Let's grow your garden, 
@@ -94,14 +102,37 @@ export default function Courses({ navigation }){
                             </Text>
                         </Text>
                     </View>
+
+                    {/* Switch For Toggling Between Different Modes */}
+                    <View
+                        style={{
+                            height: height * 0.06,
+                            width: width,
+
+                            marginTop: height * 0.005,
+                            marginBottom: height * 0.01,
+
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                        }}
+                    >
+                        <SwitchButton 
+                            FirstText="Multiple Choice"
+                            SecondText="Mock Interview"
+                            width={ 0.68 * width }
+                            height={ 0.045 * height }
+                            mode={ mode }
+                            setMode={ setMode }
+                        />
+                    </View>
                     
                     {/* FlatList Containing Topic Information */}
                     <View
                         style={{
-                            height: height * 0.6,
+                            height: height * 0.585,
                             width: width,
 
-                            marginBottom: height * 0.05,
+                            marginBottom: height * 0.03,
 
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -113,7 +144,7 @@ export default function Courses({ navigation }){
                             keyExtractor={(item) => item.row_num}
                             showsVerticalScrollIndicator={false}
                             renderItem={({ item }) => (
-                                <Card item={item} height={ height * 0.1 } width={ width * 0.8 } pressHandler={topicPress}/>
+                                <Card item={item} height={ height * 0.09 } width={ width * 0.8 } pressHandler={topicPress}/>
                             )}
                         />
                     </View>
