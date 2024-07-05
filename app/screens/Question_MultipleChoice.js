@@ -219,34 +219,39 @@ export default function Question_MC({ navigation, route }){
 
                             {/* Question Card */}
                             <View
-                                style = { {
+                                style={{
                                     height: height * 0.30,
                                     width: width * 0.85,
                                     borderRadius: 20,
                                     backgroundColor: 'white',
-
                                     marginTop: -0.04 * height,
-
                                     // styling shadow
                                     shadowColor: '#000', // black shadow color
                                     shadowOffset: { width: 0, height: 20 },
                                     shadowOpacity: 0.2,
                                     shadowRadius: 30,
                                     elevation: 10, // for Android shadow
-                                } }
-                            >
-                                <Text 
-                                    style = { { 
+                                }}
+                                >
+                                <ScrollView
+                                    contentContainerStyle={{
+                                    flexGrow: 1,
+                                    justifyContent: 'flex-start',
+                                    }}
+                                >
+                                    <Text
+                                    style={{
                                         marginTop: height * 0.03,
                                         marginHorizontal: 5,
                                         padding: 20,
                                         fontFamily: 'Baloo2-Bold',
                                         fontSize: 14,
-                                    } }
-                                > 
-                                    { data.question } 
-                                </Text>
-                            </View>
+                                    }}
+                                    >
+                                    {data.question}
+                                    </Text>
+                                </ScrollView>
+                                </View>
                         </View>
 
                         {/* Answer Component */}
