@@ -62,7 +62,12 @@ export default function Courses({ navigation }){
 
     // navigation through random question selection
     const randomSelect = () => {
-        navigation.navigate('Question', { topic: '' })
+        if(mode == 0){
+            navigation.navigate('Question_MC', { topic: '' })
+        } else if(mode == 1){
+            navigation.navigate('Question_A', { topic: '' })
+        } 
+    
     }
 
     return (
