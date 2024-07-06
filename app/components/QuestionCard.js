@@ -3,21 +3,38 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-nati
 
 export default function Card({ handlePress, currentPressed, option, text, width, height }) {
   return (
-    <View style={[styles.card, { width, height, marginRight: 0.1 * width }]}>
+    <View style={
+      [styles.card, 
+      { width: width, 
+        height: height, 
+        marginRight: 0.1 * width,
+
+        backgroundColor: currentPressed == option ? '#004643' : '#3c716f',
+      }
+      ]
+    }
+    >
       <TouchableOpacity 
+        activeOpacity={0.9}
         onPress={() => handlePress(option)} 
         style={styles.touchable}
       >
         <Text style={[
           styles.title,
-          { color: currentPressed == option ? '#004643' : 'white' }
+          { color: 'white' }
         ]}>
           {option}
         </Text>
       </TouchableOpacity>
-      <ScrollView style={styles.scrollView}>
-        <Text style={styles.text}>{text}</Text>
-      </ScrollView>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => handlePress(option)}
+        style={styles.scrollView}
+      >
+        <ScrollView style={{ flex: 1 }}>
+            <Text style={styles.text}>{text}</Text>
+        </ScrollView>
+      </TouchableOpacity>
     </View>
   )
 }
@@ -27,7 +44,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 5,
     overflow: 'hidden',
-    backgroundColor: '#3c716f',
   },
   touchable: {
     alignItems: 'center',

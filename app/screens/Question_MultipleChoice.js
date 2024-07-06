@@ -347,7 +347,7 @@ export default function Question_MC({ navigation, route }){
                                         fontSize: 14,
                                     }}
                                     >
-                                    {data.question}
+                                        {data.question}
                                     </Text>
                                 </ScrollView>
                                 </View>
