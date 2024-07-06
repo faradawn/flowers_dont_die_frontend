@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, View, ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
+import { ScrollView, Text, View, ActivityIndicator, 
+    Dimensions, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { globalStyles } from '../globalStyles/globalStyles';
@@ -47,22 +48,30 @@ export default function Question_MC({ navigation, route }){
     }, []);
 
     const [seconds, setSeconds] = useState(60);
+    const [intervalId, setIntervalId] = useState(null);
 
     // implementing timer, runs upon loading screen
     useEffect(() => {
         let interval;
-        interval = setInterval(() => {
-            setSeconds(prevSeconds => prevSeconds > 0 ? prevSeconds - 1 : 0);
-        }, 1000);
+        if (!submitted) {
+            interval = setInterval(() => {
+                setSeconds((prevSeconds) => {
+                    if(prevSeconds > 0) return prevSeconds - 1;
+                    return 0;
+                });
+            }, 1000)
+        }
+
+        setIntervalId(interval);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [submitted]);
 
     const [currentPressed, setCurrentPressed] = useState('Not Touched');
 
     // handling selection of choice
     const handleChooseOption = (option) => { 
-        if(currentPressed == 'Time ran out'){
+        if(currentPressed == 'Time ran out' || submitted ){
             return;
         }
 
@@ -77,12 +86,17 @@ export default function Question_MC({ navigation, route }){
     useEffect(() => {
         if(seconds == 0){ 
             setCurrentPressed('Time ran out');
+            setModalOpen(true);
+            setSubmitted(true);
         }
     }, [seconds]);
 
+    const [submitted, setSubmitted] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+
     // handling selection submit
     const handleNext = async() => {
-        if(seconds <= 0){ navigation.navigate('HomeTab'); return; }
+        if(submitted){ navigation.navigate('HomeTab'); return; }
 
         try {
             const response = await fetch(
@@ -104,10 +118,15 @@ export default function Question_MC({ navigation, route }){
             );
 
             const response_data = await response.json();
+
+            setSubmitted(true);
+            setModalOpen(true);
+            if (intervalId) { 
+                clearInterval(intervalId); // Clear the interval
+            }
+
         } catch(error) {
             console.log('Error fetching data', error);
-        } finally {
-            navigation.navigate('HomeTab')
         }
     }
 
@@ -131,6 +150,86 @@ export default function Question_MC({ navigation, route }){
                             ...globalStyles.container,
                         } }
                     >   
+                        {/* Pop-up notification upon successfully submitting */}
+                        <Modal
+                            visible={modalOpen}
+                            transparent={true}
+                            animationType="slide"
+                            backdropColor="black"
+                            backdropOpacity={ 0.8 }
+                        >
+                            {/* Outer View used for darkening tbe backdrop */}
+                            <View
+                                style={{
+                                    flex: 1,    
+                                    justifyContent: 'center',    
+                                    alignItems: 'center',    
+                                    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Darken backdrop
+                                }}
+                            >
+                                {/* Inner View for Styling */}
+                                <View
+                                    style={{
+                                        width: width * 0.8,
+                                        paddingTop: height * 0.05,
+                                        paddingBottom: height * 0.1,
+
+                                        backgroundColor: 'white',
+
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+
+                                        shadowColor: '#000000',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.25,
+                                        shadowRadius: 4,
+                                        elevation: 5,
+                                    }}    
+                                >
+                                    {/* Top Bar for close icon */}
+                                    <View
+                                        style={{
+                                            height: height * 0.05,
+                                            width: width * 0.8,
+                                            alignItems: 'flex-end',
+                                            justifyContent: 'flex-end',
+                                        }}
+                                    >
+                                        <Ionicons 
+                                            name="close-outline"
+                                            size={25}
+                                            onPress={() => {setModalOpen(false)}}
+                                            style={{ marginRight: 0.08 * width, }}
+                                        />
+                                    </View>
+
+                                    {/* Title Text */}
+                                    <Text
+                                        style={{
+                                            fontFamily: 'Baloo2-Bold',
+                                            fontSize: 30,
+                                        }}
+                                    >
+                                        { currentPressed == data.answer ? 'Congratulations!' : 'Sorry!' }
+                                    </Text>
+
+                                    {/* Body Text */}
+                                    <Text
+                                        style={{
+                                            fontFamily: 'Baloo2-Regular',
+                                            fontSize: 16,
+                                            padding: 0.05 * width,
+                                        }}
+                                    >
+                                        { currentPressed == 'Time ran out' ? 'Your time ran out.' : 
+                                            (currentPressed == data.answer ? 'You are correct!' : 'You are incorrect.')}
+                                    </Text>
+
+                                </View>
+
+                            </View>
+                        </Modal>
+
                         {/* Top Bar */}
                         { seconds == 0 ? 
                         (   
@@ -308,9 +407,9 @@ export default function Question_MC({ navigation, route }){
                             } }
                         >
                             <TouchableOpacity
-                                activeOpacity={ currentPressed == "Not Touched" ? 1 : 0.7 }
+                                activeOpacity={ currentPressed == "Not Touched" && !submitted ? 1 : 0.7 }
                                 style = { {
-                                    backgroundColor: currentPressed == 'Not Touched' ? '#3c716f' : '#004643',
+                                    backgroundColor: currentPressed == 'Not Touched' && !submitted ? '#3c716f' : '#004643',
 
                                     height: height * 0.06,
                                     width: width * 0.75,
@@ -319,7 +418,7 @@ export default function Question_MC({ navigation, route }){
                                 } }
                                 onPress={() => handleNext()}
                             >
-                                <Text style = {globalStyles.buttonText}> Next </Text>
+                                <Text style = {globalStyles.buttonText}> { submitted ? 'Next' : 'Submit' } </Text>
                             </TouchableOpacity>
                         </View>
 
