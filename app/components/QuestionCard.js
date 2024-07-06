@@ -9,7 +9,7 @@ export default function Card({ handlePress, currentPressed, option, text, width,
         height: height, 
         marginRight: 0.1 * width,
 
-        backgroundColor: currentPressed == option ? '#004643' : '#3c716f',
+        backgroundColor: currentPressed == option ? '#004643' : '#3c716f'
       }
       ]
     }
@@ -26,15 +26,12 @@ export default function Card({ handlePress, currentPressed, option, text, width,
           {option}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={() => handlePress(option)}
+      <ScrollView 
         style={styles.scrollView}
+        showsVerticalScrollIndicator={false}  
       >
-        <ScrollView style={{ flex: 1 }}>
-            <Text style={styles.text}>{text}</Text>
-        </ScrollView>
-      </TouchableOpacity>
+        <Text style={styles.text}>{text}</Text>
+      </ScrollView>
     </View>
   )
 }
@@ -44,6 +41,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 5,
     overflow: 'hidden',
+    backgroundColor: '#3c716f',
   },
   touchable: {
     alignItems: 'center',

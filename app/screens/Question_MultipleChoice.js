@@ -350,7 +350,7 @@ export default function Question_MC({ navigation, route }){
                                         {data.question}
                                     </Text>
                                 </ScrollView>
-                                </View>
+                            </View>
                         </View>
 
                         {/* Answer Component */}
