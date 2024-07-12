@@ -218,14 +218,14 @@ export default function Question_A({ navigation, route }){
 
     return (
         <View 
-            style={ { 
-                width: width, 
+            style={ { flex: 1} } >
+            <View stgle ={{
+                width: width,
                 height: height,
                 alignItems: 'center',
-                justifyContent: 'center', 
-            } } 
-        >
-            { isLoading ? ( <ActivityIndicator /> ) : ( 
+                justifyContent: 'center',
+            }}>
+            
                 <View 
                     style={ {
                         width: width,
@@ -241,7 +241,7 @@ export default function Question_A({ navigation, route }){
                         backdropColor="black"
                         backdropOpacity={ 0.8 }
                     >
-                        {/* Outer View used for darkening tbe backdrop */}
+                        {/* Outer View used for darkening tbe backdrop */} 
                         <View
                             style={{
                                 flex: 1,    
@@ -461,12 +461,17 @@ export default function Question_A({ navigation, route }){
                                 alignItems: 'center',
                             }}
                             onPress={() => handleRecord()}
-                        >
-                            <MaterialIcons 
+                        >   
+                            {isLoading ? (
+                                <ActivityIndicator size="small" color="white" />
+                                )  : (
+                                <MaterialIcons 
                                 name={ recording ? 'square' :  'keyboard-voice' }
                                 color='white'
                                 size={ recording ? 30:35 }
                             />
+                            )}
+                            
                         </TouchableOpacity>
                     </View>
 
@@ -499,7 +504,9 @@ export default function Question_A({ navigation, route }){
                     </View>
 
                 </View> 
-            )}
+            </View>
+            
+            
         </View>  
-    )
+    );
 }
