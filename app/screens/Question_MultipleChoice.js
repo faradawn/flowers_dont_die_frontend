@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, Text, View, 
-    Dimensions, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+    Dimensions, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 
@@ -150,7 +150,9 @@ export default function Question_MC({ navigation, route }){
         >
             {
                 isLoading ? 
-                ( <AntDesign name="loading1" size={24} color="black" /> ) : 
+                (
+                    <ActivityIndicator size="large" color="gray" />
+                    ) : 
                 ( 
                     <View 
                         style={ {
