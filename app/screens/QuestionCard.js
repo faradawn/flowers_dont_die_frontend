@@ -16,7 +16,6 @@ export default function Card({ handlePress, isSelected, option, text, width, hei
     >
       <TouchableOpacity 
         activeOpacity={0.9}
-        onPress={() => handlePress(option)} 
         style={styles.touchable}
       >
         <Text style={[
