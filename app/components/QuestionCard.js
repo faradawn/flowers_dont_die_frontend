@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 
-export default function Card({ handlePress, currentPressed, option, text, width, height }) {
+export default function Card({ handlePress, isSelected, option, text, width, height }) {
   return (
     <View style={
       [styles.card, 
@@ -9,14 +9,13 @@ export default function Card({ handlePress, currentPressed, option, text, width,
         height: height, 
         marginRight: 0.1 * width,
 
-        backgroundColor: currentPressed == option ? '#004643' : '#3c716f'
+        backgroundColor: isSelected ? '#004643' : '#3c716f'
       }
       ]
     }
     >
       <TouchableOpacity 
         activeOpacity={0.9}
-        onPress={() => handlePress(option)} 
         style={styles.touchable}
       >
         <Text style={[
