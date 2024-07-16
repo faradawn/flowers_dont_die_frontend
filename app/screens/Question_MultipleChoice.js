@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, View, ActivityIndicator, 
-    Dimensions, TouchableOpacity, Modal } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect, useRef } from 'react';
+import { ScrollView, Text, View, 
+    Dimensions, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+
+import { Ionicons, AntDesign } from '@expo/vector-icons';
 
 import { globalStyles } from '../globalStyles/globalStyles';
 import Card from '../components/QuestionCard';
@@ -9,6 +10,7 @@ import { useUser } from '../components/UserContext';
 
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
+
 
 export default function Question_MC({ navigation, route }){
     const [data, setData] = useState([])
@@ -32,9 +34,11 @@ export default function Question_MC({ navigation, route }){
                 }),
               }
             );
-      
+            
             const response_data = await response.json();
             setData(response_data);
+            //Set default pressed value to "A"
+            setCurrentPressed("A");
         } catch(error) {
             console.log('Error fetching data: ', error);
         } finally {
@@ -67,19 +71,14 @@ export default function Question_MC({ navigation, route }){
         return () => clearInterval(interval);
     }, [submitted]);
 
-    const [currentPressed, setCurrentPressed] = useState('Not Touched');
+    const [currentPressed, setCurrentPressed] = useState("A");
 
     // handling selection of choice
     const handleChooseOption = (option) => { 
         if(currentPressed == 'Time ran out' || submitted ){
             return;
         }
-
-        if(option == currentPressed) {
-            setCurrentPressed('Not Touched');
-        } else {
-            setCurrentPressed(option) 
-        }
+        setCurrentPressed(option);
     }
 
     // function called when time runs out
@@ -128,7 +127,17 @@ export default function Question_MC({ navigation, route }){
         } catch(error) {
             console.log('Error fetching data', error);
         }
-    }
+    };
+
+    
+    const handleScroll = (event) => {
+        const xOffset = event.nativeEvent.contentOffset.x;
+        const index = Math.round(xOffset / (width * 0.88)); // Calculate the index based on scroll position
+        const options = ['A', 'B', 'C'];
+        if (index >= 0 && index < options.length) {
+            handleChooseOption(options[index]);
+        }
+    };
 
     return (
         <View 
@@ -141,7 +150,7 @@ export default function Question_MC({ navigation, route }){
         >
             {
                 isLoading ? 
-                ( <ActivityIndicator /> ) : 
+                ( <AntDesign name="loading1" size={24} color="black" /> ) : 
                 ( 
                     <View 
                         style={ {
@@ -357,45 +366,41 @@ export default function Question_MC({ navigation, route }){
                         <ScrollView
                             horizontal={true}
                             showsHorizontalScrollIndicator={false}
-
                             alwaysBounceHorizontal={true}
-                            snapToOffsets={[0, 0.88*width, 1.76*width, 2.64*width]}
+                            snapToOffsets={[0, 0.88 * width, 1.76 * width, 2.64 * width]}
                             snapToEnd={false}
                             decelerationRate='fast'
-
-                            style = { {
+                            style={{
                                 width: width,
                                 height: height * 0.4,
-                            } }
-
-                            contentContainerStyle = { { 
+                            }}
+                            contentContainerStyle={{
                                 alignItems: 'center',
-                                paddingLeft: 0.1*width,
-                            } }
+                                paddingLeft: 0.1 * width,
+                            }}
+                            onScroll={handleScroll} // Add onScroll listener here
+                            scrollEventThrottle={16} // Control how often the scroll event will be sent while scrolling (milliseconds)
                         >
                             <Card
-                                handlePress={handleChooseOption}
-                                currentPressed={currentPressed}
                                 option={'A'}
                                 text={data.options[0]} 
                                 width={width * 0.8} 
                                 height={height * 0.35}
+                                isSelected={currentPressed === "A"}
                             />
                             <Card
-                                handlePress={handleChooseOption}
-                                currentPressed={currentPressed}
                                 option={'B'}
                                 text={data.options[1]} 
                                 width={width * 0.8} 
                                 height={height * 0.35}
+                                isSelected={currentPressed === "B"}
                             />
                             <Card
-                                handlePress={handleChooseOption}
-                                currentPressed={currentPressed}
                                 option={'C'}
                                 text={data.options[2]} 
                                 width={width * 0.8} 
                                 height={height * 0.35}
+                                isSelected={currentPressed === "C"}
                             />
                         </ScrollView>
 
