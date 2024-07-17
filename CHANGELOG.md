@@ -1,10 +1,14 @@
 # CHANGELOG
 Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
-## [2.0.0]
-- Change question_ids to questions_done in /get_garden API
+## [3.0.0] Add voice Feature
+- Change icon to fat flower
 
-## [1.0.6]
+## [2.0.0] Redesign interface
+- Change question_ids to questions_done in /get_garden API
+- Change icon to slim flower
+
+## [1.0.6] Garden game
 
 ### Added
 - Create OG user from create script. 
