@@ -8,6 +8,9 @@ import { globalStyles } from '../globalStyles/globalStyles';
 import Card from '../components/QuestionCard';
 import { useUser } from '../components/UserContext';
 
+import RenderHtml from 'react-native-render-html';
+
+
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
 
@@ -37,6 +40,7 @@ export default function Question_MC({ navigation, route }){
             
             const response_data = await response.json();
             setData(response_data);
+            console.log("Got data question", response_data.question)
             //Set default pressed value to "A"
             setCurrentPressed("A");
         } catch(error) {
@@ -51,7 +55,8 @@ export default function Question_MC({ navigation, route }){
         setTimeout(fetchQuestions, 10);
     }, []);
 
-    const [seconds, setSeconds] = useState(60);
+    const TOTAL_SECONDS = 90
+    const [seconds, setSeconds] = useState(TOTAL_SECONDS);
     const [intervalId, setIntervalId] = useState(null);
 
     // implementing timer, runs upon loading screen
@@ -109,7 +114,7 @@ export default function Question_MC({ navigation, route }){
                         course_id: state.course_id,
                         topic: topic,
                         question_id: data.question_id,
-                        response_time: (60 - seconds),
+                        response_time: (TOTOAL_SECONDS - seconds),
                         user_answer: currentPressed,
                         correct_answer: data.answer,
                     })
@@ -138,6 +143,16 @@ export default function Question_MC({ navigation, route }){
             handleChooseOption(options[index]);
         }
     };
+
+    const sampleHtmlContent = `
+<p>Given an array of integers <code>nums</code>&nbsp;and an integer <code>target</code>, return <em>indices of the two numbers such that they add up to <code>target</code></em>.</p>
+<img alt="" src="https://assets.leetcode.com/uploads/2021/01/18/pathsum1.jpg" style="width: 500px; height: 356px;" />
+<pre>
+<strong>Input:</strong> nums = [2,7,11,15], target = 9
+<strong>Output:</strong> [0,1]
+<strong>Explanation:</strong> Because nums[0] + nums[1] == 9, we return [0, 1].
+</pre>
+`;
 
     return (
         <View 
@@ -233,7 +248,7 @@ export default function Question_MC({ navigation, route }){
                                         }}
                                     >
                                         { currentPressed == 'Time ran out' ? 'Your time ran out.' : 
-                                            (currentPressed == data.answer ? 'You are correct!' : 'You are incorrect.')}
+                                            (currentPressed == data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`)}
                                     </Text>
 
                                 </View>
@@ -242,7 +257,7 @@ export default function Question_MC({ navigation, route }){
                         </Modal>
 
                         {/* Top Bar */}
-                        { seconds == 0 ? 
+                        { false ? 
                         (   
                             <View 
                                 style={{
@@ -345,22 +360,34 @@ export default function Question_MC({ navigation, route }){
                                 >
                                 <ScrollView
                                     contentContainerStyle={{
-                                    flexGrow: 1,
-                                    justifyContent: 'flex-start',
-                                    }}
-                                >
-                                    <Text
-                                    style={{
-                                        marginTop: height * 0.03,
-                                        marginHorizontal: 5,
-                                        padding: 20,
-                                        fontFamily: 'Baloo2-Bold',
-                                        fontSize: 14,
+                                        flexGrow: 1,
+                                        justifyContent: 'flex-start',
                                     }}
                                     >
-                                        {data.question}
-                                    </Text>
-                                </ScrollView>
+                                    <RenderHtml
+                                        contentWidth={width - 50}  // Adjust based on your padding/margin
+                                        source={{ html: data.question }}
+                                        tagsStyles={{
+                                        body: {
+                                            marginTop: height * 0.03,
+                                            marginHorizontal: 5,
+                                            padding: 20,
+                                            fontFamily: 'Baloo2-Bold',
+                                            fontSize: 14,
+                                        },
+                                        code: {
+                                            backgroundColor: '#f0f0f0',
+                                            padding: 2,
+                                            borderRadius: 4,
+                                        },
+                                        pre: {
+                                            backgroundColor: '#f0f0f0',
+                                            padding: 10,
+                                            borderRadius: 4,
+                                        },
+                                        }}
+                                    />
+                                    </ScrollView>
                             </View>
                         </View>
 
