@@ -8,7 +8,7 @@ export const UserProvider = ({ children }) => {
     const [state, setState] = useState({
         uid: '',
         username: '',
-        course_id: 'Software_Engineer_53fc0699-7eb2-4e66-bdd9-e1fa51aa4c3c'
+        course_id: 'Software_Engineering_1'
     });
 
     const updateState = (key, value) => {

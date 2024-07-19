@@ -4,13 +4,10 @@ import { Text, View, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { images, colors } from '../globalStyles/globalStyles';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-export default function Card({ item, height, width, pressHandler }){
+export default function Card({ index, item, height, width, pressHandler }){
     const totalQuestionsDone = item.questions_done.length;
     // console.log("Card item row num", item.row_num, "num question done", totalQuestionsDone);
-    const getIndex = () => {
-        return ( (item.row_num - 1 % 9) + 1 );
-    }
-
+  
     return (
         <TouchableOpacity
             style={{
@@ -40,7 +37,7 @@ export default function Card({ item, height, width, pressHandler }){
                     height: height * 0.8,
                     width: width * 0.1,
                 }}
-                source={images.id[getIndex()]}
+                source={images.id[index+1]}
             />
 
             {/* Bulk Info of Card */}

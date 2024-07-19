@@ -36,6 +36,7 @@ export default function Courses({ navigation }){
             )
 
             const data = await response.json();
+            console.log("Got garden", data);
             setCourses(data);
 
         } catch(error) {
@@ -144,14 +145,20 @@ export default function Courses({ navigation }){
                         }}
                     >
                         <FlatList
-                            style={{ flex : 1 }}
+                            style={{ flex: 1 }}
                             data={courses.garden_rows}
                             keyExtractor={(item) => item.row_num}
                             showsVerticalScrollIndicator={false}
-                            renderItem={({ item }) => (
-                                <Card item={item} height={ height * 0.09 } width={ width * 0.8 } pressHandler={topicPress}/>
+                            renderItem={({ item, index }) => (
+                                <Card 
+                                index={index}
+                                item={item} 
+                                height={height * 0.09} 
+                                width={width * 0.8} 
+                                pressHandler={topicPress}
+                                />
                             )}
-                        />
+                            />
                     </View>
 
                     {/* Random Button */}
