@@ -8,7 +8,7 @@ export default function Card({ handlePress, isSelected, option, text, width, hei
       { width: width, 
         height: height, 
         marginRight: 0.1 * width,
-
+        marginTop: -10,
         backgroundColor: isSelected ? '#004643' : '#3c716f'
       }
       ]
@@ -16,7 +16,7 @@ export default function Card({ handlePress, isSelected, option, text, width, hei
     >
       <TouchableOpacity 
         activeOpacity={0.9}
-        style={styles.touchable}
+        style={[styles.touchable, { padding: 0 }]}
       >
         <Text style={[
           styles.title,
@@ -26,7 +26,7 @@ export default function Card({ handlePress, isSelected, option, text, width, hei
         </Text>
       </TouchableOpacity>
       <ScrollView 
-        style={styles.scrollView}
+        style={[styles.scrollView, {marginTop: 0}]}
         showsVerticalScrollIndicator={false}  
       >
         <Text style={styles.text}>{text}</Text>
