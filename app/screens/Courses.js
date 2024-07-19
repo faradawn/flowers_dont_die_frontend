@@ -16,7 +16,6 @@ const width = Dimensions.get('screen').width;
 export default function Courses({ navigation }){
     const [isLoading, setIsLoading] = useState(true);
     const [courses, setCourses] = useState([]);
-    const [mode, setMode] = useState(0);
     const { state } = useUser();
 
     // fetching the topics from the backend api
@@ -54,21 +53,12 @@ export default function Courses({ navigation }){
 
     // navigation through clicking a specific topic
     const topicPress = (topic) => {
-        if(mode == 0){
-            navigation.navigate('Question_MC', { topic: topic })
-        } else if(mode == 1){
-            navigation.navigate('Question_A', { topic: topic })
-        } 
+        navigation.navigate('Question_MC', { topic: topic })
     }
 
     // navigation through random question selection
     const randomSelect = () => {
-        if(mode == 0){
-            navigation.navigate('Question_MC', { topic: '' })
-        } else if(mode == 1){
-            navigation.navigate('Question_A', { topic: '' })
-        } 
-    
+        navigation.navigate('Question_MC', { topic: '' })
     }
 
     return (
@@ -109,29 +99,7 @@ export default function Courses({ navigation }){
                         </Text>
                     </View>
 
-                    {/* Switch For Toggling Between Different Modes */}
-                    <View
-                        style={{
-                            height: height * 0.06,
-                            width: width,
-
-                            marginTop: height * 0.005,
-                            marginBottom: height * 0.01,
-
-                            alignItems: 'center',
-                            justifyContent: 'flex-start',
-                        }}
-                    >
-                        <SwitchButton 
-                            FirstText="Multiple Choice"
-                            SecondText="Mock Interview"
-                            width={ 0.68 * width }
-                            height={ 0.045 * height }
-                            mode={ mode }
-                            setMode={ setMode }
-                        />
-                    </View>
-                    
+                    <View style={{height: 20}}></View>
                     {/* FlatList Containing Topic Information */}
                     <View
                         style={{
