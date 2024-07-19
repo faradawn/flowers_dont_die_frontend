@@ -159,7 +159,7 @@ export default function Question_A({ navigation, route }){
     const [submitted, setSubmitted] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
 
-    // submitting the recording to backend api
+    // when stop recording
     const submitRecording = async() => {
         try {
             const response = await fetch(
@@ -186,7 +186,7 @@ export default function Question_A({ navigation, route }){
         }
     }
 
-    // handling submit and next
+    // when clicking next
     const handleNext_Submit = async() => {
         if(!allowSubmit) { return; }
 
