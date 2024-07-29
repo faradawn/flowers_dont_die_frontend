@@ -31,7 +31,8 @@ export default function Question_Combined({ navigation, route }) {
     const [transcribedText, setTranscribedText] = useState({ status: '', message: '', transcribed_text: '' });
 
     // Common state
-    const [submitted, setSubmitted] = useState(false);
+    const [voiceSubmitted, setVoiceSubmitted] = useState(false);
+    const [mcSubmitted, setMcSubmitted] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [seconds, setSeconds] = useState(90);
     const [intervalId, setIntervalId] = useState(null);
@@ -66,7 +67,7 @@ export default function Question_Combined({ navigation, route }) {
     // Timer logic
     useEffect(() => {
         let interval;
-        if (!submitted) {
+        if (!mcSubmitted && !voiceSubmitted) { // if user has not submit
             interval = setInterval(() => {
                 setSeconds((prevSeconds) => {
                     if(prevSeconds > 0) return prevSeconds - 1;
@@ -76,19 +77,18 @@ export default function Question_Combined({ navigation, route }) {
         }
         setIntervalId(interval);
         return () => clearInterval(interval);
-    }, [submitted]);
+    }, [mcSubmitted, voiceSubmitted]);
 
     useEffect(() => {
         if(seconds === 0){ 
             setCurrentPressed('Time ran out');
             setModalOpen(true);
-            setSubmitted(true);
         }
     }, [seconds]);
 
     // === MC
     const handleChooseOption = (option) => { 
-        if(currentPressed == 'Time ran out' || submitted ){
+        if(mcSubmitted){
             return;
         }
         setCurrentPressed(option);
@@ -133,7 +133,7 @@ export default function Question_Combined({ navigation, route }) {
     };
 
     const handleRecord = () => {
-        if(submitted) return;
+        if(voiceSubmitted) return;
         if(recording) stopRecording();
         else startRecording();
     };
@@ -173,11 +173,13 @@ export default function Question_Combined({ navigation, route }) {
 
     // Handle submission
     const handleNext = async () => {
-        if(submitted) { 
+        // If button displays "Next"
+        if((mode == 0 && voiceSubmitted) || (mode == 1 && mcSubmitted)) { 
             navigation.navigate('HomeTab'); 
             return; 
         }
         
+        // If button displays "Submit"
         setIsLoading(true);
 
         if(mode === 0) {
@@ -198,6 +200,8 @@ export default function Question_Combined({ navigation, route }) {
             } catch(error) {
                 console.log("Error sending data: ", error);
             }
+            setVoiceSubmitted(true);
+
         } else {
             // Multiple choice submission
             try {
@@ -219,10 +223,10 @@ export default function Question_Combined({ navigation, route }) {
             } catch(error) {
                 console.log('Error fetching data', error);
             }
+            setMcSubmitted(true);
         }
 
         setIsLoading(false);
-        setSubmitted(true);
         setModalOpen(true);
         if (intervalId) { 
             clearInterval(intervalId);
@@ -450,17 +454,18 @@ export default function Question_Combined({ navigation, route }) {
             marginTop: height * -0.04,
             marginBottom: height * 0.08,
         }}>
+            {/* TODO: understand this logic */}
             <TouchableOpacity
-                activeOpacity={(mode === 0 && !allowSubmit) || (mode === 1 && currentPressed == "Not Touched" && !submitted) ? 1 : 0.7}
+                activeOpacity={(mode === 0 && !allowSubmit) || (mode === 1 && currentPressed == "Not Touched" && !mcSubmitted) ? 1 : 0.7}
                 style={{
-                    backgroundColor: (mode === 0 && !allowSubmit) || (mode === 1 && currentPressed == 'Not Touched' && !submitted) ? '#3c716f' : '#004643',
+                    backgroundColor: (mode === 0 && !allowSubmit) || (mode === 1 && currentPressed == 'Not Touched' && !mcSubmitted) ? '#3c716f' : '#004643',
                     height: height * 0.06,
                     width: width * 0.75,
                     ...globalStyles.button
                 }}
                 onPress={() => handleNext()}
             >
-                <Text style={globalStyles.buttonText}>{submitted ? 'Next' : 'Submit'}</Text>
+                <Text style={globalStyles.buttonText}>{((mode == 0 && voiceSubmitted) || (mode == 1 && mcSubmitted)) ? 'Go home' : 'Submit'}</Text>
             </TouchableOpacity>
         </View>
     );
@@ -534,29 +539,31 @@ export default function Question_Combined({ navigation, route }) {
                           value={transcribedText.transcribed_text}
                         />
                       </View>
-                      <TouchableOpacity
-                        activeOpacity={submitted ? 1 : 0.7}
-                        style={{
-                          height: 60,
-                          width: 60,
-                          borderRadius: 60,
-                          marginTop: -80,
-                          backgroundColor: recording ? 'red' : 'black',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        onPress={() => handleRecord()}
-                      >   
-                        {isLoading ? (
-                          <ActivityIndicator size="small" color="white" />
-                        ) : (
-                          <MaterialIcons 
-                            name={recording ? 'square' : 'keyboard-voice'}
-                            color='white'
-                            size={recording ? 30 : 35}
-                          />
+                      {!voiceSubmitted && (
+                        <TouchableOpacity
+                            activeOpacity={voiceSubmitted ? 1 : 0.7}
+                            style={{
+                            height: 60,
+                            width: 60,
+                            borderRadius: 60,
+                            marginTop: -80,
+                            backgroundColor: recording ? 'red' : 'black',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            }}
+                            onPress={() => handleRecord()}
+                        >   
+                            {isLoading ? (
+                            <ActivityIndicator size="small" color="white" />
+                            ) : (
+                            <MaterialIcons 
+                                name={recording ? 'square' : 'keyboard-voice'}
+                                color='white'
+                                size={recording ? 30 : 35}
+                            />
+                            )}
+                        </TouchableOpacity>
                         )}
-                      </TouchableOpacity>
                     </View>
                   ) : (
                     // MC answer component 
