@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Image, ImageBackground, Dimensions, TextInput,
-    Text, TouchableOpacity, TouchableWithoutFeedback, Keyboard
+    Text, TouchableOpacity, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -84,190 +84,197 @@ export default function SignUp({ navigation }){
                 ...globalStyles.container
             }}
         >
-            {/* Signup Icon + Back Button Header */}
+
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View
-                    style={ {
-                        height: height * 0.4,
-                        width: width,
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                    } }
-                >
-                    <TouchableOpacity 
-                        style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-
-                            marginLeft: 40,
-                            marginTop: 0.04 * height,
-                            alignSelf: 'flex-start' 
-                        }}
-                        onPress={() => navigation.navigate('Login')}
-                    >
-                        <Ionicons 
-                            size={30}
-                            name="chevron-back-outline"
-                            color='#F8C660'
-                        />
-                        <Text
-                            style={{
-                                fontFamily: 'Baloo2-Bold',
-                                fontSize: 20,
-                                color: '#F8C660'
-                            }}
-                        > Back </Text>
-                    </TouchableOpacity>
-                    
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
+                
+                    {/* Signup Icon + Back Button Header */}
                     <View
-                        style= { {
-                            height: 150, 
-                            width: 150,
-                            borderRadius: 150,
-
-                            backgroundColor: 'white',
-
+                        style={ {
+                            height: height * 0.4,
+                            width: width,
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            marginTop: 0.065 * height,
+                            justifyContent: 'flex-start',
                         } }
                     >
-                        <Text
-                            style={ { 
-                                fontFamily: 'Baloo2-Bold',
-                                fontSize: 26,
-                            } }
+                        {/* Horizontal back button line */}
+                        <TouchableOpacity 
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+
+                                marginLeft: 40,
+                                marginTop: 0.04 * height,
+                                alignSelf: 'flex-start' 
+                            }}
+                            onPress={() => navigation.navigate('Login')}
                         >
-                            Sign Up
-                        </Text>
-                    </View>   
-                </View>
-            </TouchableWithoutFeedback>
-
-            {/* Text Input Component for Username and Password */}
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View
-                    style={{
-                        height: height * 0.3,
-                        width: width * 0.8,
-                        alignItems: 'flex-start',
-                        justifyContent: 'flex-end',
-                    }}
-                >
-                    
-                    {/* Username input field */}
-                    <Text style={globalStyles.inputKey}> Enter Username </Text>
-                    <TextInput 
-                        style={[
-                            { 
-                                height: 0.06 * height, 
-                                width: 0.8 * width,
-                                paddingHorizontal: 20, 
-                            }, 
-                            globalStyles.textInput
-                        ]}
-                        placeholder='John Smith'
-                        placeholderTextColor='rgba(255, 255, 255, 0.5)'
-                        onChangeText={(val) => setUsername(val)}
-                        
-                        textContentType="oneTimeCode"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                    />
-
-                    {/* Password input field */}
-                    <Text style={globalStyles.inputKey}> Enter Password </Text>
-                    <TextInput 
-                        style={[
-                            { 
-                                height: 0.06 * height, 
-                                width: 0.8 * width,
-                                paddingHorizontal: 20, 
-                            }, 
-                            globalStyles.textInput
-                        ]}
-                        placeholder="John Smith's Password"
-                        placeholderTextColor='rgba(255, 255, 255, 0.5)'
-                        onChangeText={(val) => setPassword(val)}
-
-                        textContentType="oneTimeCode"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-
-                        secureTextEntry={true}
-                    />
-
-                    {/* Confirm Password input field */}
-                    <Text style={globalStyles.inputKey}> Confirm Password </Text>
-                    <TextInput 
-                        style={[
-                            { 
-                                height: 0.06 * height, 
-                                width: 0.8 * width,
-                                paddingHorizontal: 20, 
-                            }, 
-                            globalStyles.textInput
-                        ]}
-                        placeholder="John Smith's Password (again)"
-                        placeholderTextColor='rgba(255, 255, 255, 0.5)'
-                        onChangeText={(val) => setConfirmPassword(val)}
-
-                        autoCapitalize="none"
-                        autoCorrect={false}
-
-                        secureTextEntry={true}
-                    />
-
-                    {/* Error message field */}
-                    { infoCorrect ?
-                        (
-                            <View style={{ height: 23 }}>
-                            </View>
-                        ) 
-                        : 
-                        (
+                            <Ionicons 
+                                size={30}
+                                name="chevron-back-outline"
+                                color='#F8C660'
+                            />
                             <Text
                                 style={{
                                     fontFamily: 'Baloo2-Bold',
-                                    color: '#FFD912',
-                                    alignSelf: 'center',
+                                    fontSize: 20,
+                                    color: '#F8C660'
                                 }}
+                            > Back </Text>
+                        </TouchableOpacity>
+                        
+                        {/* Circle icon */}
+                        <View
+                            style= { {
+                                height: 150, 
+                                width: 150,
+                                borderRadius: 150,
+
+                                backgroundColor: 'white',
+
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginTop: 0.065 * height,
+                            } }
+                        >
+                            <Text
+                                style={ { 
+                                    fontFamily: 'Baloo2-Bold',
+                                    fontSize: 26,
+                                } }
                             >
-                                {errorMessage}
+                                Sign Up
                             </Text>
-                        ) 
-                    }
-                </View>
-            </TouchableWithoutFeedback>
+                        </View>   
+                    </View>
 
-            {/* Sign Up Button */}
-            <View
-                style={{ 
-                    height: 0.1 * height,
-                    width: 0.8 * width,
 
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <TouchableOpacity
-                    style={ [
-                        { 
-                            backgroundColor: '#F8C660',
-                            height: 0.06 * height,
+                    {/* Forms */}
+                    <View
+                        style={{
+                            height: height * 0.3,
+                            width: width * 0.8,
+                            alignItems: 'flex-start',
+                            justifyContent: 'flex-end',
+                        }}
+                    >
+                        
+                        {/* Username input field */}
+                        <Text style={globalStyles.inputKey}> Enter Username </Text>
+                        <TextInput 
+                            style={[
+                                { 
+                                    height: 0.06 * height, 
+                                    width: 0.8 * width,
+                                    paddingHorizontal: 20, 
+                                }, 
+                                globalStyles.textInput
+                            ]}
+                            placeholder='John Smith'
+                            placeholderTextColor='rgba(255, 255, 255, 0.5)'
+                            onChangeText={(val) => setUsername(val)}
+                            
+                            textContentType="oneTimeCode"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                        />
+
+                        {/* Password input field */}
+                        <Text style={globalStyles.inputKey}> Enter Password </Text>
+                        <TextInput 
+                            style={[
+                                { 
+                                    height: 0.06 * height, 
+                                    width: 0.8 * width,
+                                    paddingHorizontal: 20, 
+                                }, 
+                                globalStyles.textInput
+                            ]}
+                            placeholder="John Smith's Password"
+                            placeholderTextColor='rgba(255, 255, 255, 0.5)'
+                            onChangeText={(val) => setPassword(val)}
+
+                            textContentType="oneTimeCode"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+
+                            secureTextEntry={true}
+                        />
+
+                        {/* Confirm Password input field */}
+                        <Text style={globalStyles.inputKey}> Confirm Password </Text>
+                        <TextInput 
+                            style={[
+                                { 
+                                    height: 0.06 * height, 
+                                    width: 0.8 * width,
+                                    paddingHorizontal: 20, 
+                                }, 
+                                globalStyles.textInput
+                            ]}
+                            placeholder="John Smith's Password (again)"
+                            placeholderTextColor='rgba(255, 255, 255, 0.5)'
+                            onChangeText={(val) => setConfirmPassword(val)}
+
+                            autoCapitalize="none"
+                            autoCorrect={false}
+
+                            secureTextEntry={true}
+                        />
+
+                        {/* Error message field */}
+                        { infoCorrect ?
+                            (
+                                <View style={{ height: 23 }}>
+                                </View>
+                            ) 
+                            : 
+                            (
+                                <Text
+                                    style={{
+                                        fontFamily: 'Baloo2-Bold',
+                                        color: '#FFD912',
+                                        alignSelf: 'center',
+                                    }}
+                                >
+                                    {errorMessage}
+                                </Text>
+                            ) 
+                        }
+                    </View>
+
+
+                    {/* Sign Up Button */}
+                    <View
+                        style={{ 
+                            height: 0.1 * height,
                             width: 0.8 * width,
-                        }, 
-                        globalStyles.button
-                    ] }
-                    onPress={() => signupAttempt()}
-                >
-                    <Text style={globalStyles.buttonText}>Sign Up</Text>
-                </TouchableOpacity>
-            </View>
 
-            {/* placeholder for controlling the layout */}
-            <View style={{ height: 0.1 * height }}></View>
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <TouchableOpacity
+                            style={ [
+                                { 
+                                    backgroundColor: '#F8C660',
+                                    height: 0.06 * height,
+                                    width: 0.8 * width,
+                                }, 
+                                globalStyles.button
+                            ] }
+                            onPress={() => signupAttempt()}
+                        >
+                            <Text style={globalStyles.buttonText}>Sign Up</Text>
+                        </TouchableOpacity>
+                    </View>
 
+                    {/* placeholder for controlling the layout */}
+                    <View style={{ height: 0.1 * height }}></View>
+                
+                
+                </KeyboardAvoidingView>            
+            </TouchableWithoutFeedback>
         </ImageBackground>
     )
 }
