@@ -75,7 +75,7 @@ export default function Profile({ navigation }){
                         width: width * 0.35,
                         height: width * 0.35,
                     }}
-                    source={require('../../assets/images/notion_avatars/notion_01.png')}
+                    source={require('../../assets/images/notion_avatars/notion_02.png')}
                 />
             </View>
 
