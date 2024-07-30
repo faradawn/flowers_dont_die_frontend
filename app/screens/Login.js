@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Image, ImageBackground, Dimensions, TextInput,
     Text, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView
 } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
-import { useUser } from '../components/UserContext';
+import { useUser } from '../components/UserContext'
+import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
+
 
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
@@ -15,6 +17,22 @@ export default function Login({ navigation }){
     const [infoCorrect, setInfoCorrect] = useState(true);
 
     const { updateState } = useUser();
+
+    useEffect(() => {
+        const checkStoredLogin = async () => {
+            const loginInfo = await getLoginInfo();
+            if (loginInfo) {
+                const { uid, username, password } = loginInfo;
+                updateState('uid', uid);
+                updateState('username', username);
+                console.log("Got async login info", loginInfo);
+                navigation.navigate('HomeTab');
+            }else{
+                console.log("No previous login info", loginInfo);
+            }
+        };
+        checkStoredLogin();
+    }, []);
 
     // handles login attempts from the user
     const loginAttempt = async () => {
@@ -42,6 +60,9 @@ export default function Login({ navigation }){
 
                 setUsername('');
                 setPassword('');
+
+                await saveLoginInfo(data.uid, username, password);
+                console.log("Saved login info to async");
 
                 navigation.navigate('HomeTab')
 

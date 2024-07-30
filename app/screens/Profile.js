@@ -3,12 +3,15 @@ import { View, Dimensions, Image, Text, TouchableOpacity } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext';
+import { deleteLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
+
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 export default function Profile({ navigation }){
     const { state } = useUser();
+    const { updateState } = useUser();
 
     // handling deletion of the account
     const handleDelete = async() => {
@@ -27,12 +30,28 @@ export default function Profile({ navigation }){
 
             const data = await response.json();
 
+            await deleteLoginInfo();
+            
+            console.log("Account deleted from remote and local", data);
         } catch(error) {
             console.log('Error deleting account: ', error);
         } finally {
             navigation.navigate('Login');
         }
     }
+
+    const handleLogout = async () => {
+        try {
+            await deleteLoginInfo();
+            updateState('username', '');
+            updateState('uid', '');
+            navigation.navigate('Login');
+            console.log("Done logout and deleted async storage");
+        } catch (error) {
+            console.log('Error during logout:', error);
+        }
+    };
+
 
     return (
         <View 
@@ -110,17 +129,16 @@ export default function Profile({ navigation }){
             >
                 {/* Logout Button */}
                 <TouchableOpacity
-                    style={ [
+                    style={[
                         { 
                             backgroundColor: '#004643',
                             height: 0.06 * height,
                             width: 0.8 * width,
-
                             marginBottom: 0.02 * height,
                         }, 
                         globalStyles.button
-                    ] }
-                    onPress={() => navigation.navigate('Login')}
+                    ]}
+                    onPress={() => handleLogout()}
                 >
                     <Text style={globalStyles.buttonText}>Log Out</Text>
                 </TouchableOpacity>

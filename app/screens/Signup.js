@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext';
+import { saveLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -60,6 +61,10 @@ export default function SignUp({ navigation }){
                 setInfoCorrect(true);
                 updateState( 'uid', data.uid )
                 updateState( 'username', username )
+
+                await saveLoginInfo(data.uid, username, password);
+                console.log("Created and storeged login info", username, data.uid);
+
                 navigation.navigate('HomeTab')
 
             } else if (data.message == 'User already exists') {
