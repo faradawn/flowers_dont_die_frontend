@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput } from 'react-native';
+import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image } from 'react-native';
 import { Ionicons, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 
-import { globalStyles } from '../globalStyles/globalStyles';
+import { globalStyles, stars } from '../globalStyles/globalStyles';
 import Card from '../components/QuestionCard';
 import { useUser } from '../components/UserContext';
 import RenderHtml from 'react-native-render-html';
@@ -296,56 +296,71 @@ export default function Question_Combined({ navigation, route }) {
             visible={modalOpen}
             transparent={true}
             animationType="slide"
-            backdropColor="black"
-            backdropOpacity={0.8}
         >
             <View style={{
-                flex: 1,    
-                justifyContent: 'center',    
-                alignItems: 'center',    
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
             }}>
                 <View style={{
                     width: width * 0.8,
-                    paddingTop: height * 0.05,
-                    paddingBottom: height * 0.1,
+                    paddingVertical: height * 0.05,
+                    paddingHorizontal: width * 0.05,
                     backgroundColor: 'white',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    shadowColor: '#000000',
+                    shadowColor: '#000',
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.25,
                     shadowRadius: 4,
                     elevation: 5,
+                    position: 'relative',
                 }}>
-                    <View style={{
-                        height: height * 0.05,
-                        width: width * 0.8,
-                        alignItems: 'flex-end',
-                        justifyContent: 'flex-end',
-                    }}>
-                        <Ionicons 
-                            name="close-outline"
-                            size={25}
-                            onPress={() => {setModalOpen(false)}}
-                            style={{ marginRight: 0.08 * width }}
+                    {/* 0. close bottom */}
+                    <Ionicons 
+                        name="close-outline"
+                        size={25}
+                        onPress={() => { setModalOpen(false) }}
+                        style={{
+                            position: 'absolute',
+                            top: 20,
+                            right: 20,
+                        }}
+                    />
+
+                    {/* 1. Star */}
+                    { mode === 0 && answerResponse.grade !== 0 && (
+                        <Image
+                            source={stars.grade[answerResponse.grade]}
+                            style={{
+                                height: height * 0.04,
+                                width: width * 0.3,
+                                marginVertical: height * 0.01,
+                            }}
                         />
-                    </View>
+                    )}
+                    
+                    {/* 2. Title */}
                     <Text style={{
                         fontFamily: 'Baloo2-Bold',
                         fontSize: 30,
+                        textAlign: 'center',
                     }}>
                         {mode === 0 ? answerResponse.feedback_title : 
-                            (currentPressed == data.answer ? 'Congratulations!' : 'Sorry!')}
+                            (currentPressed === data.answer ? 'Congratulations!' : 'Sorry!')}
                     </Text>
+                    
+                    {/* 3. Body */}
                     <Text style={{
                         fontFamily: 'Baloo2-Regular',
                         fontSize: 16,
-                        padding: 0.05 * width,
+                        textAlign: 'center',
+                        paddingTop: height * 0.02,
                     }}>
                         {mode === 0 ? answerResponse.feedback_body :
-                            (currentPressed == 'Time ran out' ? 'Your time ran out.' : 
-                            (currentPressed == data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`))}
+                            (currentPressed === 'Time ran out' ? 'Your time ran out.' : 
+                            (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`))}
                     </Text>
                 </View>
             </View>
