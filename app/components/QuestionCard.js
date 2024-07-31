@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 
-export default function Card({ handlePress, isSelected, option, text, width, height }) {
+export default function Card({ isSelected, option, text, width, height, isCardSubmitted, isCardCorrectAnswer }) {
   return (
     <View style={
       [styles.card, 
@@ -9,7 +9,8 @@ export default function Card({ handlePress, isSelected, option, text, width, hei
         height: height, 
         marginRight: 0.1 * width,
         marginTop: -10,
-        backgroundColor: isSelected ? '#004643' : '#3c716f'
+
+        backgroundColor : isCardSubmitted ?  (isCardCorrectAnswer ? "#65c465" : "#FF2020") : (isSelected ? '#004643' : '#3c716f'),
       }
       ]
     }
