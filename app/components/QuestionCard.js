@@ -10,7 +10,7 @@ export default function Card({ isSelected, option, text, width, height, isCardSu
         marginRight: 0.1 * width,
         marginTop: -10,
 
-        backgroundColor : isCardSubmitted ?  (isCardCorrectAnswer ? "#65c465" : "#FF2020") : (isSelected ? '#004643' : '#3c716f'),
+        backgroundColor : isCardSubmitted ?  (isCardCorrectAnswer ? "#65c465" : "#004643") : (isSelected ? '#004643' : '#3c716f'),
       }
       ]
     }
