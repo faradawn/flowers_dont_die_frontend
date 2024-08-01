@@ -19,7 +19,10 @@
         "NSMicrophoneUsageDescription": "We need access to your microphone for recording audio as you explain your problem-solving approach.",
         "NSSpeechRecognitionUsageDescription": "We need access to speech recognition to convert your spoken problem-solving approach to text and let AI check whether it is correct.",
         "NSPhotoLibraryUsageDescription": "Our app uses libraries that might reference the photo library to render images describing coding problems, but we do not access your photos.",
-        "NSUserNotificationsUsageDescription": "Our app uses libraries that might reference push notifications, but we do not send or receive notifications."
+        "NSUserNotificationsUsageDescription": "Our app uses libraries that might reference push notifications, but we do not send or receive notifications.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       },
       "config": {
         "usesNonExemptEncryption": false
