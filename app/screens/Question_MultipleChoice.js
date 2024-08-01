@@ -290,7 +290,6 @@ export default function Question_Combined({ navigation, route }) {
         </View>
     );
 
-
     const ModalComponent = () => (
         <Modal
             visible={modalOpen}
@@ -457,9 +456,6 @@ export default function Question_Combined({ navigation, route }) {
         </View>
     );
 
-
-
-
     const NextButtonComponent = () => (
         <View style={{ 
             width: width,
@@ -509,7 +505,7 @@ export default function Question_Combined({ navigation, route }) {
                   <QuestionComponent />
 
                   <View style={{height: 20}} />
-                
+    
 
                   <SwitchButton
                     FirstText="Voice"
@@ -617,6 +613,8 @@ export default function Question_Combined({ navigation, route }) {
                                 width={width * 0.8}
                                 height={height * 0.35}
                                 isSelected={currentPressed === optionLetter}
+                                isCardSubmitted={submitted}
+                                isCardCorrectAnswer={optionLetter == data.answer}
                             />
                             );
                         })}
