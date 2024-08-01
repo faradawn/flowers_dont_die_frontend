@@ -42,7 +42,7 @@ export default function SignUp({ navigation }){
 
         try {
             const response = await fetch(
-				'http://129.114.24.200:8001/create_user', {
+				'https://backend.faradawn.site:8001/create_user', {
 					method: 'POST',
 					headers: {
 					    "Content-Type": "application/json",

@@ -41,7 +41,7 @@ export default function Question_Combined({ navigation, route }) {
     // Fetch questions
     const fetchQuestions = async () => {
         try {
-            const response = await fetch('http://129.114.24.200:8001/get_question', {
+            const response = await fetch('https://backend.faradawn.site:8001/get_question', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -149,7 +149,7 @@ export default function Question_Combined({ navigation, route }) {
         formData.append('question_id', data.question_id);
         formData.append('audio_file', file);
         try {
-            const response = await fetch('http://129.114.24.200:8001/transcribe', {
+            const response = await fetch('https://backend.faradawn.site:8001/transcribe', {
                 method: 'POST',
                 headers: { "Content-Type": "multipart/form-data" },
                 body: formData
@@ -185,7 +185,7 @@ export default function Question_Combined({ navigation, route }) {
         if(mode === 0) {
             // Voice submission
             try {
-                const response = await fetch('http://129.114.24.200:8001/submit_text_response', {
+                const response = await fetch('https://backend.faradawn.site:8001/submit_text_response', {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -205,7 +205,7 @@ export default function Question_Combined({ navigation, route }) {
         } else {
             // Multiple choice submission
             try {
-                const response = await fetch('http://129.114.24.200:8001/submit_answer', {
+                const response = await fetch('https://backend.faradawn.site:8001/submit_answer', {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -613,7 +613,7 @@ export default function Question_Combined({ navigation, route }) {
                                 width={width * 0.8}
                                 height={height * 0.35}
                                 isSelected={currentPressed === optionLetter}
-                                isCardSubmitted={submitted}
+                                isCardSubmitted={mcSubmitted}
                                 isCardCorrectAnswer={optionLetter == data.answer}
                             />
                             );

@@ -38,7 +38,7 @@ export default function Login({ navigation }){
     const loginAttempt = async () => {
         try {
             const response = await fetch(
-                'http://129.114.24.200:8001/login', {
+                'https://backend.faradawn.site:8001/login', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",

@@ -22,7 +22,7 @@ export default function Courses({ navigation }){
     const fetchTopics = async() => {
         try {
             const response = await fetch(
-                'http://129.114.24.200:8001/get_garden', {
+                'https://backend.faradawn.site:8001/get_garden', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",

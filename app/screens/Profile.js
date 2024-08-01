@@ -17,7 +17,7 @@ export default function Profile({ navigation }){
     const handleDelete = async() => {
         try {
             const response = await fetch(
-                'http://129.114.24.200:8001/delete_account', {
+                'https://backend.faradawn.site:8001/delete_account', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",

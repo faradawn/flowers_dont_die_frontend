@@ -29,7 +29,7 @@ export default function Question_MC({ navigation, route }){
     const fetchQuestions = async () => {
         try {
             const response = await fetch(
-              'http://129.114.24.200:8001/get_question', {
+              'https://backend.faradawn.site:8001/get_question', {
                 method: 'POST',
                 headers: {
                   "Content-Type": "application/json",
@@ -107,7 +107,7 @@ export default function Question_MC({ navigation, route }){
 
         try {
             const response = await fetch(
-                'http://129.114.24.200:8001/submit_answer', {
+                'https://backend.faradawn.site:8001/submit_answer', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
