@@ -10,7 +10,20 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "ios": {
+        "buildConfiguration": "Release",
+        "distribution": "store",
+        "autoIncrement": true,
+        "credentialsSource": "remote"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease",
+        "credentialsSource": "remote"
+      }
+    }
+    
   },
   "submit": {
     "production": {

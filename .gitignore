@@ -25,3 +25,7 @@ env
 *secret_key*
 *secret-key*
 __pycache__
+
+# prebuild
+ios/
+android/

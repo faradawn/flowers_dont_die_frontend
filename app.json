@@ -13,6 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "buildNumber": "2",
       "supportsTablet": true,
       "bundleIdentifier": "com.huayuanbaobao.flowerhunt",
       "infoPlist": {
@@ -33,7 +34,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "package": "com.huayuanbaobao.flowerhunt"
     },
     "web": {
       "bundler": "metro",
