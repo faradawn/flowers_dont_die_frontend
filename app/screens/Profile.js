@@ -113,7 +113,7 @@ export default function Profile({ navigation }){
                         width: width * 0.85,
                         height: height * 0.23,
                     }}
-                    source={require('../../assets/images/notion_avatars/trendline_graph.png')}
+                    source={require('../../assets/images/notion_avatars/trendline_graph_white.png')}
                 />
             </View>
 

@@ -10,6 +10,10 @@ import { useUser } from '../components/UserContext';
 import RenderHtml from 'react-native-render-html';
 import SwitchButton from '../components/SwitchButton';
 
+import * as Haptics from 'expo-haptics';
+import LottieView from 'lottie-react-native';
+
+
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
 
@@ -38,6 +42,15 @@ export default function Question_Combined({ navigation, route }) {
     const [intervalId, setIntervalId] = useState(null);
     const [answerResponse, setAnswerResponse] = useState('');
 
+    const animation = useRef(null);
+
+    const triggerConfetti = () => {
+        if (animation.current) {
+          animation.current.play(0);
+        }
+      };
+
+
     // Fetch questions
     const fetchQuestions = async () => {
         try {
@@ -64,27 +77,21 @@ export default function Question_Combined({ navigation, route }) {
         setTimeout(fetchQuestions, 10);
     }, []);
 
-    // Timer logic
-    useEffect(() => {
-        let interval;
-        if (!mcSubmitted && !voiceSubmitted) { // if user has not submit
-            interval = setInterval(() => {
-                setSeconds((prevSeconds) => {
-                    if(prevSeconds > 0) return prevSeconds - 1;
-                    return 0;
-                });
-            }, 1000);
-        }
-        setIntervalId(interval);
-        return () => clearInterval(interval);
-    }, [mcSubmitted, voiceSubmitted]);
+    // // Timer logic
+    // useEffect(() => {
+    //     let interval;
+    //     if (!mcSubmitted && !voiceSubmitted) { // if user has not submit
+    //         interval = setInterval(() => {
+    //             setSeconds((prevSeconds) => {
+    //                 if(prevSeconds > 0) return prevSeconds - 1;
+    //                 return 0;
+    //             });
+    //         }, 1000);
+    //     }
+    //     setIntervalId(interval);
+    //     return () => clearInterval(interval);
+    // }, [mcSubmitted, voiceSubmitted]);
 
-    useEffect(() => {
-        if(seconds === 0){ 
-            setCurrentPressed('Time ran out');
-            setModalOpen(true);
-        }
-    }, [seconds]);
 
     // === MC
     const handleChooseOption = (option) => { 
@@ -290,81 +297,112 @@ export default function Question_Combined({ navigation, route }) {
         </View>
     );
 
-    const ModalComponent = () => (
-        <Modal
-            visible={modalOpen}
-            transparent={true}
-            animationType="slide"
-        >
-            <View style={{
-                flex: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            }}>
+    const ModalComponent = () => {
+        useEffect(() => {
+            if (modalOpen) {
+                if ((mode === 1 && currentPressed === data.answer) || (mode === 0 && answerResponse && answerResponse.grade > 1)) {
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                    triggerConfetti();
+                } else {
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                } 
+            }
+        }, [modalOpen]);
+
+        const voiceModalTitle =  answerResponse.feedback_title || 'Not Submitted';
+
+        return (
+            <>
+            
+            
+            
+            <Modal
+                visible={modalOpen}
+                transparent={true}
+                animationType="fade"
+            >
+                
+
                 <View style={{
-                    width: width * 0.8,
-                    paddingVertical: height * 0.05,
-                    paddingHorizontal: width * 0.05,
-                    backgroundColor: 'white',
+                    flex: 1,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.25,
-                    shadowRadius: 4,
-                    elevation: 5,
-                    position: 'relative',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
                 }}>
-                    {/* 0. close bottom */}
-                    <Ionicons 
-                        name="close-outline"
-                        size={25}
-                        onPress={() => { setModalOpen(false) }}
-                        style={{
-                            position: 'absolute',
-                            top: 20,
-                            right: 20,
-                        }}
-                    />
+                    <View style={{
+                        width: width * 0.8,
+                        paddingVertical: height * 0.05,
+                        paddingHorizontal: width * 0.05,
+                        backgroundColor: 'white',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 4,
+                        elevation: 5,
+                        position: 'relative',
+                    }}>
 
-                    {/* 1. Star */}
-                    { mode === 0 && answerResponse.grade !== 0 && (
-                        <Image
-                            source={stars.grade[answerResponse.grade]}
+                        <LottieView
+                            ref={animation}
+                            source={require('../../assets/animations/confettie_bottom.json')}
+                            loop={false}
+                            style={{position: 'absolute', top:0, bottom: 0, left: 0, right: 0}}
+                            resizeMode='cover'
+                        />
+                        {/* 0. close bottom */}
+                        <Ionicons 
+                            name="close-outline"
+                            size={25}
+                            onPress={() => { setModalOpen(false) }}
                             style={{
-                                height: height * 0.04,
-                                width: width * 0.3,
-                                marginVertical: height * 0.01,
+                                position: 'absolute',
+                                top: 20,
+                                right: 20,
                             }}
                         />
-                    )}
-                    
-                    {/* 2. Title */}
-                    <Text style={{
-                        fontFamily: 'Baloo2-Bold',
-                        fontSize: 30,
-                        textAlign: 'center',
-                    }}>
-                        {mode === 0 ? answerResponse.feedback_title : 
-                            (currentPressed === data.answer ? 'Congratulations!' : 'Sorry!')}
-                    </Text>
-                    
-                    {/* 3. Body */}
-                    <Text style={{
-                        fontFamily: 'Baloo2-Regular',
-                        fontSize: 16,
-                        textAlign: 'center',
-                        paddingTop: height * 0.02,
-                    }}>
-                        {mode === 0 ? answerResponse.feedback_body :
-                            (currentPressed === 'Time ran out' ? 'Your time ran out.' : 
-                            (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`))}
-                    </Text>
+
+                        {/* 1. Star */}
+                        { mode === 0 && answerResponse.grade !== 0 && (
+                            <Image
+                                source={stars.grade[answerResponse.grade]}
+                                style={{
+                                    height: height * 0.04,
+                                    width: width * 0.3,
+                                    marginVertical: height * 0.01,
+                                }}
+                            />
+                        )}
+                        
+                        {/* 2. Title */}
+                        <Text style={{
+                            fontFamily: 'Baloo2-Bold',
+                            fontSize: 30,
+                            textAlign: 'center',
+                        }}>
+                            {mode === 0 ? voiceModalTitle : 
+                                (currentPressed === data.answer ? 'Congratulations!' : 'Sorry!')}
+                        </Text>
+                        
+                        {/* 3. Body */}
+                        <Text style={{
+                            fontFamily: 'Baloo2-Regular',
+                            fontSize: 16,
+                            textAlign: 'center',
+                            paddingTop: height * 0.02,
+                        }}>
+                            {mode === 0 ? answerResponse.feedback_body :
+                                (currentPressed === 'Time ran out' ? 'Your time ran out.' : 
+                                (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`))}
+                        </Text>
+                    </View>
                 </View>
-            </View>
-        </Modal>
-    );
+            </Modal>
+            </>
+        )
+    }
+
 
     const QuestionComponent = () => (
         // {/* Question Component */}
@@ -394,17 +432,19 @@ export default function Question_Combined({ navigation, route }) {
                     justifyContent: 'center',
                 } }
             >
+         
                 <Text
                     style = { { 
                         color: '#0c2d1c',
-                        fontSize: 20,
+                        fontSize: 15, // previously 20
                         fontWeight: 'bold',
                         fontFamily: 'Baloo2-Bold' 
                     } }
                 > 
-                    { seconds } 
+                    { data.difficulty } 
                 </Text>
             </View>
+            
 
             {/* Question Card */}
             <View
@@ -482,12 +522,14 @@ export default function Question_Combined({ navigation, route }) {
     );
 
     return (
+        
         <View style={{
           width: width,
           height: height,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
+
           {isLoading ? (
             <ActivityIndicator size="large" color="gray" />
           ) : (
@@ -626,6 +668,8 @@ export default function Question_Combined({ navigation, route }) {
               )}
             </View>
           )}
+
+            
         </View>
       );
 }
