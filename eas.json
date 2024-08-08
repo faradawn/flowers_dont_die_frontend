@@ -14,7 +14,6 @@
       "ios": {
         "buildConfiguration": "Release",
         "distribution": "store",
-        "autoIncrement": true,
         "credentialsSource": "remote"
       },
       "android": {

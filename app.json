@@ -2,7 +2,7 @@
   "expo": {
     "name": "Flowers Don't Die",
     "slug": "flower-hunt",
-    "version": "3.0.4",
+    "version": "3.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/app_icon_v2_fat.png",
     "scheme": "myapp",
@@ -13,7 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "buildNumber": "2",
+      "buildNumber": "1",
       "supportsTablet": true,
       "bundleIdentifier": "com.huayuanbaobao.flowerhunt",
       "infoPlist": {
