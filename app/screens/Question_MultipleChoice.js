@@ -34,7 +34,7 @@ export default function Question_Combined({ navigation, route }) {
     const [submitted, setSubmitted] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [seconds, setSeconds] = useState(90);
-    const [intervalId, setIntervalId] = useState(null);
+    const intervalRef = useRef(null);
     const [answerResponse, setAnswerResponse] = useState('');
 
     // Fetch questions
@@ -67,15 +67,16 @@ export default function Question_Combined({ navigation, route }) {
     useEffect(() => {
         let interval;
         if (!submitted) {
-            interval = setInterval(() => {
+            intervalRef.current = setInterval(() => {
                 setSeconds((prevSeconds) => {
                     if(prevSeconds > 0) return prevSeconds - 1;
+                    clearInterval(intervalRef.current);
                     return 0;
                 });
             }, 1000);
         }
-        setIntervalId(interval);
-        return () => clearInterval(interval);
+        
+        return () => clearInterval(intervalRef);
     }, [submitted]);
 
     useEffect(() => {
@@ -404,6 +405,7 @@ export default function Question_Combined({ navigation, route }) {
                 }}
                 >
                 <ScrollView
+                    ref={ScrollViewRef} //Ref for ScrollView to keep its position
                     contentContainerStyle={{
                         flexGrow: 1,
                         justifyContent: 'flex-start',
