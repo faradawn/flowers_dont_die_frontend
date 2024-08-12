@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image } from 'react-native';
+import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -201,7 +201,7 @@ export default function Question_Combined({ navigation, route }) {
                         uid: state.uid,
                         question_id: data.question_id,
                         question: data.question,
-                        transcribed_text: transcribedText.transcribed_text,
+                        transcribed_text: text,
                     })
                 });
                 const response_data = await response.json();
@@ -548,6 +548,7 @@ export default function Question_Combined({ navigation, route }) {
               height: height,
               ...globalStyles.container,
             }}>
+                
               <TopBar />
               {data.message === "No questions" ? (
                 <NoQuestionView />
@@ -579,6 +580,9 @@ export default function Question_Combined({ navigation, route }) {
                       justifyContent: 'center',
                       alignItems: 'center',
                     }}>
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
+                    
                       <View style={{
                         height: height * 0.35,
                         width: width * 0.8,
@@ -630,7 +634,10 @@ export default function Question_Combined({ navigation, route }) {
                             )}
                         </TouchableOpacity>
                         )}
+                        </KeyboardAvoidingView>            
+                        </TouchableWithoutFeedback>
                     </View>
+                    
                   ) : (
                     // MC answer component 
                     <View style={{
@@ -679,6 +686,8 @@ export default function Question_Combined({ navigation, route }) {
                   <NextButtonComponent />
                 </>
               )}
+
+
             </View>
           )}
 
