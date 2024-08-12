@@ -18,6 +18,7 @@ const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
 
 export default function Question_Combined({ navigation, route }) {
+    const [text, setText] = useState('');
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
@@ -163,6 +164,7 @@ export default function Question_Combined({ navigation, route }) {
             });
             const response_data = await response.json();
             setTranscribedText(response_data);
+            setText((prevText) => `${prevText} ${response_data.transcribed_text}`);
         } catch(error) {
             console.log('Error transcribing text: ', error);
         }
@@ -297,11 +299,19 @@ export default function Question_Combined({ navigation, route }) {
         </View>
     );
 
+    const triggerLongHapticFeedback = async () => {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        await new Promise(resolve => setTimeout(resolve, 900));
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      };
+
     const ModalComponent = () => {
         useEffect(() => {
             if (modalOpen) {
                 if ((mode === 1 && currentPressed === data.answer) || (mode === 0 && answerResponse && answerResponse.grade > 1)) {
-                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                    triggerLongHapticFeedback();
                     triggerConfetti();
                 } else {
                     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -589,7 +599,10 @@ export default function Question_Combined({ navigation, route }) {
                           }}
                           multiline={true}
                           scrollEnabled={true}
-                          value={transcribedText.transcribed_text}
+                          placeholder="Type here or record..."
+                            value={text}
+                            onChangeText={setText}
+                            keyboardType="default"
                         />
                       </View>
                       {!voiceSubmitted && (
