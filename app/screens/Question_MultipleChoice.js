@@ -23,7 +23,7 @@ export default function Question_Combined({ navigation, route }) {
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
     const [mode, setMode] = useState(0); // 0 for voice, 1 for multiple choice
-    const topic = route.params?.topic;
+    const question_id = route.params?.question_id;
 
     // Multiple choice state
     const [currentPressed, setCurrentPressed] = useState("A");
@@ -61,12 +61,17 @@ export default function Question_Combined({ navigation, route }) {
                 body: JSON.stringify({
                     uid: state.uid,
                     course_id: state.course_id,
-                    topic: topic,
+                    question_id: question_id,
                 }),
             });
+
             const response_data = await response.json();
+            console.log('Question Data Received: ', response_data);
+
+            
             setData(response_data);
             setCurrentPressed("A");
+
         } catch(error) {
             console.log('Error fetching data: ', error);
         } finally {

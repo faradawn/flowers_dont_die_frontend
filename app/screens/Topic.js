@@ -10,32 +10,35 @@ import SwitchButton from '../components/SwitchButton';
 import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
 
+import { Ionicons } from '@expo/vector-icons';
+
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
-export default function Courses({ navigation }){
+export default function Topics({ navigation }){
     const [isLoading, setIsLoading] = useState(true);
-    const [courses, setCourses] = useState([]);
-    const { state, updateState } = useUser();
+    const [topics, setTopics] = useState([]);
+    const { state } = useUser();
 
     // fetching the topics from the backend api
-    const fetchCourses = async() => {
+    const fetchTopics = async() => {
         try {
             const response = await fetch(
-                'https://backend.faradawn.site:8001/get_courses', {
+                'https://backend.faradawn.site:8001/get_topics', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                         uid: state.uid,
+                        course_id: state.course_id,
                     }),
                 }
             )
 
             const data = await response.json();
-            console.log("Courses Received: ", data)
-            setCourses(data);
+            console.log("Got topics", data);
+            setTopics(data);
 
         } catch(error) {
             console.log('Error fetching data: ', error)
@@ -46,16 +49,51 @@ export default function Courses({ navigation }){
 
     useFocusEffect(
         useCallback(() => {
-          fetchCourses();
+          fetchTopics();
         }, [])
-    );
+      );
 
     // navigation through clicking a specific topic
-    const coursePress = (course_id) => {
-        updateState('course_id', course_id)
-        navigation.navigate('Topics')
+    const topicPress = (topic) => {
+        navigation.navigate('Assignments', { topic: topic })
     }
 
+    const TopBar = () => (
+        <View 
+            style={{
+                width: width,
+                height: height * 0.0625,
+                justifyContent: 'flex-end',
+            }}
+        >
+            <TouchableOpacity
+                style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                }}
+                onPress={() => navigation.navigate('HomeTab')}
+            >
+                <Ionicons
+                    name='chevron-back'
+                    size={16}
+                    color='#004643'
+                    style={{ 
+                        marginLeft: width / 12,
+                    }}
+                />
+                <Text 
+                    style={{ 
+                        color: '#004643', 
+                        marginLeft: 3, 
+                        fontSize: 16,
+                        fontFamily: 'Baloo2-Bold',
+                    }}
+                > 
+                    Back
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
 
     return (
         <View
@@ -68,8 +106,23 @@ export default function Courses({ navigation }){
             { isLoading ? (<ActivityIndicator />) : 
             (
                 <View>
+                    <View
+                        style={{ 
+                            flex: 1,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <TopBar />
+                    </View>
 
                     {/* Message At The Top */}
+                    <View
+                        style={{ 
+                            flex: 5,
+                            alignItems: 'center',
+                        }}
+                    >
                     <View
                         style={{
                             height: height * 0.06,
@@ -86,7 +139,7 @@ export default function Courses({ navigation }){
                                 fontSize: 22,
                             }}
                         >
-                            Select your Course, 
+                            Select your Topic, 
                             <Text
                                 style={{
                                     color: '#26C250'
@@ -111,22 +164,22 @@ export default function Courses({ navigation }){
                     >
                         <FlatList
                             style={{ flex: 1 }}
-                            data={courses.courses}
-                            keyExtractor={(item) => item.course_id}
+                            data={topics.topics}
+                            keyExtractor={(item) => item.topic}
                             showsVerticalScrollIndicator={false}
                             renderItem={({ item, index }) => (
                                 <Card 
                                     index={index}
-                                    title={item.course_title} 
-                                    id={item.course_id}
+                                    title={item.topic}
+                                    id={item.topic}
                                     height={height * 0.09} 
                                     width={width * 0.8} 
-                                    pressHandler={coursePress}
+                                    pressHandler={topicPress}
                                 />
                             )}
-                        />
+                            />
                     </View>
-
+                    </View>
                 </View>
             )}  
         </View>

@@ -16,25 +16,26 @@ const width = Dimensions.get('screen').width;
 export default function Courses({ navigation }){
     const [isLoading, setIsLoading] = useState(true);
     const [courses, setCourses] = useState([]);
-    const { state, updateState } = useUser();
+    const { state } = useUser();
 
     // fetching the topics from the backend api
-    const fetchCourses = async() => {
+    const fetchTopics = async() => {
         try {
             const response = await fetch(
-                'https://backend.faradawn.site:8001/get_courses', {
+                'https://backend.faradawn.site:8001/get_garden', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                         uid: state.uid,
+                        course_id: state.course_id,
                     }),
                 }
             )
 
             const data = await response.json();
-            console.log("Courses Received: ", data)
+            console.log("Got garden", data);
             setCourses(data);
 
         } catch(error) {
@@ -46,16 +47,19 @@ export default function Courses({ navigation }){
 
     useFocusEffect(
         useCallback(() => {
-          fetchCourses();
+          fetchTopics();
         }, [])
-    );
+      );
 
     // navigation through clicking a specific topic
-    const coursePress = (course_id) => {
-        updateState('course_id', course_id)
-        navigation.navigate('Topics')
+    const topicPress = (topic) => {
+        navigation.navigate('Question_MC', { topic: topic })
     }
 
+    // navigation through random question selection
+    const randomSelect = () => {
+        navigation.navigate('Question_MC', { topic: '' })
+    }
 
     return (
         <View
@@ -68,7 +72,6 @@ export default function Courses({ navigation }){
             { isLoading ? (<ActivityIndicator />) : 
             (
                 <View>
-
                     {/* Message At The Top */}
                     <View
                         style={{
@@ -86,7 +89,7 @@ export default function Courses({ navigation }){
                                 fontSize: 22,
                             }}
                         >
-                            Select your Course, 
+                            Let's grow your garden, 
                             <Text
                                 style={{
                                     color: '#26C250'
@@ -111,20 +114,46 @@ export default function Courses({ navigation }){
                     >
                         <FlatList
                             style={{ flex: 1 }}
-                            data={courses.courses}
-                            keyExtractor={(item) => item.course_id}
+                            data={courses.garden_rows}
+                            keyExtractor={(item) => item.row_num}
                             showsVerticalScrollIndicator={false}
                             renderItem={({ item, index }) => (
                                 <Card 
-                                    index={index}
-                                    title={item.course_title} 
-                                    id={item.course_id}
-                                    height={height * 0.09} 
-                                    width={width * 0.8} 
-                                    pressHandler={coursePress}
+                                index={index}
+                                item={item} 
+                                height={height * 0.09} 
+                                width={width * 0.8} 
+                                pressHandler={topicPress}
                                 />
                             )}
-                        />
+                            />
+                    </View>
+
+                    {/* Random Button */}
+                    <View
+                        style={{
+                            height: height * 0.1,
+                            width: width,
+                            marginBottom: height * 0.10,
+
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                        }}
+                    >
+                        <TouchableOpacity
+                            style={{
+                                height: height * 0.06,
+                                width: width * 0.8,
+
+                                backgroundColor: '#004643',
+                                ...globalStyles.button
+                            }}
+                            onPress={() => randomSelect()}
+                        >
+                            <Text
+                                style={globalStyles.buttonText}
+                            > Random Question </Text>
+                        </TouchableOpacity>
                     </View>
 
                 </View>

@@ -4,9 +4,7 @@ import { Text, View, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { images, colors } from '../globalStyles/globalStyles';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-export default function Card({ index, item, height, width, pressHandler }){
-    const totalQuestionsDone = item.questions_done.length;
-    // console.log("Card item row num", item.row_num, "num question done", totalQuestionsDone);
+export default function Card({ index, title, id, height, width, pressHandler, isDone = false }){
   
     return (
         <TouchableOpacity
@@ -15,7 +13,7 @@ export default function Card({ index, item, height, width, pressHandler }){
                 width: width,
                 marginVertical: height * 0.1,
 
-                backgroundColor: 'white',
+                backgroundColor: isDone ? '#26D250': 'white',
                 borderRadius: 20,
 
                 shadowColor: '#000', // black shadow color
@@ -28,7 +26,7 @@ export default function Card({ index, item, height, width, pressHandler }){
                 alignItems: 'center',
                 justifyContent: 'center',
             }}
-            onPress={() => pressHandler(item.topic)}
+            onPress={() => pressHandler(id)}
         >
             {/* Image At the Front */}
             <Image 
@@ -48,50 +46,21 @@ export default function Card({ index, item, height, width, pressHandler }){
 
                     marginLeft: width * 0.1,
 
+                    justifyContent: 'center',
                     alignItems: 'flex-start',
                 }}
             >
                 {/* Label Text for Topic */}
                 <Text 
                     style={{ 
-                        marginTop: 0.2 * height,
                         fontFamily: 'Baloo2-Regular',
-                        fontSize: 16,
+                        fontSize: 20,
                     }}
                 >
-                    { item.topic }
+                    { title }
                 </Text>
 
-                {/* Square Indicators for Each Topic */}
-                <ScrollView
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                    style={{ height: 0.18 }}
-                >
-                    {(item.questions_done).map((item, index) => {
-                        let squareColor;
-
-                        if (totalQuestionsDone <= 2) {
-                            squareColor = 'red';
-                        } else if (totalQuestionsDone <= 4) {
-                            squareColor = '#F8C660';
-                        } else {
-                            squareColor = 'green';
-                        }
-
-                        return (
-                            <View 
-                                key={index}
-                                style={{ 
-                                    height: 0.17 * height,
-                                    width: 0.17 * height,
-                                    marginRight: 0.01 * width,
-                                    backgroundColor: squareColor,
-                                }}
-                            />
-                        );
-                    })}
-                </ScrollView>
+                
             </View>
 
             {/* End Icon */}
