@@ -6,7 +6,7 @@ import { View, Dimensions, Text, FlatList, ActivityIndicator,
 } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
-import Card from '../components/CourseCard';
+import Card from '../components/AssignmentCard';
 import { useUser } from '../components/UserContext';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -149,7 +149,7 @@ export default function Topics({ navigation, route }){
                                         fontSize: 22,
                                     }}
                                 >
-                                    Your Progress, 
+                                    Nice progress, 
                                     <Text
                                         style={{
                                             color: '#26C250'
@@ -158,7 +158,8 @@ export default function Topics({ navigation, route }){
                                     </Text>
                                 </Text>
                             </View>
-
+                            
+                            {/* progress bar */}
                             <View
                                 style={{
                                     height: 0.03 * height,
@@ -181,6 +182,8 @@ export default function Topics({ navigation, route }){
                             </View>
                         </View>
 
+
+                        {/* Flat list of cards */}
                         <View
                             style={{
                                 flex: 5,
@@ -196,12 +199,10 @@ export default function Topics({ navigation, route }){
                                 renderItem={({ item, index }) => (
                                     <Card 
                                         index={index}
-                                        title={item.question_title} 
                                         id={item.question_id}
-                                        height={height * 0.09} 
-                                        width={width * 0.8}
+                                        num_stars={item.num_stars}
+                                        title={item.question_title} 
                                         pressHandler={questionPress}
-                                        isDone={item.is_done}
                                     />
                                 )}
                             />

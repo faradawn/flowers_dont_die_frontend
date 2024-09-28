@@ -262,7 +262,7 @@ export default function Question_Combined({ navigation, route }) {
                     flexDirection: 'row',
                     alignItems: 'center',
                 }}
-                onPress={() => navigation.navigate('HomeTab')}
+                onPress={() => navigation.navigate('Assignments')}
             >
                 <Ionicons
                     name='chevron-back'
