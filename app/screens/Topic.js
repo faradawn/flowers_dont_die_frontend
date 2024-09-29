@@ -17,7 +17,7 @@ const width = Dimensions.get('screen').width;
 
 export default function Topics({ navigation }){
     const [isLoading, setIsLoading] = useState(true);
-    const [topics, setTopics] = useState([]);
+    const [topics, setTopics] = useState(null);
     const { state } = useUser();
 
     // fetching the topics from the backend api
@@ -175,6 +175,7 @@ export default function Topics({ navigation }){
                                     height={height * 0.09} 
                                     width={width * 0.8} 
                                     pressHandler={topicPress}
+                                    item={item}
                                 />
                             )}
                             />

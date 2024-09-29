@@ -5,37 +5,10 @@ import { images, colors } from '../globalStyles/globalStyles';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 
-const ProgressIndicator = ({ totalQuestions, numsDone, height, width }) => {
-    const squareSize = Math.min(height * 0.18, width / totalQuestions);
-    const gap = 2; // Gap between squares
-  
-    const renderSquares = () => {
-      return Array(totalQuestions).fill().map((_, index) => (
-        <View 
-          key={index}
-          style={{
-            width: squareSize - gap,
-            height: squareSize - gap,
-            backgroundColor: index < numsDone ? 'green' : '#E0E0E0',
-            marginRight: index < totalQuestions - 1 ? gap : 0,
-          }}
-        />
-      ));
-    };
-  
-    return (
-      <View style={{ 
-        flexDirection: 'row',
-        alignItems: 'center',
-        height: squareSize,
-        width: width,
-      }}>
-        {renderSquares()}
-      </View>
-    );
-  };
 
-export default function Card({ index, title, id, height, width, pressHandler, item }){
+export default function Card({ index, item, height, width, pressHandler }){
+    const totalQuestionsDone = item.questions_done.length;
+    // console.log("Card item row num", item.row_num, "num question done", totalQuestionsDone);
   
     return (
         <TouchableOpacity
@@ -57,7 +30,7 @@ export default function Card({ index, title, id, height, width, pressHandler, it
                 alignItems: 'center',
                 justifyContent: 'center',
             }}
-            onPress={() => pressHandler(id)}
+            onPress={() => pressHandler(item.topic)}
         >
             {/* Image At the Front */}
             <Image 
@@ -77,36 +50,50 @@ export default function Card({ index, title, id, height, width, pressHandler, it
 
                     marginLeft: width * 0.1,
 
-                    justifyContent: 'center',
                     alignItems: 'flex-start',
                 }}
             >
                 {/* Label Text for Topic */}
                 <Text 
                     style={{ 
+                        marginTop: 0.2 * height,
                         fontFamily: 'Baloo2-Regular',
-                        fontSize: 20,
+                        fontSize: 16,
                     }}
                 >
-                    { title }
+                    { item.topic }
                 </Text>
-                
-                {/* TODO  */}
-                {/* Conditional rendering of ProgressIndicator */}
-        {item && item.total_questions ? (
-          <ProgressIndicator 
-            totalQuestions={item.total_questions}
-            numsDone={item.completed_questions}
-            height={height}
-            width={width}
-          />
-        ) : (
-          <Text></Text>
-        )}
 
+                {/* Square Indicators for Each Topic */}
+                <ScrollView
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    style={{ height: 0.18 }}
+                >
+                    {(item.questions_done).map((item, index) => {
+                        let squareColor;
 
+                        if (totalQuestionsDone <= 2) {
+                            squareColor = 'red';
+                        } else if (totalQuestionsDone <= 4) {
+                            squareColor = '#F8C660';
+                        } else {
+                            squareColor = 'green';
+                        }
 
-                
+                        return (
+                            <View 
+                                key={index}
+                                style={{ 
+                                    height: 0.17 * height,
+                                    width: 0.17 * height,
+                                    marginRight: 0.01 * width,
+                                    backgroundColor: squareColor,
+                                }}
+                            />
+                        );
+                    })}
+                </ScrollView>
             </View>
 
             {/* End Icon */}

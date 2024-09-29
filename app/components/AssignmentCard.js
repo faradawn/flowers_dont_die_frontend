@@ -11,7 +11,7 @@ export default function Card({ index, id, title, num_stars, pressHandler }) {
           return null;
         }
         return [...Array(num_stars)].map((_, index) => (
-          <FontAwesome key={index} name="star" size={18} color="#FFD700" style={{ marginLeft: 2 }} />
+          <FontAwesome key={index} name="star" size={18} color="#26C250" style={{ marginLeft: 2 }} />
         ));
       };
 
