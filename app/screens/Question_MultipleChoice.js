@@ -549,12 +549,16 @@ export default function Question_Combined({ navigation, route }) {
     );
 
     return (
-        // Main Quiz View Screen
         <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
+
           {isLoading ? (
             <ActivityIndicator size="large" color="gray" />
           ) : (
             // main quiz view 
+            
+                        
             <View style={{
               width: width,
               height: height,
@@ -605,8 +609,7 @@ export default function Question_Combined({ navigation, route }) {
                       justifyContent: 'flex-start',
                       alignItems: 'center',
                     }}>
-                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
+                        
                     
                       <View style={{
                         height: height * 0.35,
@@ -647,9 +650,8 @@ export default function Question_Combined({ navigation, route }) {
                       
                         
 
-                        </KeyboardAvoidingView>            
-                        </TouchableWithoutFeedback>
                     </View>
+                        
                     
                   ) : (
                     // MC answer component 
@@ -667,6 +669,7 @@ export default function Question_Combined({ navigation, route }) {
                         />      
                     </View>
                 )}
+                
                 </>
               )}
 
@@ -674,7 +677,8 @@ export default function Question_Combined({ navigation, route }) {
             </View>
           )}
 
-            
+</KeyboardAvoidingView>            
+</TouchableWithoutFeedback>
         </View>
       );
 }
