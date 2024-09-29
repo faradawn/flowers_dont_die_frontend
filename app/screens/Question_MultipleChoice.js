@@ -9,6 +9,7 @@ import Card from '../components/QuestionCard';
 import { useUser } from '../components/UserContext';
 import RenderHtml from 'react-native-render-html';
 import SwitchButton from '../components/SwitchButton';
+import { Feather } from '@expo/vector-icons';
 
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
@@ -146,7 +147,6 @@ export default function Question_Combined({ navigation, route }) {
     };
 
     const handleRecord = () => {
-        if(voiceSubmitted) return;
         if(recording) stopRecording();
         else startRecording();
     };
@@ -187,12 +187,6 @@ export default function Question_Combined({ navigation, route }) {
 
     // Handle submission
     const handleNext = async () => {
-        // If button displays "Next"
-        if((mode == 0 && voiceSubmitted) || (mode == 1 && mcSubmitted)) { 
-            navigation.navigate('HomeTab'); 
-            return; 
-        }
-        
         // If button displays "Submit"
         setIsLoading(true);
 
@@ -247,7 +241,16 @@ export default function Question_Combined({ navigation, route }) {
         }
     };
 
-    // Components
+    // handle erase ansswer 
+    const handleErase = () => {
+        setText('');
+    };
+
+
+
+
+
+    // === Components
     const TopBar = () => (
         <View 
             style={{
@@ -419,6 +422,49 @@ export default function Question_Combined({ navigation, route }) {
     }
 
 
+    // Prev and next icon
+    const QuizNavigation = ({ onPrev, onNext }) => {
+        return (
+          <View className="absolute top-10 left-0 right-0 flex-row justify-between items-center px-8 h-12">
+            <TouchableOpacity onPress={onPrev} className="p-2">
+              <Feather name="chevron-left" size={30} color="green" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onNext} className="p-2">
+              <Feather name="chevron-right" size={30} color="green" />
+            </TouchableOpacity>
+          </View>
+        );
+      };
+
+      const SubmissionPanel = () => {
+        
+      
+        return (
+          <View className="flex-row items-center justify-between px-14 py-5">
+            <TouchableOpacity onPress={handleErase} className="w-12 h-12 rounded-full bg-white items-center justify-center">
+              <Feather name="rotate-ccw" size={20} color="green" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              onPress={handleRecord}
+              className={`w-16 h-16 rounded-full items-center justify-center mx-4 ${recording ? 'bg-red-500' : 'bg-green-800'}`}
+            >
+              <Feather 
+                name={recording ? "square" : "mic"} 
+                size={32} 
+                color="white" 
+              />
+            </TouchableOpacity>
+            
+            <TouchableOpacity onPress={handleNext} className="w-12 h-12 rounded-full bg-white items-center justify-center">
+              <Feather name="send" size={20} color="green" />
+            </TouchableOpacity>
+          </View>
+        );
+      };
+
+
+
     const QuestionComponent = () => (
         // {/* Question Component */}
         <View
@@ -427,13 +473,14 @@ export default function Question_Combined({ navigation, route }) {
                 height: height * 0.35,
                 justifyContent: 'center',
                 alignItems: 'center',
+                marginTop: 10
             } } 
         >
             {/* Countdown Timer */}
             <View
                 style = { {
-                    width: 70,
-                    height: 70,
+                    width: 80,
+                    height: 80,
 
                     marginTop: 10,
                     borderRadius: 50,
@@ -555,6 +602,12 @@ export default function Question_Combined({ navigation, route }) {
             }}>
                 
               <TopBar />
+
+              <QuizNavigation 
+                onPrev={() => {/* Handle previous question */}} 
+                onNext={() => {/* Handle next question */}}
+                />
+              
               {data.message === "No questions" ? (
                 <NoQuestionView />
               ) : (
@@ -576,7 +629,7 @@ export default function Question_Combined({ navigation, route }) {
 
                     <View style={{height: 20}} />
 
-                  {/* Answer component */}
+                  {/* Bottom component */}
                   {mode === 0 ? ( 
                     // Voice answer card
                     <View style={{
@@ -599,7 +652,12 @@ export default function Question_Combined({ navigation, route }) {
                         shadowOpacity: 0.2,
                         shadowRadius: 30,
                         elevation: 10,
+                        justifyContent: 'space-between'
                       }}>
+
+                        
+
+                        {/* Text box */}
                         <TextInput
                           style={{
                             fontFamily: 'Baloo2-Regular',
@@ -613,32 +671,15 @@ export default function Question_Combined({ navigation, route }) {
                             onChangeText={setText}
                             keyboardType="default"
                         />
+
+                        {/* Microphone stripe */}
+                        <SubmissionPanel />
+
                       </View>
-                      {!voiceSubmitted && (
-                        <TouchableOpacity
-                            activeOpacity={voiceSubmitted ? 1 : 0.7}
-                            style={{
-                            height: 60,
-                            width: 60,
-                            borderRadius: 60,
-                            marginTop: -80,
-                            backgroundColor: recording ? 'red' : 'black',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            }}
-                            onPress={() => handleRecord()}
-                        >   
-                            {isLoading ? (
-                            <ActivityIndicator size="small" color="white" />
-                            ) : (
-                            <MaterialIcons 
-                                name={recording ? 'square' : 'keyboard-voice'}
-                                color='white'
-                                size={recording ? 30 : 35}
-                            />
-                            )}
-                        </TouchableOpacity>
-                        )}
+
+                      
+                        
+
                         </KeyboardAvoidingView>            
                         </TouchableWithoutFeedback>
                     </View>
@@ -659,7 +700,6 @@ export default function Question_Combined({ navigation, route }) {
                         />      
                     </View>
                 )}
-                  <NextButtonComponent />
                 </>
               )}
 
