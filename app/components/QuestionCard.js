@@ -1,16 +1,15 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 
-export default function Card({ isSelected, option, text, width, height, isCardSubmitted, isCardCorrectAnswer }) {
+export default function Card({ text, width, height }) {
+  const lightGreen = '#3c716f';
+  const darkGreen = '#004643';
   return (
     <View style={
       [styles.card, 
       { width: width, 
         height: height, 
-        marginRight: 0.1 * width,
-        marginTop: -10,
-
-        backgroundColor : isCardSubmitted ?  (isCardCorrectAnswer ? "#65c465" : "#004643") : (isSelected ? '#004643' : '#3c716f'),
+        backgroundColor : lightGreen,
       }
       ]
     }
@@ -23,7 +22,7 @@ export default function Card({ isSelected, option, text, width, height, isCardSu
           styles.title,
           { color: 'white' }
         ]}>
-          {option}
+          Answer
         </Text>
       </TouchableOpacity>
       <ScrollView 

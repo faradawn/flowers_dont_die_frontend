@@ -574,7 +574,7 @@ export default function Question_Combined({ navigation, route }) {
                     setMode={setMode}
                   />
 
-                    <View style={{height: 20}} />
+                    {/* <View style={{height: 10}} /> */}
 
                   {/* Answer component */}
                   {mode === 0 ? ( 
@@ -582,7 +582,7 @@ export default function Question_Combined({ navigation, route }) {
                     <View style={{
                       height: height * 0.45,
                       width: width, // originally width
-                      justifyContent: 'flex-start',
+                      justifyContent: 'center',
                       alignItems: 'center',
                     }}>
                         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -593,7 +593,7 @@ export default function Question_Combined({ navigation, route }) {
                         width: width * 0.8,
                         borderRadius: 20,
                         backgroundColor: 'white',
-
+                        marginTop: -0.08 * height,
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 20 },
                         shadowOpacity: 0.2,
@@ -648,17 +648,46 @@ export default function Question_Combined({ navigation, route }) {
                     <View style={{
                         height: height * 0.45,
                         width: width,
-                        display: 'flex',
-                        justifyContent: 'flex-start',
+                        justifyContent: 'center',
                         alignItems: 'center',
                       }}>
-                        <Card
-                            text={data.options[0]}
-                            width={width * 0.8}
-                            height={height * 0.35}
-                        />      
-                    </View>
-                )}
+                    <ScrollView
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        alwaysBounceHorizontal={true}
+                        snapToOffsets={data.options.map((_, index) => index * 0.88 * width)}
+                        snapToEnd={false}
+                        decelerationRate='fast'
+                        style={{
+                            width: width,
+                        }}
+                        contentContainerStyle={{
+                            paddingLeft: 0.1 * width,
+                            paddingRight: 0.1 * width, // Add right padding for better UX
+                            height: height * 0.45, // adjust spacing above
+                            alignItems: 'center',
+                        }}
+                        onScroll={handleScroll}
+                        scrollEventThrottle={16}
+                        >
+                        {data.options.map((option, index) => {
+                            const optionLetter = String.fromCharCode(65 + index); // Convert 0, 1, 2, etc. to A, B, C, etc.
+                            return (
+                            <Card
+                                key={optionLetter}
+                                option={optionLetter}
+                                text={option}
+                                width={width * 0.8}
+                                height={height * 0.35}
+                                isSelected={currentPressed === optionLetter}
+                                isCardSubmitted={mcSubmitted}
+                                isCardCorrectAnswer={optionLetter == data.answer}
+                            />
+                            );
+                        })}
+                        </ScrollView>
+                        </View>
+                  )}
                   <NextButtonComponent />
                 </>
               )}
