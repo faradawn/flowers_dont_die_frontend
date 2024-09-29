@@ -5,7 +5,7 @@ import { View, Dimensions, Text, FlatList, ActivityIndicator,
     TouchableOpacity,
 } from 'react-native';
 
-import { globalStyles } from '../globalStyles/globalStyles';
+import { globalStyles, myImages } from '../globalStyles/globalStyles';
 import SwitchButton from '../components/SwitchButton';
 import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
@@ -142,6 +142,7 @@ export default function Topics({ navigation }){
                                     width={width * 0.8} 
                                     pressHandler={topicPress}
                                     item={item}
+                                    imageSource={myImages.flowerIcons[index+1]}
                                 />
                             )}
                             />

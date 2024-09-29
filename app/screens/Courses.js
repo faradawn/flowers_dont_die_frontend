@@ -10,6 +10,8 @@ import SwitchButton from '../components/SwitchButton';
 import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
 
+import { myImages } from '../globalStyles/globalStyles';
+
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
@@ -122,6 +124,7 @@ export default function Courses({ navigation }){
                                     height={height * 0.09} 
                                     width={width * 0.8} 
                                     pressHandler={coursePress}
+                                    imageSource={myImages.courseIcons[item.course_title]}
                                 />
                             )}
                         />

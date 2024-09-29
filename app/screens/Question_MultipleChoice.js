@@ -550,7 +550,7 @@ export default function Question_Combined({ navigation, route }) {
 
     return (
         // Main Quiz View Screen
-        <>
+        <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
           {isLoading ? (
             <ActivityIndicator size="large" color="gray" />
           ) : (
@@ -559,7 +559,6 @@ export default function Question_Combined({ navigation, route }) {
               width: width,
               height: height,
               backgroundColor: globalStyles.container.backgroundColor,
-              borderWidth: 10,
               display: 'flex',
               justifyContent: 'flex-start',
               alignItems: 'center',
@@ -587,8 +586,8 @@ export default function Question_Combined({ navigation, route }) {
     
 
                   <SwitchButton
-                    FirstText="Voice"
-                    SecondText="Multiple Choice"
+                    FirstText="Practice"
+                    SecondText="Answer"
                     width={width * 0.68}
                     height={0.045 * height}
                     mode={mode}
@@ -676,6 +675,6 @@ export default function Question_Combined({ navigation, route }) {
           )}
 
             
-        </>
+        </View>
       );
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View, Image, ScrollView, TouchableOpacity } from 'react-native';
 
-import { images, colors } from '../globalStyles/globalStyles';
+import { colors } from '../globalStyles/globalStyles';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 
@@ -35,7 +35,7 @@ const ProgressIndicator = ({ totalQuestions, numsDone, height, width }) => {
     );
   };
 
-export default function Card({ index, title, id, height, width, pressHandler, item }){
+export default function Card({ index, title, id, height, width, pressHandler, item, imageSource }){
   
     return (
         <TouchableOpacity
@@ -63,10 +63,12 @@ export default function Card({ index, title, id, height, width, pressHandler, it
             <Image 
                 style={{
                     marginLeft: width * 0.05,
-                    height: height * 0.8,
+                    height: width * 0.1,
                     width: width * 0.1,
+                    marginLeft: 10,
+                    resizeMode: 'contain'
                 }}
-                source={images.id[index+1]}
+                source={typeof imageSource === 'string' ? { uri: imageSource } : imageSource}
             />
 
             {/* Bulk Info of Card */}
@@ -75,7 +77,7 @@ export default function Card({ index, title, id, height, width, pressHandler, it
                     height: height,
                     width: width * 0.65,
 
-                    marginLeft: width * 0.1,
+                    marginLeft: 20,
 
                     justifyContent: 'center',
                     alignItems: 'flex-start',

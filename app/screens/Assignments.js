@@ -164,19 +164,20 @@ export default function Topics({ navigation, route }){
                             {/* progress bar */}
                             <View
                                 style={{
-                                    height: 0.03 * height,
+                                    height: 12,
                                     width: 0.7 * width,
 
                                     backgroundColor: 'white',
                                     borderColor: '#004643',
                                     borderWidth: 1,
+                                    borderRadius: 5,
                                 }}
                             >
                                 <View
                                     style={{
-                                        height: 0.03 * height - 2,
+                                        height: 10,
                                         width: 0.7 * width * (progress),
-    
+                                        borderRadius: 5,
                                         backgroundColor: '#26C250',
                                     }}
                                 > 
