@@ -40,5 +40,7 @@ uvicorn main:app --host 0.0.0.0 --port 8001
 
 ### App submission 
 ```
+increase the app version in app.json
+
 eas build --platform ios --profile production --auto-submit
 ```

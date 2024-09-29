@@ -39,7 +39,8 @@ export default function Topics({ navigation, route }){
                     }),
                 }
             )
-
+            
+            console.log("Fetching topic", topic, "course id", state.course_id);
             const data = await response.json();
             console.log("Assignments: ", data)
             setAssignments(data);
