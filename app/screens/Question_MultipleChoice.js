@@ -14,6 +14,8 @@ import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
 
+import TopBar from '../components/TopBar';
+
 
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
@@ -250,44 +252,7 @@ export default function Question_Combined({ navigation, route }) {
 
 
 
-    // === Components
-    const TopBar = () => (
-        <View 
-            style={{
-                width: width,
-                height: height * 0.0625,
-                justifyContent: 'flex-end',
-                marginTop: 20,
-            }}
-        >
-            <TouchableOpacity
-                style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                }}
-                onPress={() => navigation.navigate('Assignments')}
-            >
-                <Ionicons
-                    name='chevron-back'
-                    size={16}
-                    color='#004643'
-                    style={{ 
-                        marginLeft: width / 12,
-                    }}
-                />
-                <Text 
-                    style={{ 
-                        color: '#004643', 
-                        marginLeft: 3, 
-                        fontSize: 16,
-                        fontFamily: 'Baloo2-Bold',
-                    }}
-                > 
-                    Back
-                </Text>
-            </TouchableOpacity>
-        </View>
-    );
+    
 
     const NoQuestionView = () => (
         <View style={{
@@ -425,7 +390,7 @@ export default function Question_Combined({ navigation, route }) {
     // Prev and next icon
     const QuizNavigation = ({ onPrev, onNext }) => {
         return (
-          <View className="absolute top-10 left-0 right-0 flex-row justify-between items-center px-8 h-12">
+          <View className="absolute top-20 left-0 right-0 flex-row justify-between items-center px-8 h-12">
             <TouchableOpacity onPress={onPrev} className="p-2">
               <Feather name="chevron-left" size={30} color="green" />
             </TouchableOpacity>
@@ -584,35 +549,38 @@ export default function Question_Combined({ navigation, route }) {
     );
 
     return (
-        
-        <View style={{
-          width: width,
-          height: height,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-
+        // Main Quiz View Screen
+        <>
           {isLoading ? (
             <ActivityIndicator size="large" color="gray" />
           ) : (
+            // main quiz view 
             <View style={{
               width: width,
               height: height,
-              ...globalStyles.container,
+              backgroundColor: globalStyles.container.backgroundColor,
+              borderWidth: 10,
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              paddingTop: 70
             }}>
                 
-              <TopBar />
+                <TopBar navigateTo="Assignments"/>
+
 
               <QuizNavigation 
                 onPrev={() => {/* Handle previous question */}} 
                 onNext={() => {/* Handle next question */}}
                 />
+
               
               {data.message === "No questions" ? (
-                <NoQuestionView />
-              ) : (
-                <>
+                  <NoQuestionView />
+                ) : (
+                    <>
                   <ModalComponent />
+
                   <QuestionComponent />
 
                   <View style={{height: 20}} />
@@ -708,6 +676,6 @@ export default function Question_Combined({ navigation, route }) {
           )}
 
             
-        </View>
+        </>
       );
 }

@@ -12,6 +12,8 @@ import { useUser } from '../components/UserContext';
 
 import { Ionicons } from '@expo/vector-icons';
 
+import TopBar from '../components/TopBar';
+
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
@@ -58,49 +60,13 @@ export default function Topics({ navigation }){
         navigation.navigate('Assignments', { topic: topic })
     }
 
-    const TopBar = () => (
-        <View 
-            style={{
-                width: width,
-                height: height * 0.0625,
-                justifyContent: 'flex-end',
-            }}
-        >
-            <TouchableOpacity
-                style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                }}
-                onPress={() => navigation.navigate('HomeTab')}
-            >
-                <Ionicons
-                    name='chevron-back'
-                    size={16}
-                    color='#004643'
-                    style={{ 
-                        marginLeft: width / 12,
-                    }}
-                />
-                <Text 
-                    style={{ 
-                        color: '#004643', 
-                        marginLeft: 3, 
-                        fontSize: 16,
-                        fontFamily: 'Baloo2-Bold',
-                    }}
-                > 
-                    Back
-                </Text>
-            </TouchableOpacity>
-        </View>
-    );
 
     return (
         <View
             style={{ 
                 height: height,
                 width: width,
-                ...globalStyles.container
+                ...globalStyles.container,
             }}
         >  
             { isLoading ? (<ActivityIndicator />) : 
@@ -113,7 +79,7 @@ export default function Topics({ navigation }){
                             justifyContent: 'center',
                         }}
                     >
-                        <TopBar />
+                        <TopBar navigateTo={'HomeTab'}/>
                     </View>
 
                     {/* Message At The Top */}

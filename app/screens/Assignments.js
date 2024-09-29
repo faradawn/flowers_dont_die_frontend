@@ -11,6 +11,8 @@ import { useUser } from '../components/UserContext';
 
 import { Ionicons } from '@expo/vector-icons';
 
+import TopBar from '../components/TopBar';
+
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
@@ -57,42 +59,42 @@ export default function Topics({ navigation, route }){
         }, [])
     );
 
-    const TopBar = () => (
-        <View 
-            style={{
-                width: width,
-                height: height * 0.0625,
-                justifyContent: 'flex-end',
-            }}
-        >
-            <TouchableOpacity
-                style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                }}
-                onPress={() => navigation.navigate('Topics')}
-            >
-                <Ionicons
-                    name='chevron-back'
-                    size={16}
-                    color='#004643'
-                    style={{ 
-                        marginLeft: width / 12,
-                    }}
-                />
-                <Text 
-                    style={{ 
-                        color: '#004643', 
-                        marginLeft: 3, 
-                        fontSize: 16,
-                        fontFamily: 'Baloo2-Bold',
-                    }}
-                > 
-                    Back
-                </Text>
-            </TouchableOpacity>
-        </View>
-    );
+    // const TopBar = () => (
+    //     <View 
+    //         style={{
+    //             width: width,
+    //             height: height * 0.0625,
+    //             justifyContent: 'flex-end',
+    //         }}
+    //     >
+    //         <TouchableOpacity
+    //             style={{
+    //                 flexDirection: 'row',
+    //                 alignItems: 'center',
+    //             }}
+    //             onPress={() => navigation.navigate('Topics')}
+    //         >
+    //             <Ionicons
+    //                 name='chevron-back'
+    //                 size={16}
+    //                 color='#004643'
+    //                 style={{ 
+    //                     marginLeft: width / 12,
+    //                 }}
+    //             />
+    //             <Text 
+    //                 style={{ 
+    //                     color: '#004643', 
+    //                     marginLeft: 3, 
+    //                     fontSize: 16,
+    //                     fontFamily: 'Baloo2-Bold',
+    //                 }}
+    //             > 
+    //                 Back
+    //             </Text>
+    //         </TouchableOpacity>
+    //     </View>
+    // );
 
     const questionPress = (question_id) => (
         navigation.navigate('Question_MC', { question_id: question_id })
@@ -117,7 +119,7 @@ export default function Topics({ navigation, route }){
                             justifyContent: 'center',
                         }}
                     >
-                        <TopBar />
+                        <TopBar navigateTo={'Topics'}/>
                     </View>
 
                     <View
