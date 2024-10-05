@@ -64,7 +64,7 @@ export default function Question_Combined({ navigation, route }) {
                 body: JSON.stringify({
                     uid: state.uid,
                     course_id: state.course_id,
-                    question_id: state.question_id,
+                    question_id: question_id,
                 }),
             });
 
