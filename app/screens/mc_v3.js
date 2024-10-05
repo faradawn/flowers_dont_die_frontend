@@ -1,5 +1,6 @@
+// Try timer
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView } from 'react-native';
+import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image } from 'react-native';
 import { Ionicons, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -9,24 +10,65 @@ import Card from '../components/QuestionCard';
 import { useUser } from '../components/UserContext';
 import RenderHtml from 'react-native-render-html';
 import SwitchButton from '../components/SwitchButton';
-import { Feather } from '@expo/vector-icons';
-
-import * as Haptics from 'expo-haptics';
-import LottieView from 'lottie-react-native';
-
-import TopBar from '../components/TopBar';
-
 
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
 
+const Timer = ({ initialTime, shouldStop, onTimeChange }) => {
+    const [innerSeconds, setInnerSeconds] = useState(initialTime);
+
+    useEffect(() => {
+        if (shouldStop) {
+            return;
+        }
+
+        const interval = setInterval(() => {
+            setInnerSeconds(prev => {
+                const newTime = prev - 1;
+                onTimeChange(newTime);
+                return newTime;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [shouldStop]);
+
+    return (
+        <View
+            style={{
+                width: 70,
+                height: 70,
+                marginTop: 10,
+                borderRadius: 50,
+                borderWidth: 6,
+                borderColor: '#ABD1C6',
+                zIndex: 1,
+                backgroundColor: 'white',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+        >
+            <Text
+                style={{
+                    color: '#0c2d1c',
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                    fontFamily: 'Baloo2-Bold'
+                }}
+            >
+                {innerSeconds}
+            </Text>
+        </View>
+    );
+};
+
+
 export default function Question_Combined({ navigation, route }) {
-    const [text, setText] = useState('');
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
     const [mode, setMode] = useState(0); // 0 for voice, 1 for multiple choice
-    const {question_id, fromScreen }= route.params;
+    const topic = route.params?.topic;
 
     // Multiple choice state
     const [currentPressed, setCurrentPressed] = useState("A");
@@ -46,15 +88,6 @@ export default function Question_Combined({ navigation, route }) {
     const [intervalId, setIntervalId] = useState(null);
     const [answerResponse, setAnswerResponse] = useState('');
 
-    const animation = useRef(null);
-
-    const triggerConfetti = () => {
-        if (animation.current) {
-          animation.current.play(0);
-        }
-      };
-
-
     // Fetch questions
     const fetchQuestions = async () => {
         try {
@@ -64,17 +97,12 @@ export default function Question_Combined({ navigation, route }) {
                 body: JSON.stringify({
                     uid: state.uid,
                     course_id: state.course_id,
-                    question_id: question_id,
+                    topic: topic,
                 }),
             });
-
             const response_data = await response.json();
-            console.log('Question Data Received: ', response_data);
-
-            
             setData(response_data);
             setCurrentPressed("A");
-
         } catch(error) {
             console.log('Error fetching data: ', error);
         } finally {
@@ -86,7 +114,7 @@ export default function Question_Combined({ navigation, route }) {
         setTimeout(fetchQuestions, 10);
     }, []);
 
-    // // Timer logic
+    // Timer logic
     // useEffect(() => {
     //     let interval;
     //     if (!mcSubmitted && !voiceSubmitted) { // if user has not submit
@@ -101,6 +129,12 @@ export default function Question_Combined({ navigation, route }) {
     //     return () => clearInterval(interval);
     // }, [mcSubmitted, voiceSubmitted]);
 
+    // useEffect(() => {
+    //     if(seconds === 0){ 
+    //         setCurrentPressed('Time ran out');
+    //         setModalOpen(true);
+    //     }
+    // }, [seconds]);
 
     // === MC
     const handleChooseOption = (option) => { 
@@ -149,6 +183,7 @@ export default function Question_Combined({ navigation, route }) {
     };
 
     const handleRecord = () => {
+        if(voiceSubmitted) return;
         if(recording) stopRecording();
         else startRecording();
     };
@@ -171,7 +206,6 @@ export default function Question_Combined({ navigation, route }) {
             });
             const response_data = await response.json();
             setTranscribedText(response_data);
-            setText((prevText) => `${prevText} ${response_data.transcribed_text}`);
         } catch(error) {
             console.log('Error transcribing text: ', error);
         }
@@ -187,15 +221,14 @@ export default function Question_Combined({ navigation, route }) {
         setAllowSubmit(true);
     }, [transcribedText]);
 
-    useEffect(() => {
-        if (fromScreen) {
-            console.log('Navigated from:', fromScreen);
-        }
-        fetchQuestions();
-    }, [fromScreen]);
-
     // Handle submission
     const handleNext = async () => {
+        // If button displays "Next"
+        if((mode == 0 && voiceSubmitted) || (mode == 1 && mcSubmitted)) { 
+            navigation.navigate('HomeTab'); 
+            return; 
+        }
+        
         // If button displays "Submit"
         setIsLoading(true);
 
@@ -209,7 +242,7 @@ export default function Question_Combined({ navigation, route }) {
                         uid: state.uid,
                         question_id: data.question_id,
                         question: data.question,
-                        transcribed_text: text,
+                        transcribed_text: transcribedText.transcribed_text,
                     })
                 });
                 const response_data = await response.json();
@@ -250,11 +283,44 @@ export default function Question_Combined({ navigation, route }) {
         }
     };
 
-    // handle erase ansswer 
-    const handleErase = () => {
-        setText('');
-    };
-    
+    // Components
+    const TopBar = () => (
+        <View 
+            style={{
+                width: width,
+                height: height * 0.0625,
+                justifyContent: 'flex-end',
+                marginTop: 20,
+            }}
+        >
+            <TouchableOpacity
+                style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                }}
+                onPress={() => navigation.navigate('HomeTab')}
+            >
+                <Ionicons
+                    name='chevron-back'
+                    size={16}
+                    color='#004643'
+                    style={{ 
+                        marginLeft: width / 12,
+                    }}
+                />
+                <Text 
+                    style={{ 
+                        color: '#004643', 
+                        marginLeft: 3, 
+                        fontSize: 16,
+                        fontFamily: 'Baloo2-Bold',
+                    }}
+                > 
+                    Back
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
 
     const NoQuestionView = () => (
         <View style={{
@@ -274,163 +340,82 @@ export default function Question_Combined({ navigation, route }) {
         </View>
     );
 
-    const triggerLongHapticFeedback = async () => {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        await new Promise(resolve => setTimeout(resolve, 900));
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      };
 
-    const ModalComponent = () => {
-        useEffect(() => {
-            if (modalOpen) {
-                if ((mode === 1 && currentPressed === data.answer) || (mode === 0 && answerResponse && answerResponse.grade > 1)) {
-                    triggerLongHapticFeedback();
-                    triggerConfetti();
-                } else {
-                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-                } 
-            }
-        }, [modalOpen]);
-
-        const voiceModalTitle =  answerResponse.feedback_title || 'Not Submitted';
-
-        return (
-            <>
-            
-            
-            
-            <Modal
-                visible={modalOpen}
-                transparent={true}
-                animationType="fade"
-            >
-                
-
+    const ModalComponent = () => (
+        <Modal
+            visible={modalOpen}
+            transparent={true}
+            animationType="slide"
+        >
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            }}>
                 <View style={{
-                    flex: 1,
+                    width: width * 0.8,
+                    paddingVertical: height * 0.05,
+                    paddingHorizontal: width * 0.05,
+                    backgroundColor: 'white',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 5,
+                    position: 'relative',
                 }}>
-                    <View style={{
-                        width: width * 0.8,
-                        paddingVertical: height * 0.05,
-                        paddingHorizontal: width * 0.05,
-                        backgroundColor: 'white',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 4,
-                        elevation: 5,
-                        position: 'relative',
-                    }}>
+                    {/* 0. close bottom */}
+                    <Ionicons 
+                        name="close-outline"
+                        size={25}
+                        onPress={() => { setModalOpen(false) }}
+                        style={{
+                            position: 'absolute',
+                            top: 20,
+                            right: 20,
+                        }}
+                    />
 
-                        <LottieView
-                            ref={animation}
-                            source={require('../../assets/animations/confettie_bottom.json')}
-                            loop={false}
-                            style={{position: 'absolute', top:0, bottom: 0, left: 0, right: 0}}
-                            resizeMode='cover'
-                        />
-                        {/* 0. close bottom */}
-                        <Ionicons 
-                            name="close-outline"
-                            size={25}
-                            onPress={() => { setModalOpen(false) }}
+                    {/* 1. Star */}
+                    { mode === 0 && answerResponse.grade !== 0 && (
+                        <Image
+                            source={stars.grade[answerResponse.grade]}
                             style={{
-                                position: 'absolute',
-                                top: 20,
-                                right: 20,
+                                height: height * 0.04,
+                                width: width * 0.3,
+                                marginVertical: height * 0.01,
                             }}
                         />
-
-                        {/* 1. Star */}
-                        { mode === 0 && answerResponse.grade !== 0 && (
-                            <Image
-                                source={stars.grade[answerResponse.grade]}
-                                style={{
-                                    height: height * 0.04,
-                                    width: width * 0.3,
-                                    marginVertical: height * 0.01,
-                                }}
-                            />
-                        )}
-                        
-                        {/* 2. Title */}
-                        <Text style={{
-                            fontFamily: 'Baloo2-Bold',
-                            fontSize: 30,
-                            textAlign: 'center',
-                        }}>
-                            {mode === 0 ? voiceModalTitle : 
-                                (currentPressed === data.answer ? 'Congratulations!' : 'Sorry!')}
-                        </Text>
-                        
-                        {/* 3. Body */}
-                        <Text style={{
-                            fontFamily: 'Baloo2-Regular',
-                            fontSize: 16,
-                            textAlign: 'center',
-                            paddingTop: height * 0.02,
-                        }}>
-                            {mode === 0 ? answerResponse.feedback_body :
-                                (currentPressed === 'Time ran out' ? 'Your time ran out.' : 
-                                (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`))}
-                        </Text>
-                    </View>
+                    )}
+                    
+                    {/* 2. Title */}
+                    <Text style={{
+                        fontFamily: 'Baloo2-Bold',
+                        fontSize: 30,
+                        textAlign: 'center',
+                    }}>
+                        {mode === 0 ? answerResponse.feedback_title : 
+                            (currentPressed === data.answer ? 'Congratulations!' : 'Sorry!')}
+                    </Text>
+                    
+                    {/* 3. Body */}
+                    <Text style={{
+                        fontFamily: 'Baloo2-Regular',
+                        fontSize: 16,
+                        textAlign: 'center',
+                        paddingTop: height * 0.02,
+                    }}>
+                        {mode === 0 ? answerResponse.feedback_body :
+                            (currentPressed === 'Time ran out' ? 'Your time ran out.' : 
+                            (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`))}
+                    </Text>
                 </View>
-            </Modal>
-            </>
-        )
-    }
-
-
-    // Prev and next icon
-    const QuizNavigation = ({ onPrev, onNext }) => {
-        return (
-          <View className="absolute top-20 left-0 right-0 flex-row justify-between items-center px-8 h-12">
-            <TouchableOpacity onPress={onPrev} className="p-2">
-              <Feather name="chevron-left" size={30} color="green" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onNext} className="p-2">
-              <Feather name="chevron-right" size={30} color="green" />
-            </TouchableOpacity>
-          </View>
-        );
-      };
-
-      const SubmissionPanel = () => {
-        
-      
-        return (
-          <View className="flex-row items-center justify-between px-14 py-5">
-            <TouchableOpacity onPress={handleErase} className="w-12 h-12 rounded-full bg-white items-center justify-center">
-              <Feather name="rotate-ccw" size={20} color="green" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              onPress={handleRecord}
-              className={`w-16 h-16 rounded-full items-center justify-center mx-4 ${recording ? 'bg-red-500' : 'bg-green-800'}`}
-            >
-              <Feather 
-                name={recording ? "square" : "mic"} 
-                size={32} 
-                color="white" 
-              />
-            </TouchableOpacity>
-            
-            <TouchableOpacity onPress={handleNext} className="w-12 h-12 rounded-full bg-white items-center justify-center">
-              <Feather name="send" size={20} color="green" />
-            </TouchableOpacity>
-          </View>
-        );
-      };
-
-
+            </View>
+        </Modal>
+    );
 
     const QuestionComponent = () => (
         // {/* Question Component */}
@@ -440,14 +425,13 @@ export default function Question_Combined({ navigation, route }) {
                 height: height * 0.35,
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginTop: 10
             } } 
         >
             {/* Countdown Timer */}
             <View
                 style = { {
-                    width: 80,
-                    height: 80,
+                    width: 70,
+                    height: 70,
 
                     marginTop: 10,
                     borderRadius: 50,
@@ -461,19 +445,17 @@ export default function Question_Combined({ navigation, route }) {
                     justifyContent: 'center',
                 } }
             >
-         
                 <Text
                     style = { { 
                         color: '#0c2d1c',
-                        fontSize: 15, // previously 20
+                        fontSize: 20,
                         fontWeight: 'bold',
                         fontFamily: 'Baloo2-Bold' 
                     } }
                 > 
-                    { data.difficulty } 
+                    { seconds } 
                 </Text>
             </View>
-            
 
             {/* Question Card */}
             <View
@@ -525,6 +507,110 @@ export default function Question_Combined({ navigation, route }) {
         </View>
     );
 
+    const Timer = () => {
+        const [innerSeconds, setInnerSeconds] = useState(90); // Example initial time
+    
+        useEffect(() => {
+            
+    
+            const interval = setInterval(() => {
+                setInnerSeconds(prev => {
+                    if (prev > 0) {
+                        const newTime = prev - 1;
+                        return newTime;
+                    } else {
+                        clearInterval(interval);
+                        return prev;
+                    }
+                });
+            }, 1000);
+    
+            return () => clearInterval(interval);
+        }, []);
+    
+        return (
+            <View
+                style={{
+                    width: 70,
+                    height: 70,
+                    marginTop: 10,
+                    borderRadius: 50,
+                    borderWidth: 6,
+                    borderColor: '#ABD1C6',
+                    zIndex: 1,
+                    backgroundColor: 'white',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <Text
+                    style={{
+                        color: '#0c2d1c',
+                        fontSize: 20,
+                        fontWeight: 'bold',
+                        fontFamily: 'Baloo2-Bold'
+                    }}
+                >
+                    {innerSeconds}
+                </Text>
+            </View>
+        );
+    };
+
+    const QuestionCard = React.memo(({ width, height, data }) => {
+        return (
+            <View
+                style={{
+                    height: height * 0.30,
+                    width: width * 0.85,
+                    borderRadius: 20,
+                    backgroundColor: 'white',
+                    marginTop: -0.04 * height,
+                    shadowColor: '#000', // black shadow color
+                    shadowOffset: { width: 0, height: 20 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 30,
+                    elevation: 10, // for Android shadow
+                }}
+            >
+                <ScrollView
+                    contentContainerStyle={{
+                        flexGrow: 1,
+                        justifyContent: 'flex-start',
+                    }}
+                >
+                    <RenderHtml
+                        contentWidth={width - 50}  // Adjust based on your padding/margin
+                        source={{ html: data.question }}
+                        tagsStyles={{
+                            body: {
+                                marginTop: height * 0.03,
+                                marginHorizontal: 5,
+                                padding: 20,
+                                fontFamily: 'Baloo2-Bold',
+                                fontSize: 14,
+                            },
+                            code: {
+                                backgroundColor: '#f0f0f0',
+                                padding: 2,
+                                borderRadius: 4,
+                            },
+                            pre: {
+                                backgroundColor: '#f0f0f0',
+                                padding: 10,
+                                borderRadius: 4,
+                            },
+                        }}
+                    />
+                </ScrollView>
+            </View>
+        );
+    });
+    
+
+
+
+
     const NextButtonComponent = () => (
         <View style={{ 
             width: width,
@@ -551,84 +637,71 @@ export default function Question_Combined({ navigation, route }) {
     );
 
     return (
-        <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
-
+        <View style={{
+          width: width,
+          height: height,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
           {isLoading ? (
             <ActivityIndicator size="large" color="gray" />
-        ) : (
-            // main quiz view 
-            
+          ) : (
             <View style={{
               width: width,
               height: height,
-              backgroundColor: globalStyles.container.backgroundColor,
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              paddingTop: 70
+              ...globalStyles.container,
             }}>
-                
-                <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} />
-
-
-              <QuizNavigation 
-                onPrev={() => {/* Handle previous question */}} 
-                onNext={() => {/* Handle next question */}}
-                />
-
-              
+              <TopBar />
               {data.message === "No questions" ? (
-                  <NoQuestionView />
-                ) : (
-                    <>
-                  <ModalComponent />
+                <NoQuestionView />
+              ) : (
+                <>
+                    <ModalComponent />
+                  
+                  
+                     {/* Countdown Timer */}
+                    <Timer/>
 
-                  <QuestionComponent />
+                    {/* Question Card */}
+                    <QuestionCard width={width} height={height} data={data} />
+
+
 
                   <View style={{height: 20}} />
-    
+                
 
                   <SwitchButton
-                    FirstText="Practice"
-                    SecondText="Answer"
+                    FirstText="Voice"
+                    SecondText="Multiple Choice"
                     width={width * 0.68}
                     height={0.045 * height}
                     mode={mode}
                     setMode={setMode}
                   />
 
-                    <View style={{height: 20}} />
+                    {/* <View style={{height: 10}} /> */}
 
-                  {/* Bottom component */}
+                  {/* Answer component */}
                   {mode === 0 ? ( 
                     // Voice answer card
                     <View style={{
                       height: height * 0.45,
                       width: width, // originally width
-                      justifyContent: 'flex-start',
+                      justifyContent: 'center',
                       alignItems: 'center',
                     }}>
-                        
-                    
                       <View style={{
                         height: height * 0.35,
                         width: width * 0.8,
                         borderRadius: 20,
                         backgroundColor: 'white',
-
+                        marginTop: -0.08 * height,
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 20 },
                         shadowOpacity: 0.2,
                         shadowRadius: 30,
                         elevation: 10,
-                        justifyContent: 'space-between'
                       }}>
-
-                        
-
-                        {/* Text box */}
                         <TextInput
                           style={{
                             fontFamily: 'Baloo2-Regular',
@@ -637,49 +710,83 @@ export default function Question_Combined({ navigation, route }) {
                           }}
                           multiline={true}
                           scrollEnabled={true}
-                          placeholder="Type here or record..."
-                            value={text}
-                            onChangeText={setText}
-                            keyboardType="default"
+                          value={transcribedText.transcribed_text}
                         />
-
-                        {/* Microphone stripe */}
-                        <SubmissionPanel />
-
                       </View>
-
-                      
-                        
-
+                      {!voiceSubmitted && (
+                        <TouchableOpacity
+                            activeOpacity={voiceSubmitted ? 1 : 0.7}
+                            style={{
+                            height: 60,
+                            width: 60,
+                            borderRadius: 60,
+                            marginTop: -80,
+                            backgroundColor: recording ? 'red' : 'black',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            }}
+                            onPress={() => handleRecord()}
+                        >   
+                            {isLoading ? (
+                            <ActivityIndicator size="small" color="white" />
+                            ) : (
+                            <MaterialIcons 
+                                name={recording ? 'square' : 'keyboard-voice'}
+                                color='white'
+                                size={recording ? 30 : 35}
+                            />
+                            )}
+                        </TouchableOpacity>
+                        )}
                     </View>
-                        
-                    
                   ) : (
                     // MC answer component 
                     <View style={{
                         height: height * 0.45,
                         width: width,
-                        display: 'flex',
-                        justifyContent: 'flex-start',
+                        justifyContent: 'center',
                         alignItems: 'center',
                       }}>
-                        <Card
-                            text={data.options[0]}
-                            width={width * 0.8}
-                            height={height * 0.35}
-                        />      
-                    </View>
-                )}
-                
+                    <ScrollView
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        alwaysBounceHorizontal={true}
+                        snapToOffsets={data.options.map((_, index) => index * 0.88 * width)}
+                        snapToEnd={false}
+                        decelerationRate='fast'
+                        style={{
+                            width: width,
+                        }}
+                        contentContainerStyle={{
+                            paddingLeft: 0.1 * width,
+                            paddingRight: 0.1 * width, // Add right padding for better UX
+                            height: height * 0.45, // adjust spacing above
+                            alignItems: 'center',
+                        }}
+                        onScroll={handleScroll}
+                        scrollEventThrottle={16}
+                        >
+                        {data.options.map((option, index) => {
+                            const optionLetter = String.fromCharCode(65 + index); // Convert 0, 1, 2, etc. to A, B, C, etc.
+                            return (
+                            <Card
+                                key={optionLetter}
+                                option={optionLetter}
+                                text={option}
+                                width={width * 0.8}
+                                height={height * 0.35}
+                                isSelected={currentPressed === optionLetter}
+                            />
+                            );
+                        })}
+                        </ScrollView>
+                        </View>
+                  )}
+                  <NextButtonComponent />
                 </>
               )}
-
-
             </View>
           )}
-
-</KeyboardAvoidingView>            
-</TouchableWithoutFeedback>
         </View>
       );
 }

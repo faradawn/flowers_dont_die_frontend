@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, ActivityIndicator, Dimensions, TouchableOpacity,
+import { Text, ScrollView, View, ActivityIndicator, Dimensions, TouchableOpacity,
     Modal, Image, TextInput
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
@@ -23,7 +23,7 @@ export default function Question_A({ navigation, route }){
     const fetchQuestions = async () => {
         try {
             const response = await fetch(
-              'http://129.114.24.200:8001/get_question', {
+              'https://backend.faradawn.site:8001/get_question', {
                 method: 'POST',
                 headers: {
                   "Content-Type": "application/json",
@@ -123,7 +123,7 @@ export default function Question_A({ navigation, route }){
 
         try {
             const response = await fetch(
-                'http://129.114.24.200:8001/transcribe', {
+                'https://backend.faradawn.site:8001/transcribe', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "multipart/form-data",
@@ -159,11 +159,11 @@ export default function Question_A({ navigation, route }){
     const [submitted, setSubmitted] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
 
-    // submitting the recording to backend api
+    // when stop recording
     const submitRecording = async() => {
         try {
             const response = await fetch(
-                'http://129.114.24.200:8001/submit_text_response', {
+                'https://backend.faradawn.site:8001/submit_text_response', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
@@ -186,7 +186,7 @@ export default function Question_A({ navigation, route }){
         }
     }
 
-    // handling submit and next
+    // when clicking next
     const handleNext_Submit = async() => {
         if(!allowSubmit) { return; }
 
@@ -373,12 +373,13 @@ export default function Question_A({ navigation, route }){
 
                             justifyContent: 'center',
                             alignItems: 'center',
+                            marginTop: 10,
                         } } 
                     >
                         {/* Question Card */}
                         <View
                             style = { {
-                                height: height * 0.25,
+                                height: height * 0.30,
                                 width: width * 0.85,
                                 borderRadius: 20,
                                 backgroundColor: 'white',
@@ -391,17 +392,25 @@ export default function Question_A({ navigation, route }){
                                 elevation: 10, // for Android shadow
                             } }
                         >
-                            <Text 
-                                style = { { 
-                                    marginTop: height * 0.03,
-                                    marginHorizontal: 5,
-                                    padding: 20,
-                                    fontFamily: 'Baloo2-Bold',
-                                    fontSize: 14,
-                                } }
-                            > 
-                                { data.question } 
-                            </Text>
+                            <ScrollView
+                                    contentContainerStyle={{
+                                    flexGrow: 1,
+                                    justifyContent: 'flex-start',
+                                    }}
+                                >
+                                    <Text
+                                    style={{
+                                        marginTop: height * 0.03,
+                                        marginHorizontal: 5,
+                                        padding: 20,
+                                        paddingTop: 10,
+                                        fontFamily: 'Baloo2-Bold',
+                                        fontSize: 14,
+                                    }}
+                                    >
+                                        {data.question}
+                                    </Text>
+                                </ScrollView>
                         </View>
                     </View>
 

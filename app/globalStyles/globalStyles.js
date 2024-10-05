@@ -36,8 +36,8 @@ export const globalStyles = StyleSheet.create({
     }
 })
 
-export const images = {
-    id: {
+export const myImages = {
+    flowerIcons: {
         '1': require('../../assets/images/isometric_flowers/isometric_flower_1.png'),
         '2': require('../../assets/images/isometric_flowers/isometric_flower_2.png'),
         '3': require('../../assets/images/isometric_flowers/isometric_flower_3.png'),
@@ -47,6 +47,10 @@ export const images = {
         '7': require('../../assets/images/isometric_flowers/isometric_flower_7.png'),
         '8': require('../../assets/images/isometric_flowers/isometric_flower_8.png'),
         '9': require('../../assets/images/isometric_flowers/isometric_flower_9.png'),
+    },
+    courseIcons: {
+        'Algo Group': require('../../assets/images/course_icons/algo_group_icon.png'),
+        'ICPC': require('../../assets/images/course_icons/icpc_icon.png'),
     }
 }
 

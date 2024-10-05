@@ -1,32 +1,32 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 
-export default function Card({ handlePress, isSelected, option, text, width, height }) {
+export default function Card({ text, width, height }) {
+  const lightGreen = '#3c716f';
+  const darkGreen = '#004643';
   return (
     <View style={
       [styles.card, 
       { width: width, 
         height: height, 
-        marginRight: 0.1 * width,
-
-        backgroundColor: isSelected ? '#004643' : '#3c716f'
+        backgroundColor : lightGreen,
       }
       ]
     }
     >
       <TouchableOpacity 
         activeOpacity={0.9}
-        style={styles.touchable}
+        style={[styles.touchable, { padding: 0 }]}
       >
         <Text style={[
           styles.title,
           { color: 'white' }
         ]}>
-          {option}
+          Answer
         </Text>
       </TouchableOpacity>
       <ScrollView 
-        style={styles.scrollView}
+        style={[styles.scrollView, {marginTop: 0}]}
         showsVerticalScrollIndicator={false}  
       >
         <Text style={styles.text}>{text}</Text>

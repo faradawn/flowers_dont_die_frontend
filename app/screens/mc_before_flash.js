@@ -9,12 +9,9 @@ import Card from '../components/QuestionCard';
 import { useUser } from '../components/UserContext';
 import RenderHtml from 'react-native-render-html';
 import SwitchButton from '../components/SwitchButton';
-import { Feather } from '@expo/vector-icons';
 
 import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
-
-import TopBar from '../components/TopBar';
 
 
 const height = Dimensions.get('window').height * 0.95;
@@ -26,7 +23,7 @@ export default function Question_Combined({ navigation, route }) {
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
     const [mode, setMode] = useState(0); // 0 for voice, 1 for multiple choice
-    const {question_id, fromScreen }= route.params;
+    const question_id = route.params?.question_id;
 
     // Multiple choice state
     const [currentPressed, setCurrentPressed] = useState("A");
@@ -149,6 +146,7 @@ export default function Question_Combined({ navigation, route }) {
     };
 
     const handleRecord = () => {
+        if(voiceSubmitted) return;
         if(recording) stopRecording();
         else startRecording();
     };
@@ -187,15 +185,14 @@ export default function Question_Combined({ navigation, route }) {
         setAllowSubmit(true);
     }, [transcribedText]);
 
-    useEffect(() => {
-        if (fromScreen) {
-            console.log('Navigated from:', fromScreen);
-        }
-        fetchQuestions();
-    }, [fromScreen]);
-
     // Handle submission
     const handleNext = async () => {
+        // If button displays "Next"
+        if((mode == 0 && voiceSubmitted) || (mode == 1 && mcSubmitted)) { 
+            navigation.navigate('HomeTab'); 
+            return; 
+        }
+        
         // If button displays "Submit"
         setIsLoading(true);
 
@@ -250,11 +247,44 @@ export default function Question_Combined({ navigation, route }) {
         }
     };
 
-    // handle erase ansswer 
-    const handleErase = () => {
-        setText('');
-    };
-    
+    // Components
+    const TopBar = () => (
+        <View 
+            style={{
+                width: width,
+                height: height * 0.0625,
+                justifyContent: 'flex-end',
+                marginTop: 20,
+            }}
+        >
+            <TouchableOpacity
+                style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                }}
+                onPress={() => navigation.navigate('Assignments')}
+            >
+                <Ionicons
+                    name='chevron-back'
+                    size={16}
+                    color='#004643'
+                    style={{ 
+                        marginLeft: width / 12,
+                    }}
+                />
+                <Text 
+                    style={{ 
+                        color: '#004643', 
+                        marginLeft: 3, 
+                        fontSize: 16,
+                        fontFamily: 'Baloo2-Bold',
+                    }}
+                > 
+                    Back
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
 
     const NoQuestionView = () => (
         <View style={{
@@ -389,49 +419,6 @@ export default function Question_Combined({ navigation, route }) {
     }
 
 
-    // Prev and next icon
-    const QuizNavigation = ({ onPrev, onNext }) => {
-        return (
-          <View className="absolute top-20 left-0 right-0 flex-row justify-between items-center px-8 h-12">
-            <TouchableOpacity onPress={onPrev} className="p-2">
-              <Feather name="chevron-left" size={30} color="green" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onNext} className="p-2">
-              <Feather name="chevron-right" size={30} color="green" />
-            </TouchableOpacity>
-          </View>
-        );
-      };
-
-      const SubmissionPanel = () => {
-        
-      
-        return (
-          <View className="flex-row items-center justify-between px-14 py-5">
-            <TouchableOpacity onPress={handleErase} className="w-12 h-12 rounded-full bg-white items-center justify-center">
-              <Feather name="rotate-ccw" size={20} color="green" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              onPress={handleRecord}
-              className={`w-16 h-16 rounded-full items-center justify-center mx-4 ${recording ? 'bg-red-500' : 'bg-green-800'}`}
-            >
-              <Feather 
-                name={recording ? "square" : "mic"} 
-                size={32} 
-                color="white" 
-              />
-            </TouchableOpacity>
-            
-            <TouchableOpacity onPress={handleNext} className="w-12 h-12 rounded-full bg-white items-center justify-center">
-              <Feather name="send" size={20} color="green" />
-            </TouchableOpacity>
-          </View>
-        );
-      };
-
-
-
     const QuestionComponent = () => (
         // {/* Question Component */}
         <View
@@ -440,14 +427,13 @@ export default function Question_Combined({ navigation, route }) {
                 height: height * 0.35,
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginTop: 10
             } } 
         >
             {/* Countdown Timer */}
             <View
                 style = { {
-                    width: 80,
-                    height: 80,
+                    width: 70,
+                    height: 70,
 
                     marginTop: 10,
                     borderRadius: 50,
@@ -551,84 +537,69 @@ export default function Question_Combined({ navigation, route }) {
     );
 
     return (
-        <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
+        
+        <View style={{
+          width: width,
+          height: height,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
 
           {isLoading ? (
             <ActivityIndicator size="large" color="gray" />
-        ) : (
-            // main quiz view 
-            
+          ) : (
             <View style={{
               width: width,
               height: height,
-              backgroundColor: globalStyles.container.backgroundColor,
-              display: 'flex',
-              justifyContent: 'flex-start',
-              alignItems: 'center',
-              paddingTop: 70
+              ...globalStyles.container,
             }}>
                 
-                <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} />
-
-
-              <QuizNavigation 
-                onPrev={() => {/* Handle previous question */}} 
-                onNext={() => {/* Handle next question */}}
-                />
-
-              
+              <TopBar />
               {data.message === "No questions" ? (
-                  <NoQuestionView />
-                ) : (
-                    <>
+                <NoQuestionView />
+              ) : (
+                <>
                   <ModalComponent />
-
                   <QuestionComponent />
 
                   <View style={{height: 20}} />
     
 
                   <SwitchButton
-                    FirstText="Practice"
-                    SecondText="Answer"
+                    FirstText="Voice"
+                    SecondText="Multiple Choice"
                     width={width * 0.68}
                     height={0.045 * height}
                     mode={mode}
                     setMode={setMode}
                   />
 
-                    <View style={{height: 20}} />
+                    {/* <View style={{height: 10}} /> */}
 
-                  {/* Bottom component */}
+                  {/* Answer component */}
                   {mode === 0 ? ( 
                     // Voice answer card
                     <View style={{
                       height: height * 0.45,
                       width: width, // originally width
-                      justifyContent: 'flex-start',
+                      justifyContent: 'center',
                       alignItems: 'center',
                     }}>
-                        
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
                     
                       <View style={{
                         height: height * 0.35,
                         width: width * 0.8,
                         borderRadius: 20,
                         backgroundColor: 'white',
-
+                        marginTop: -0.08 * height,
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 20 },
                         shadowOpacity: 0.2,
                         shadowRadius: 30,
                         elevation: 10,
-                        justifyContent: 'space-between'
                       }}>
-
-                        
-
-                        {/* Text box */}
                         <TextInput
                           style={{
                             fontFamily: 'Baloo2-Regular',
@@ -642,35 +613,82 @@ export default function Question_Combined({ navigation, route }) {
                             onChangeText={setText}
                             keyboardType="default"
                         />
-
-                        {/* Microphone stripe */}
-                        <SubmissionPanel />
-
                       </View>
-
-                      
-                        
-
+                      {!voiceSubmitted && (
+                        <TouchableOpacity
+                            activeOpacity={voiceSubmitted ? 1 : 0.7}
+                            style={{
+                            height: 60,
+                            width: 60,
+                            borderRadius: 60,
+                            marginTop: -80,
+                            backgroundColor: recording ? 'red' : 'black',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            }}
+                            onPress={() => handleRecord()}
+                        >   
+                            {isLoading ? (
+                            <ActivityIndicator size="small" color="white" />
+                            ) : (
+                            <MaterialIcons 
+                                name={recording ? 'square' : 'keyboard-voice'}
+                                color='white'
+                                size={recording ? 30 : 35}
+                            />
+                            )}
+                        </TouchableOpacity>
+                        )}
+                        </KeyboardAvoidingView>            
+                        </TouchableWithoutFeedback>
                     </View>
-                        
                     
                   ) : (
                     // MC answer component 
                     <View style={{
                         height: height * 0.45,
                         width: width,
-                        display: 'flex',
-                        justifyContent: 'flex-start',
+                        justifyContent: 'center',
                         alignItems: 'center',
                       }}>
-                        <Card
-                            text={data.options[0]}
-                            width={width * 0.8}
-                            height={height * 0.35}
-                        />      
-                    </View>
-                )}
-                
+                    <ScrollView
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        alwaysBounceHorizontal={true}
+                        snapToOffsets={data.options.map((_, index) => index * 0.88 * width)}
+                        snapToEnd={false}
+                        decelerationRate='fast'
+                        style={{
+                            width: width,
+                        }}
+                        contentContainerStyle={{
+                            paddingLeft: 0.1 * width,
+                            paddingRight: 0.1 * width, // Add right padding for better UX
+                            height: height * 0.45, // adjust spacing above
+                            alignItems: 'center',
+                        }}
+                        onScroll={handleScroll}
+                        scrollEventThrottle={16}
+                        >
+                        {data.options.map((option, index) => {
+                            const optionLetter = String.fromCharCode(65 + index); // Convert 0, 1, 2, etc. to A, B, C, etc.
+                            return (
+                            <Card
+                                key={optionLetter}
+                                option={optionLetter}
+                                text={option}
+                                width={width * 0.8}
+                                height={height * 0.35}
+                                isSelected={currentPressed === optionLetter}
+                                isCardSubmitted={mcSubmitted}
+                                isCardCorrectAnswer={optionLetter == data.answer}
+                            />
+                            );
+                        })}
+                        </ScrollView>
+                        </View>
+                  )}
+                  <NextButtonComponent />
                 </>
               )}
 
@@ -678,8 +696,7 @@ export default function Question_Combined({ navigation, route }) {
             </View>
           )}
 
-</KeyboardAvoidingView>            
-</TouchableWithoutFeedback>
+            
         </View>
       );
 }

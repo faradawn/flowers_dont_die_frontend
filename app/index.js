@@ -12,9 +12,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Login from './screens/Login';
 import SignUp from './screens/Signup';
 import Courses from './screens/Courses';
+import Topics from './screens/Topic';
 import Question_A from './screens/Question_Audio';
 import Question_MC from './screens/Question_MultipleChoice';
 import Profile from './screens/Profile';
+import Assignments from './screens/Assignments';
 
 import { UserProvider } from './components/UserContext';
 
@@ -83,6 +85,16 @@ function RootStackNavigator() {
                 <RootStack.Screen 
                     name="HomeTab" 
                     component={HomeTabNavigator}
+                    options={{headerShown: false}}
+                />
+                <RootStack.Screen 
+                    name="Topics" 
+                    component={Topics}
+                    options={{headerShown: false}}
+                />
+                <RootStack.Screen 
+                    name="Assignments" 
+                    component={Assignments}
                     options={{headerShown: false}}
                 />
                 <RootStack.Screen 
