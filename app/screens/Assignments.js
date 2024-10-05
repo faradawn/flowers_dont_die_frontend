@@ -98,7 +98,10 @@ export default function Topics({ navigation, route }){
     // );
 
     const questionPress = (question_id) => (
-        navigation.navigate('Question_MC', { question_id: question_id })
+        navigation.navigate('Question_MC', { 
+            question_id: question_id,
+            fromScreen: 'Assignments',
+        })
     )
 
     return (

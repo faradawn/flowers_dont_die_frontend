@@ -26,7 +26,7 @@ export default function Question_Combined({ navigation, route }) {
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
     const [mode, setMode] = useState(0); // 0 for voice, 1 for multiple choice
-    const question_id = route.params?.question_id;
+    const {question_id, fromScreen }= route.params;
 
     // Multiple choice state
     const [currentPressed, setCurrentPressed] = useState("A");
@@ -64,7 +64,7 @@ export default function Question_Combined({ navigation, route }) {
                 body: JSON.stringify({
                     uid: state.uid,
                     course_id: state.course_id,
-                    question_id: question_id,
+                    question_id: state.question_id,
                 }),
             });
 
@@ -187,6 +187,13 @@ export default function Question_Combined({ navigation, route }) {
         setAllowSubmit(true);
     }, [transcribedText]);
 
+    useEffect(() => {
+        if (fromScreen) {
+            console.log('Navigated from:', fromScreen);
+        }
+        fetchQuestions();
+    }, [fromScreen]);
+
     // Handle submission
     const handleNext = async () => {
         // If button displays "Submit"
@@ -247,11 +254,6 @@ export default function Question_Combined({ navigation, route }) {
     const handleErase = () => {
         setText('');
     };
-
-
-
-
-
     
 
     const NoQuestionView = () => (
@@ -555,10 +557,9 @@ export default function Question_Combined({ navigation, route }) {
 
           {isLoading ? (
             <ActivityIndicator size="large" color="gray" />
-          ) : (
+        ) : (
             // main quiz view 
             
-                        
             <View style={{
               width: width,
               height: height,
@@ -569,7 +570,7 @@ export default function Question_Combined({ navigation, route }) {
               paddingTop: 70
             }}>
                 
-                <TopBar navigateTo="Assignments"/>
+                <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} />
 
 
               <QuizNavigation 
