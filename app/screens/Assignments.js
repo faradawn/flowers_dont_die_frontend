@@ -42,7 +42,7 @@ export default function Topics({ navigation, route }){
             
             console.log("Fetching topic", topic, "course id", state.course_id);
             const data = await response.json();
-            console.log("Assignments: ", data)
+            console.log("Got assignments: ", data)
             setAssignments(data);
 
         } catch(error) {
@@ -52,7 +52,9 @@ export default function Topics({ navigation, route }){
         }
     }
 
-    const progress = assignments.num_total_questions == 0 ? 0 : (assignments.num_completed_questions / assignments.num_total_questions);
+    const progress = assignments.num_total_questions > 0 
+        ? (assignments.num_completed_questions / assignments.num_total_questions)
+        : 0;
 
     useFocusEffect(
         useCallback(() => {
@@ -177,7 +179,7 @@ export default function Topics({ navigation, route }){
                                 <View
                                     style={{
                                         height: 10,
-                                        width: 0.7 * width * (progress),
+                                        width: Math.max(0, Math.min(0.7 * width * progress, 0.7 * width)),
                                         borderRadius: 5,
                                         backgroundColor: '#26C250',
                                     }}
@@ -204,7 +206,7 @@ export default function Topics({ navigation, route }){
                                     <Card 
                                         index={index}
                                         id={item.question_id}
-                                        num_stars={item.num_stars}
+                                        num_stars={item.score}
                                         title={item.question_title} 
                                         pressHandler={questionPress}
                                     />
