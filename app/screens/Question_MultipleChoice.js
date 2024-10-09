@@ -46,6 +46,12 @@ export default function Question_Combined({ navigation, route }) {
     const [intervalId, setIntervalId] = useState(null);
     const [answerResponse, setAnswerResponse] = useState('');
 
+     // track the current question index
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    // assume at least one question, update with actual data
+    const [totalQuestions, setTotalQuestions] = useState(1); 
+
+
     const animation = useRef(null);
 
     const triggerConfetti = () => {
@@ -75,6 +81,8 @@ export default function Question_Combined({ navigation, route }) {
             setData(response_data);
             setCurrentPressed("A");
 
+            // Set total number of questions
+            setTotalQuestions(response_data.total_questions);
         } catch(error) {
             console.log('Error fetching data: ', error);
         } finally {
@@ -109,6 +117,20 @@ export default function Question_Combined({ navigation, route }) {
         }
         setCurrentPressed(option);
     }
+
+    // Handle next question navigation
+    const handleNextQuestion = () => {
+        if (currentQuestionIndex < totalQuestions - 1) {
+            setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+        }
+    };
+
+    // Handle previous question navigation
+    const handlePrevQuestion = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(prevIndex => prevIndex - 1);
+        }
+    };
     
     const handleScroll = (event) => {
         const xOffset = event.nativeEvent.contentOffset.x;
@@ -274,6 +296,8 @@ export default function Question_Combined({ navigation, route }) {
         </View>
     );
 
+    
+
     const triggerLongHapticFeedback = async () => {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -393,18 +417,31 @@ export default function Question_Combined({ navigation, route }) {
     const QuizNavigation = ({ onPrev, onNext }) => {
         return (
           <View className="absolute top-20 left-0 right-0 flex-row justify-between items-center px-8 h-12">
-            <TouchableOpacity onPress={onPrev} className="p-2">
-              <Feather name="chevron-left" size={30} color="green" />
+            <TouchableOpacity 
+                onPress={handlePrevQuestion}
+
+                // Disable button if on the first question
+                disabled = {currentQuestionIndex === 0}
+                // Change appearance when disabled
+                style={{ opacity: currentQuestionIndex === 0 ? 0.5 : 1 }} 
+            >
+              <Feather name="chevron-left" size={30} color={currentQuestionIndex === 0 ? "gray" : "green"} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={onNext} className="p-2">
-              <Feather name="chevron-right" size={30} color="green" />
+            <TouchableOpacity 
+                onPress={handleNextQuestion} className="p-2"
+
+                // Disable button if on the last question
+                disabled={currentQuestionIndex === totalQuestions - 1}
+                style={{ opacity: currentQuestionIndex === totalQuestions - 1 ? 0.5 : 1 }}
+            
+            >
+              <Feather name="chevron-right" size={30} color= {currentQuestionIndex === totalQuestions -1 ? "gray" : "green"} />
             </TouchableOpacity>
           </View>
         );
       };
 
       const SubmissionPanel = () => {
-        
       
         return (
           <View className="flex-row items-center justify-between px-14 py-5">
