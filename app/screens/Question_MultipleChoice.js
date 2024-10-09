@@ -229,12 +229,15 @@ export default function Question_Combined({ navigation, route }) {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         uid: state.uid,
+                        course_id: state.course_id,
                         question_id: data.question_id,
                         question: data.question,
                         transcribed_text: text,
+                        practice_type: "ASSIGNMENT"
                     })
                 });
                 const response_data = await response.json();
+                console.log("Response data: ", response_data);
                 setAnswerResponse(response_data);
             } catch(error) {
                 console.log("Error sending data: ", error);
