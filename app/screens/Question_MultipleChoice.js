@@ -26,7 +26,7 @@ export default function Question_Combined({ navigation, route }) {
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
     const [mode, setMode] = useState(0); // 0 for voice, 1 for multiple choice
-    const {question_id, fromScreen }= route.params;
+    const {question_id, fromScreen, question_arr }= route.params;
 
     // Multiple choice state
     const [currentPressed, setCurrentPressed] = useState("A");
@@ -46,11 +46,20 @@ export default function Question_Combined({ navigation, route }) {
     const [intervalId, setIntervalId] = useState(null);
     const [answerResponse, setAnswerResponse] = useState('');
 
+    
      // track the current question index
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     // assume at least one question, update with actual data
-    const [totalQuestions, setTotalQuestions] = useState(1); 
-
+    const [totalQuestions, setTotalQuestions] = useState(question_arr.length); 
+    
+    useEffect(() => {
+        // Find the index of the initial question in question_arr
+        const index = question_arr.findIndex((q) => q.question_id === question_id);
+        if (index !== -1) {
+            setCurrentQuestionIndex(index);
+            fetchQuestions(question_id); // Fetch the initial question data
+        }
+    }, [question_id]);
 
     const animation = useRef(null);
 
@@ -62,8 +71,9 @@ export default function Question_Combined({ navigation, route }) {
 
 
     // Fetch questions
-    const fetchQuestions = async () => {
+    const fetchQuestions = async (question_id) => {
         try {
+            setIsLoading(true)
             const response = await fetch('https://backend.faradawn.site:8001/get_question', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
@@ -81,8 +91,6 @@ export default function Question_Combined({ navigation, route }) {
             setData(response_data);
             setCurrentPressed("A");
 
-            // Set total number of questions
-            setTotalQuestions(response_data.total_questions);
         } catch(error) {
             console.log('Error fetching data: ', error);
         } finally {
@@ -121,14 +129,28 @@ export default function Question_Combined({ navigation, route }) {
     // Handle next question navigation
     const handleNextQuestion = () => {
         if (currentQuestionIndex < totalQuestions - 1) {
-            setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+            const nextQuestionIndex = currentQuestionIndex + 1;
+            const nextQuestionId = question_arr[nextQuestionIndex].question_id;
+            setCurrentQuestionIndex(nextQuestionIndex);
+            navigation.navigate('Question_MC', { 
+                question_id: nextQuestionId, 
+                fromScreen, 
+                question_arr 
+            }); 
         }
     };
 
     // Handle previous question navigation
     const handlePrevQuestion = () => {
         if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(prevIndex => prevIndex - 1);
+            const prevQuestionIndex = currentQuestionIndex - 1;
+            const prevQuestionId = question_arr[prevQuestionIndex].question_id;
+            setCurrentQuestionIndex(prevQuestionIndex);
+            navigation.navigate('Question_MC', { 
+                question_id: prevQuestionId, 
+                fromScreen, 
+                question_arr 
+            }); 
         }
     };
     

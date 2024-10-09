@@ -103,6 +103,7 @@ export default function Topics({ navigation, route }){
         navigation.navigate('Question_MC', { 
             question_id: question_id,
             fromScreen: 'Assignments',
+            question_arr: assignments.question_arr,
         })
     )
 
