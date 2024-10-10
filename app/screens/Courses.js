@@ -38,7 +38,7 @@ export default function Courses({ navigation }) {
             )
 
             const data = await response.json();
-            console.log("Courses Received: ", data)
+            console.log("[HomeTab]Courses Received: ", data)
             setCourses(data.courses);
             setDailyQuestionId(data.daily_question_id);
 
@@ -66,12 +66,12 @@ export default function Courses({ navigation }) {
         if (dailyQuestionId) {
             console.log('Daily question: ', dailyQuestionId);
             updateState('course_id', 'Algo Group')
-            navigation.navigate('Question_MC', { 
+            navigation.navigate('Question_Daily', { 
                 question_id: dailyQuestionId,
                 fromScreen: 'HomeTab',
             });
         } else {
-            console.log("No daily question ID available");
+            console.log("[HomeTab] No daily question ID available");
         }
     };
 

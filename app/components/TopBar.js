@@ -7,18 +7,18 @@ const TopBar = ({ navigateTo, backText = 'Back' }) => {
   const navigation = useNavigation();
 
   return (
-    <View className="absolute top-0 left-5 right-0 h-16 justify-end">
+    <View className="absolute top-15 left-0 right-0 h-16 flex-row items-center justify-start z-10">
       <TouchableOpacity
-        className="flex-row items-center ml-4"
+        className="flex-row items-center px-4 py-2"
         onPress={() => navigation.navigate(navigateTo)}
       >
         <Ionicons
           name="chevron-back"
-          size={16}
+          size={17} 
           color="#004643"
         />
-        <Text 
-          className="ml-1 text-base font-bold text-[#004643]"
+        <Text
+          className="ml-1 text-lg font-bold text-[#004643]"
           style={{ fontFamily: 'Baloo2-Bold' }}
         >
           {backText}
