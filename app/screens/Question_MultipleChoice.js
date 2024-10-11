@@ -132,6 +132,7 @@ export default function Question_Combined({ navigation, route }) {
 
     // Handle next question
     const handleNextQuestion = () => {
+        console.log('Clicked next button. Current question index: ', currentQuestionIndex);
         if (fromScreen === 'Assignments' &&currentQuestionIndex < totalQuestions - 1) {
             const nextQuestionIndex = currentQuestionIndex + 1;
             const nextQuestionId = question_arr[nextQuestionIndex].question_id;
@@ -143,6 +144,7 @@ export default function Question_Combined({ navigation, route }) {
     
     // Handle prev question
     const handlePrevQuestion = () => {
+        console.log('Clicked prev button. Current question index: ', currentQuestionIndex);
         if (fromScreen === 'Assignments' && currentQuestionIndex > 0) {
             const prevQuestionIndex = currentQuestionIndex - 1;
             const prevQuestionId = question_arr[prevQuestionIndex].question_id;
@@ -434,7 +436,7 @@ export default function Question_Combined({ navigation, route }) {
     const QuizNavigation = ({ onPrev, onNext, currentQuestionIndex, totalQuestions }) => {
       
         return (
-          <View className="absolute top-16 left-0 right-0 flex-row justify-between items-center px-4 z-5">
+          <View className="absolute top-16 left-0 right-0 flex-row justify-between items-center px-4 z-5" style={{zIndex: 10}}>
             <PrevButton
               onPress={onPrev}
               disabled={currentQuestionIndex === 0}
@@ -596,7 +598,7 @@ export default function Question_Combined({ navigation, route }) {
     return (
         <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center", width: width, height: height}}>
 
           {isLoading ? (
             <ActivityIndicator size="large" color="gray" />

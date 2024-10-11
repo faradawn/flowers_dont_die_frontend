@@ -12,7 +12,7 @@ const NextButton = ({ onPress, disabled }) => (
         padding: 10,
         opacity: disabled ? 0.5 : 1, 
       }}
-    hitSlop={{ top: 30, bottom: 20, left: 10, right: 10 }}
+    // hitSlop={{ top: 30, bottom: 20, left: 10, right: 10 }}
   >
     <Text style={{ color: disabled ? "gray" : "green", fontSize: 16, marginRight: 5 }}>Next</Text>
     <Feather name="chevron-right" size={30} color={disabled ? "gray" : "green"} />

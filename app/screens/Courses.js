@@ -119,7 +119,7 @@ export default function Courses({ navigation }) {
                             </Text>
                         </View>
 
-                        <View
+                        {/* <View
                             style={{
                                 height: height * 0.2,
                                 width: width,
@@ -131,7 +131,7 @@ export default function Courses({ navigation }) {
                             }}
 
                         >
-                            {/* Random Question */}
+
                             <TouchableOpacity
                                 style={{
                                     marginTop: 20,
@@ -161,7 +161,7 @@ export default function Courses({ navigation }) {
                                     marginTop: height * 0.008,
                                 }}> Random Question</Text>
                             </TouchableOpacity>
-                        </View>
+                        </View> */}
 
                         <View style={{ height: 20 }}></View>
                         {/* FlatList Containing Topic Information */}
