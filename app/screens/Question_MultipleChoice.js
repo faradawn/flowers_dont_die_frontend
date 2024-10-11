@@ -51,35 +51,22 @@ export default function Question_Combined({ navigation, route }) {
 
     
      // track the current question index
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
+        if (isAssignment && question_arr) {
+            const index = question_arr.findIndex((q) => q.question_id === initialQuestionId);
+            return index !== -1 ? index : 0;
+        }
+        return 0;
+    });
     // assume at least one question, update with actual data
     const totalQuestions = isAssignment ? question_arr.length : 1; 
     const [questionId, setQuestionId] = useState(initialQuestionId);
-    
-    useEffect(() => {
-        if (isAssignment && questionId) {
-            const index = question_arr.findIndex((q) => q.question_id === questionId);
-            if (index !== -1 && index !== currentQuestionIndex) {
-                setCurrentQuestionIndex(index);
-                fetchQuestions(questionId); 
-            }
-        }
-    }, [questionId]);
 
     useEffect(() => {
-        if (isAssignment && currentQuestionIndex >= 0 && currentQuestionIndex < question_arr.length) {
-          const questionId = question_arr[currentQuestionIndex].question_id;
-            if (questionId !== initialQuestionId) {
-                setQuestionId(questionId);
-            } 
-        }
-      }, [currentQuestionIndex]); 
-
-    useEffect(() => {
-        if (isAssignment && questionId && !isLoading) {
+        if (questionId) {
             fetchQuestions(questionId);
         }
-    }, [questionId, isAssignment, isLoading])
+    }, [questionId]);
 
     const animation = useRef(null);
 
@@ -108,14 +95,14 @@ export default function Question_Combined({ navigation, route }) {
             const response_data = await response.json();
             console.log('[Question_MC] Question Data Received: ', response_data);
 
-            if (response_data.question_id !== data.question_id) {  // 检查数据是否真的变化
+            if (response_data.question_id !== data.question_id) {  
                 setData(response_data);
                 setCurrentPressed("A");
             }
         } catch(error) {
             console.log('Error fetching data: ', error);
         } finally {
-            if (isLoading) setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -353,8 +340,7 @@ export default function Question_Combined({ navigation, route }) {
 
         return (
             <>
-            
-            
+
             
             <Modal
                 visible={modalOpen}

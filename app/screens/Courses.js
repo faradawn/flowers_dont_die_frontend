@@ -36,11 +36,14 @@ export default function Courses({ navigation }) {
                 }),
             }
             )
-
-            const data = await response.json();
-            console.log("[HomeTab]Courses Received: ", data)
-            setCourses(data.courses);
-            setDailyQuestionId(data.daily_question_id);
+            try{
+                const data = await response.json();
+                console.log("Courses Received: ", data)
+                setCourses(data.courses);
+                setDailyQuestionId(data.daily_question_id);
+            }catch(jsonError){
+                console.error('[Courses] JSON parsing error:', jsonError);
+            }
 
         } catch (error) {
             console.log('Error fetching data: ', error)

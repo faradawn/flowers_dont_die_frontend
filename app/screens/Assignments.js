@@ -99,13 +99,14 @@ export default function Topics({ navigation, route }){
     //     </View>
     // );
 
-    const questionPress = (question_id) => (
+    const questionPress = (question_id) => {
+        console.log("[Assignments] Navigate to Question_MC", question_id, assignments.question_arr)
         navigation.navigate('Question_MC', { 
             question_id: question_id,
             fromScreen: 'Assignments',
             question_arr: assignments.question_arr,
         })
-    )
+    }
 
     return (
         <View

@@ -248,12 +248,6 @@ export default function Question_Combined({ navigation, route }) {
         setText('');
     };
 
-
-
-
-
-    
-
     const NoQuestionView = () => (
         <View style={{
             flex: 1,
@@ -385,21 +379,6 @@ export default function Question_Combined({ navigation, route }) {
             </>
         )
     }
-
-
-    // Prev and next icon
-    const QuizNavigation = ({ onPrev, onNext }) => {
-        return (
-          <View className="absolute top-20 left-0 right-0 flex-row justify-between items-center px-8 h-12">
-            <TouchableOpacity onPress={onPrev} className="p-2">
-              <Feather name="chevron-left" size={30} color="green" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onNext} className="p-2">
-              <Feather name="chevron-right" size={30} color="green" />
-            </TouchableOpacity>
-          </View>
-        );
-      };
 
       const SubmissionPanel = () => {
         
@@ -569,14 +548,7 @@ export default function Question_Combined({ navigation, route }) {
               paddingTop: 70
             }}>
                 
-                <TopBar navigateTo="Assignments"/>
-
-
-              <QuizNavigation 
-                onPrev={() => {/* Handle previous question */}} 
-                onNext={() => {/* Handle next question */}}
-                />
-
+                <TopBar navigateTo="HomeTab"/>
               
               {data.message === "No questions" ? (
                   <NoQuestionView />
