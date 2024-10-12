@@ -132,11 +132,11 @@ export default function Question_Combined({ navigation, route }) {
 
     // Handle next question
     const handleNextQuestion = () => {
-        console.log('Clicked next button. Current question index: ', currentQuestionIndex);
         if (fromScreen === 'Assignments' &&currentQuestionIndex < totalQuestions - 1) {
             const nextQuestionIndex = currentQuestionIndex + 1;
             const nextQuestionId = question_arr[nextQuestionIndex].question_id;
             console.log('Navigating to next question:', nextQuestionId);
+            setText('');
             setCurrentQuestionIndex(nextQuestionIndex);
             setQuestionId(nextQuestionId);
         }
@@ -144,11 +144,11 @@ export default function Question_Combined({ navigation, route }) {
     
     // Handle prev question
     const handlePrevQuestion = () => {
-        console.log('Clicked prev button. Current question index: ', currentQuestionIndex);
         if (fromScreen === 'Assignments' && currentQuestionIndex > 0) {
             const prevQuestionIndex = currentQuestionIndex - 1;
             const prevQuestionId = question_arr[prevQuestionIndex].question_id;
             console.log('Navigating to previous question:', prevQuestionId);
+            setText('');
             setCurrentQuestionIndex(prevQuestionIndex);
             setQuestionId(prevQuestionId);
         }
