@@ -15,8 +15,7 @@ import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
 
 import TopBar from '../components/TopBar';
-import PrevButton from '../components/PrevButton';
-import NextButton from '../components/NextButton';
+
 
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
@@ -27,9 +26,7 @@ export default function Question_Combined({ navigation, route }) {
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
     const [mode, setMode] = useState(0); // 0 for voice, 1 for multiple choice
-    const { question_id: initialQuestionId, fromScreen, question_arr } = route.params;
-    // If not from Assignments，then do not calculate totalQuestion and ignore buttons prev/next
-    const isAssignment = fromScreen === 'Assignments';
+    const {dailyQuestionId, fromScreen} = route.params;
 
     // Multiple choice state
     const [currentPressed, setCurrentPressed] = useState("A");
@@ -49,25 +46,6 @@ export default function Question_Combined({ navigation, route }) {
     const [intervalId, setIntervalId] = useState(null);
     const [answerResponse, setAnswerResponse] = useState('');
 
-    
-     // track the current question index
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
-        if (isAssignment && question_arr) {
-            const index = question_arr.findIndex((q) => q.question_id === initialQuestionId);
-            return index !== -1 ? index : 0;
-        }
-        return 0;
-    });
-    // assume at least one question, update with actual data
-    const totalQuestions = isAssignment ? question_arr.length : 1; 
-    const [questionId, setQuestionId] = useState(initialQuestionId);
-
-    useEffect(() => {
-        if (questionId) {
-            fetchQuestions(questionId);
-        }
-    }, [questionId]);
-
     const animation = useRef(null);
 
     const triggerConfetti = () => {
@@ -78,33 +56,35 @@ export default function Question_Combined({ navigation, route }) {
 
 
     // Fetch questions
-    const fetchQuestions = async (questionId) => {
+    const fetchQuestions = async () => {
         try {
-            setIsLoading(true)
-            console.log("[Questoin_MC] Send post")
             const response = await fetch('https://backend.faradawn.site:8001/get_question', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     uid: state.uid,
                     course_id: state.course_id,
-                    question_id: questionId,
+                    question_id: dailyQuestionId,
                 }),
             });
 
             const response_data = await response.json();
-            console.log('[Question_MC] Question Data Received: ', response_data);
+            console.log('Question Data Received: ', response_data);
 
-            if (response_data.question_id !== data.question_id) {  
-                setData(response_data);
-                setCurrentPressed("A");
-            }
+            
+            setData(response_data);
+            setCurrentPressed("A");
+
         } catch(error) {
             console.log('Error fetching data: ', error);
         } finally {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        setTimeout(fetchQuestions, 10);
+    }, []);
 
     // // Timer logic
     // useEffect(() => {
@@ -129,30 +109,6 @@ export default function Question_Combined({ navigation, route }) {
         }
         setCurrentPressed(option);
     }
-
-    // Handle next question
-    const handleNextQuestion = () => {
-        if (fromScreen === 'Assignments' &&currentQuestionIndex < totalQuestions - 1) {
-            const nextQuestionIndex = currentQuestionIndex + 1;
-            const nextQuestionId = question_arr[nextQuestionIndex].question_id;
-            console.log('Navigating to next question:', nextQuestionId);
-            setText('');
-            setCurrentQuestionIndex(nextQuestionIndex);
-            setQuestionId(nextQuestionId);
-        }
-    };
-    
-    // Handle prev question
-    const handlePrevQuestion = () => {
-        if (fromScreen === 'Assignments' && currentQuestionIndex > 0) {
-            const prevQuestionIndex = currentQuestionIndex - 1;
-            const prevQuestionId = question_arr[prevQuestionIndex].question_id;
-            console.log('Navigating to previous question:', prevQuestionId);
-            setText('');
-            setCurrentQuestionIndex(prevQuestionIndex);
-            setQuestionId(prevQuestionId);
-        }
-    };
     
     const handleScroll = (event) => {
         const xOffset = event.nativeEvent.contentOffset.x;
@@ -231,8 +187,6 @@ export default function Question_Combined({ navigation, route }) {
         setAllowSubmit(true);
     }, [transcribedText]);
 
-
-
     // Handle submission
     const handleNext = async () => {
         // If button displays "Submit"
@@ -246,15 +200,12 @@ export default function Question_Combined({ navigation, route }) {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         uid: state.uid,
-                        course_id: state.course_id,
                         question_id: data.question_id,
                         question: data.question,
                         transcribed_text: text,
-                        practice_type: "ASSIGNMENT"
                     })
                 });
                 const response_data = await response.json();
-                console.log("Response data: ", response_data);
                 setAnswerResponse(response_data);
             } catch(error) {
                 console.log("Error sending data: ", error);
@@ -296,7 +247,6 @@ export default function Question_Combined({ navigation, route }) {
     const handleErase = () => {
         setText('');
     };
-    
 
     const NoQuestionView = () => (
         <View style={{
@@ -315,8 +265,6 @@ export default function Question_Combined({ navigation, route }) {
             </Text>
         </View>
     );
-
-    
 
     const triggerLongHapticFeedback = async () => {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -342,7 +290,8 @@ export default function Question_Combined({ navigation, route }) {
 
         return (
             <>
-
+            
+            
             
             <Modal
                 visible={modalOpen}
@@ -431,25 +380,8 @@ export default function Question_Combined({ navigation, route }) {
         )
     }
 
-
-    // Prev and next icon
-    const QuizNavigation = ({ onPrev, onNext, currentQuestionIndex, totalQuestions }) => {
-      
-        return (
-          <View className="absolute top-16 left-0 right-0 flex-row justify-between items-center px-4 z-5" style={{zIndex: 10}}>
-            <PrevButton
-              onPress={onPrev}
-              disabled={currentQuestionIndex === 0}
-            />
-            <NextButton
-              onPress={onNext}
-              disabled={currentQuestionIndex === totalQuestions - 1}
-            />
-          </View>
-        );
-      };
-
       const SubmissionPanel = () => {
+        
       
         return (
           <View className="flex-row items-center justify-between px-14 py-5">
@@ -598,13 +530,14 @@ export default function Question_Combined({ navigation, route }) {
     return (
         <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center", width: width, height: height}}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
 
           {isLoading ? (
             <ActivityIndicator size="large" color="gray" />
-        ) : (
+          ) : (
             // main quiz view 
             
+                        
             <View style={{
               width: width,
               height: height,
@@ -615,17 +548,7 @@ export default function Question_Combined({ navigation, route }) {
               paddingTop: 70
             }}>
                 
-            <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} />
-
-            {fromScreen === 'Assignments' && (
-              <QuizNavigation 
-                onPrev={handlePrevQuestion} 
-                onNext={handleNextQuestion}
-                currentQuestionIndex={currentQuestionIndex}
-                totalQuestions={totalQuestions}
-                />
-            )}
-
+                <TopBar navigateTo="HomeTab"/>
               
               {data.message === "No questions" ? (
                   <NoQuestionView />
@@ -694,10 +617,7 @@ export default function Question_Combined({ navigation, route }) {
                         {/* Microphone stripe */}
                         <SubmissionPanel />
 
-                      </View>
-
-                      
-                        
+                      </View>  
 
                     </View>
                         
@@ -721,8 +641,6 @@ export default function Question_Combined({ navigation, route }) {
                 
                 </>
               )}
-
-
             </View>
           )}
 

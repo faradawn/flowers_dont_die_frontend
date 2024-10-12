@@ -17,6 +17,7 @@ import Question_A from './screens/Question_Audio';
 import Question_MC from './screens/Question_MultipleChoice';
 import Profile from './screens/Profile';
 import Assignments from './screens/Assignments';
+import Question_Daily from './screens/Question_Daily';
 
 import { UserProvider } from './components/UserContext';
 
@@ -105,6 +106,11 @@ function RootStackNavigator() {
                 <RootStack.Screen 
                     name="Question_MC" 
                     component={Question_MC}
+                    options={{headerShown: false}}
+                />
+                <RootStack.Screen
+                    name="Question_Daily"
+                    component={Question_Daily}
                     options={{headerShown: false}}
                 />
             </RootStack.Navigator>

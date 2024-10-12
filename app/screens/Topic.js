@@ -7,7 +7,7 @@ import { View, Dimensions, Text, FlatList, ActivityIndicator,
 
 import { globalStyles, myImages } from '../globalStyles/globalStyles';
 import SwitchButton from '../components/SwitchButton';
-import Card from '../components/CourseCard';
+import Card from '../components/TopicsCard';
 import { useUser } from '../components/UserContext';
 
 import { Ionicons } from '@expo/vector-icons';
