@@ -189,6 +189,7 @@ export default function Courses({ navigation }) {
                                         height={height * 0.09}
                                         width={width * 0.8}
                                         pressHandler={coursePress}
+                                        item={item}
                                         imageSource={myImages.courseIcons[item.course_title]}
                                     />
                                 )}

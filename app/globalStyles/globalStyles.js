@@ -55,6 +55,8 @@ export const myImages = {
 }
 
 export const colors = {
+    green: '#26C250',
+    algoGroup: '#304a8a',
     id: {
         '1': 'green',
         '2': 'red',

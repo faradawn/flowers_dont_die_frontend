@@ -6,34 +6,36 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 
 const ProgressIndicator = ({ totalQuestions, numsDone, height, width }) => {
-    const squareSize = Math.min(height * 0.18, width / totalQuestions);
-    const gap = 2; // Gap between squares
-  
-    const renderSquares = () => {
-      return Array(totalQuestions).fill().map((_, index) => (
-        <View 
-          key={index}
-          style={{
-            width: squareSize - gap,
-            height: squareSize - gap,
-            backgroundColor: index < numsDone ? 'green' : '#E0E0E0',
-            marginRight: index < totalQuestions - 1 ? gap : 0,
-          }}
-        />
-      ));
-    };
-  
-    return (
-      <View style={{ 
-        flexDirection: 'row',
-        alignItems: 'center',
-        height: squareSize,
-        width: width,
+  const progress = totalQuestions > 0 ? (numsDone / totalQuestions) * 100 : 0;
+  const barWidth = width * 0.5; // Adjust this value to change the progress bar width
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', width: width * 0.6 }}>
+      <View style={{
+        width: barWidth,
+        height: 8,
+        backgroundColor: '#E0E0E0',
+        borderRadius: 4,
+        overflow: 'hidden',
       }}>
-        {renderSquares()}
+        <View style={{
+          width: `${progress}%`,
+          height: '100%',
+          backgroundColor: 'black',
+          borderRadius: 4,
+        }} />
       </View>
-    );
-  };
+      <Text style={{
+        marginLeft: 10,
+        fontFamily: 'Baloo2-Regular',
+        fontSize: 14,
+        color: colors.textSecondary,
+      }}>
+        {`${Math.round(progress)}%`}
+      </Text>
+    </View>
+  );
+};
 
 export default function Card({ index, title, id, height, width, pressHandler, item, imageSource }){
   
@@ -95,16 +97,15 @@ export default function Card({ index, title, id, height, width, pressHandler, it
                 
                 {/* TODO  */}
                 {/* Conditional rendering of ProgressIndicator */}
-        {item && item.total_questions ? (
+        {item && item.num_total_questions ? (
           <ProgressIndicator 
-            totalQuestions={item.total_questions}
-            numsDone={item.completed_questions}
+            totalQuestions={item.num_total_questions}
+            numsDone={item.num_completed_questions}
             height={height}
             width={width}
           />
-        ) : (
-          <Text></Text>
-        )}
+        ) : null}
+        
 
 
 
