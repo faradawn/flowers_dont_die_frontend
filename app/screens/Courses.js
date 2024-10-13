@@ -10,6 +10,7 @@ import { globalStyles } from '../globalStyles/globalStyles';
 import SwitchButton from '../components/SwitchButton';
 import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
+import { getLoginInfo, saveLoginInfo } from '../components/SecureStoreUtils';
 
 import { myImages } from '../globalStyles/globalStyles';
 
@@ -21,6 +22,30 @@ export default function Courses({ navigation }) {
     const [courses, setCourses] = useState([]);
     const [dailyQuestionId, setDailyQuestionId] = useState(null); // daily random question
     const { state, updateState } = useUser();
+
+    useEffect(() => {
+        async function checkAndSetupUser() {
+            const loginInfo = await getLoginInfo();
+            if (loginInfo) {
+                // User info exists, update the context
+                updateState('uid', loginInfo.uid);
+                updateState('username', loginInfo.username);
+                console.log("GOt Login info: ", loginInfo);
+            } else {
+                // Create guest account
+                const guestUid = `guest_${Math.random().toString(36).substr(2, 9)}`;
+                const guestUsername = `Guest_${guestUid.substring(0, 3)}`;
+                
+                updateState('uid', guestUid);
+                updateState('username', guestUsername);
+
+                // Save guest info to secure storage
+                await saveLoginInfo(guestUid, guestUsername, null);
+                console.log("Created and stored guest info", guestUsername, guestUid);
+            }
+        }
+        checkAndSetupUser();
+    }, []);
 
     // fetching the topics from the backend api
     const fetchCourses = async () => {

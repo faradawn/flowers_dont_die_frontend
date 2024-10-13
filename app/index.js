@@ -13,7 +13,6 @@ import Login from './screens/Login';
 import SignUp from './screens/Signup';
 import Courses from './screens/Courses';
 import Topics from './screens/Topic';
-import Question_A from './screens/Question_Audio';
 import Question_MC from './screens/Question_MultipleChoice';
 import Profile from './screens/Profile';
 import Assignments from './screens/Assignments';
@@ -72,6 +71,7 @@ function RootStackNavigator() {
         <View style={{ height: height, width: width }}>
             <RootStack.Navigator
                 detachPreviousScreen={true}
+                initialRouteName="HomeTab"
             >
                 <RootStack.Screen 
                     name="Login" 
@@ -98,11 +98,7 @@ function RootStackNavigator() {
                     component={Assignments}
                     options={{headerShown: false}}
                 />
-                <RootStack.Screen 
-                    name="Question_A" 
-                    component={Question_A}
-                    options={{headerShown: false}}
-                />
+               
                 <RootStack.Screen 
                     name="Question_MC" 
                     component={Question_MC}
