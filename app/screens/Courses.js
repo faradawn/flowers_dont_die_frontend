@@ -34,7 +34,7 @@ export default function Courses({ navigation }) {
             } else {
                 // Create guest account
                 const guestUid = `guest_${Math.random().toString(36).substr(2, 9)}`;
-                const guestUsername = `Guest_${guestUid.substring(0, 3)}`;
+                const guestUsername = `Guest_${guestUid.slice(-3)}`;
                 
                 updateState('uid', guestUid);
                 updateState('username', guestUsername);
@@ -63,7 +63,7 @@ export default function Courses({ navigation }) {
             )
             try{
                 const data = await response.json();
-                console.log("Courses Received: ", data)
+                console.log("Courses Received: ", "uid", state.uid, "courses", data)
                 setCourses(data.courses);
                 setDailyQuestionId(data.daily_question_id);
             }catch(jsonError){
