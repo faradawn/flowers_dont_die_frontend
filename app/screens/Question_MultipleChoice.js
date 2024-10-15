@@ -50,7 +50,7 @@ export default function Question_Combined({ navigation, route }) {
     const [answerResponse, setAnswerResponse] = useState('');
 
     const [allQuestions, setAllQuestions] = useState([]);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(route.params.index);
 
     useEffect(() => {
         fetchQuestionSet();

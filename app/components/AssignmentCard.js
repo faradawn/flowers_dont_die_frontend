@@ -31,7 +31,7 @@ export default function Card({ index, id, title, num_stars, pressHandler }) {
         paddingTop: 12,
         paddingHorizontal: 15,
       }} 
-      onPress={() => pressHandler(id)}
+      onPress={() => pressHandler(id, index)}
     >
 
         {/* Top problem number */}
