@@ -25,12 +25,20 @@ export default function Courses({ navigation }) {
 
     useEffect(() => {
         async function checkAndSetupUser() {
+            // Check if state.uid is already set
+            if (state.uid) {
+                console.log("User ID already set:", state.uid);
+                return;
+            } 
+
+            console.log("state.uid is not set, checking login info, state info", state);
+
             const loginInfo = await getLoginInfo();
             if (loginInfo) {
                 // User info exists, update the context
                 updateState('uid', loginInfo.uid);
                 updateState('username', loginInfo.username);
-                console.log("GOt Login info: ", loginInfo);
+                console.log("Got Login info: ", loginInfo);
             } else {
                 // Create guest account
                 const guestUid = `guest_${Math.random().toString(36).substr(2, 9)}`;
@@ -45,7 +53,7 @@ export default function Courses({ navigation }) {
             }
         }
         checkAndSetupUser();
-    }, []);
+    }, [state.uid]); // Add state.uid as a dependency
 
     // fetching the topics from the backend api
     const fetchCourses = async () => {
