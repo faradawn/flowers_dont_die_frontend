@@ -45,8 +45,10 @@ export default function Profile({ navigation }){
             await deleteLoginInfo();
             updateState('username', '');
             updateState('uid', '');
-            navigation.navigate('Login');
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             console.log("Done logout and deleted async storage");
+            navigation.navigate('Courses');
         } catch (error) {
             console.log('Error during logout:', error);
         }

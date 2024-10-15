@@ -23,72 +23,49 @@ export default function Courses({ navigation }) {
     const [dailyQuestionId, setDailyQuestionId] = useState(null); // daily random question
     const { state, updateState } = useUser();
 
-    useEffect(() => {
-        async function checkAndSetupUser() {
-            // Check if state.uid is already set
-            if (state.uid) {
-                console.log("User ID already set:", state.uid);
-                return;
-            } 
-
-            console.log("state.uid is not set, checking login info, state info", state);
-
-            const loginInfo = await getLoginInfo();
-            if (loginInfo) {
-                // User info exists, update the context
-                updateState('uid', loginInfo.uid);
-                updateState('username', loginInfo.username);
-                console.log("Got Login info: ", loginInfo);
-            } else {
-                // Create guest account
-                const guestUid = `guest_${Math.random().toString(36).substr(2, 9)}`;
-                const guestUsername = `Guest_${guestUid.slice(-3)}`;
-                
-                updateState('uid', guestUid);
-                updateState('username', guestUsername);
-
-                // Save guest info to secure storage
-                await saveLoginInfo(guestUid, guestUsername, null);
-                console.log("Created and stored guest info", guestUsername, guestUid);
-            }
-        }
-        checkAndSetupUser();
-    }, [state.uid]); // Add state.uid as a dependency
-
-    // fetching the topics from the backend api
-    const fetchCourses = async () => {
-        try {
-            const response = await fetch(
-                'https://backend.faradawn.site:8001/get_courses', {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    uid: state.uid,
-                }),
-            }
-            )
-            try{
-                const data = await response.json();
-                console.log("Courses Received: ", "uid", state.uid, "courses", data)
-                setCourses(data.courses);
-                setDailyQuestionId(data.daily_question_id);
-            }catch(jsonError){
-                console.error('[Courses] JSON parsing error:', jsonError);
-            }
-
-        } catch (error) {
-            console.log('Error fetching data: ', error)
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
     useFocusEffect(
         useCallback(() => {
-            fetchCourses();
-        }, [])
+            async function checkAndSetupUser() {
+                if (!state.uid) {
+                    console.log("state.uid is not set, checking login info, state info", state);
+                    const loginInfo = await getLoginInfo();
+                    if (loginInfo) {
+                        updateState('uid', loginInfo.uid);
+                        updateState('username', loginInfo.username);
+                        console.log("Got Login info: ", loginInfo);
+                    } else {
+                        const guestUid = `guest_${Math.random().toString(36).substr(2, 9)}`;
+                        const guestUsername = `Guest_${guestUid.slice(-3)}`;
+                        updateState('uid', guestUid);
+                        updateState('username', guestUsername);
+                        await saveLoginInfo(guestUid, guestUsername, null);
+                        console.log("Created and stored guest info", guestUsername, guestUid);
+                    }
+                } else {
+                    console.log("User ID already set:", state.uid);
+                }
+            }
+
+            async function fetchCourses() {
+                try {
+                    const response = await fetch('https://backend.faradawn.site:8001/get_courses', {
+                        method: 'POST',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ uid: state.uid }),
+                    });
+                    const data = await response.json();
+                    console.log("Courses Received: ", "uid", state.uid, "courses", data);
+                    setCourses(data.courses);
+                    setDailyQuestionId(data.daily_question_id);
+                } catch (error) {
+                    console.error('[Courses] Error fetching or parsing data:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+
+            checkAndSetupUser().then(() => fetchCourses());
+        }, [state.uid])
     );
 
     // navigation through clicking a specific topic
