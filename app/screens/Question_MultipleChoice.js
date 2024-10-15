@@ -49,24 +49,19 @@ export default function Question_Combined({ navigation, route }) {
     const [intervalId, setIntervalId] = useState(null);
     const [answerResponse, setAnswerResponse] = useState('');
 
-    
-     // track the current question index
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
-        if (isAssignment && question_arr) {
-            const index = question_arr.findIndex((q) => q.question_id === initialQuestionId);
-            return index !== -1 ? index : 0;
-        }
-        return 0;
-    });
-    // assume at least one question, update with actual data
-    const totalQuestions = isAssignment ? question_arr.length : 1; 
-    const [questionId, setQuestionId] = useState(initialQuestionId);
+    const [allQuestions, setAllQuestions] = useState([]);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
     useEffect(() => {
-        if (questionId) {
-            fetchQuestions(questionId);
+        fetchQuestionSet();
+    }, []);
+
+    useEffect(() => {
+        if (allQuestions.length > 0) {
+            setData(allQuestions[currentQuestionIndex]);
+            setCurrentPressed("A");
         }
-    }, [questionId]);
+    }, [currentQuestionIndex, allQuestions]);
 
     const animation = useRef(null);
 
@@ -76,84 +71,52 @@ export default function Question_Combined({ navigation, route }) {
         }
       };
 
-
-    // Fetch questions
-    const fetchQuestions = async (questionId) => {
+    const fetchQuestionSet = async () => {
         try {
-            setIsLoading(true)
-            console.log("[Questoin_MC] Send post")
-            const response = await fetch('https://backend.faradawn.site:8001/get_question', {
+            setIsLoading(true);
+            const response = await fetch('https://backend.faradawn.site:8001/get_question_set', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     uid: state.uid,
                     course_id: state.course_id,
-                    question_id: questionId,
+                    topic: route.params.topic,
                 }),
             });
 
-            const response_data = await response.json();
-            console.log('[Question_MC] Question Data Received: ', response_data);
+            console.log('fetch parameters: topics, course_id, uid: ', route.params.topic, state.course_id, state.uid);
 
-            if (response_data.question_id !== data.question_id) {  
-                setData(response_data);
-                setCurrentPressed("A");
+            const responseData = await response.json();
+            console.log('[Question_MC] Question Set Received: ', responseData);
+
+            if (responseData.status === 'success') {
+                setAllQuestions(responseData.questions);
+            } else {
+                console.log('Error fetching question set (api message):', responseData.message);
             }
         } catch(error) {
-            console.log('Error fetching data: ', error);
+            console.log('Error fetching question set (try catch): ', error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // // Timer logic
-    // useEffect(() => {
-    //     let interval;
-    //     if (!mcSubmitted && !voiceSubmitted) { // if user has not submit
-    //         interval = setInterval(() => {
-    //             setSeconds((prevSeconds) => {
-    //                 if(prevSeconds > 0) return prevSeconds - 1;
-    //                 return 0;
-    //             });
-    //         }, 1000);
-    //     }
-    //     setIntervalId(interval);
-    //     return () => clearInterval(interval);
-    // }, [mcSubmitted, voiceSubmitted]);
-
-
-    // === MC
-    const handleChooseOption = (option) => { 
-        if(mcSubmitted){
-            return;
-        }
-        setCurrentPressed(option);
-    }
-
     // Handle next question
     const handleNextQuestion = () => {
-        if (fromScreen === 'Assignments' &&currentQuestionIndex < totalQuestions - 1) {
-            const nextQuestionIndex = currentQuestionIndex + 1;
-            const nextQuestionId = question_arr[nextQuestionIndex].question_id;
-            console.log('Navigating to next question:', nextQuestionId);
+        if (currentQuestionIndex < allQuestions.length - 1) {
+            setCurrentQuestionIndex(prevIndex => prevIndex + 1);
             setText('');
-            setCurrentQuestionIndex(nextQuestionIndex);
-            setQuestionId(nextQuestionId);
         }
     };
     
     // Handle prev question
     const handlePrevQuestion = () => {
-        if (fromScreen === 'Assignments' && currentQuestionIndex > 0) {
-            const prevQuestionIndex = currentQuestionIndex - 1;
-            const prevQuestionId = question_arr[prevQuestionIndex].question_id;
-            console.log('Navigating to previous question:', prevQuestionId);
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(prevIndex => prevIndex - 1);
             setText('');
-            setCurrentQuestionIndex(prevQuestionIndex);
-            setQuestionId(prevQuestionId);
         }
     };
-    
+
     const handleScroll = (event) => {
         const xOffset = event.nativeEvent.contentOffset.x;
         const index = Math.round(xOffset / (width * 0.88)); // Calculate the index based on scroll position
@@ -434,20 +397,22 @@ export default function Question_Combined({ navigation, route }) {
 
     // Prev and next icon
     const QuizNavigation = ({ onPrev, onNext, currentQuestionIndex, totalQuestions }) => {
-      
         return (
-          <View className="absolute top-16 left-0 right-0 flex-row justify-between items-center px-4 z-5" style={{zIndex: 10}}>
-            <PrevButton
-              onPress={onPrev}
-              disabled={currentQuestionIndex === 0}
-            />
-            <NextButton
-              onPress={onNext}
-              disabled={currentQuestionIndex === totalQuestions - 1}
-            />
-          </View>
+            <View className="absolute top-10 left-0 right-0 flex-row justify-between items-center px-4 z-5" style={{zIndex: 10}}>
+                <PrevButton
+                    onPress={onPrev}
+                    disabled={currentQuestionIndex === 0}
+                />
+                <Text style={{fontFamily: 'Baloo2-Regular', fontSize: 16}}>
+                    {`${currentQuestionIndex + 1} / ${totalQuestions}`}
+                </Text>
+                <NextButton
+                    onPress={onNext}
+                    disabled={currentQuestionIndex === totalQuestions - 1}
+                />
+            </View>
         );
-      };
+    };
 
       const SubmissionPanel = () => {
       
@@ -615,16 +580,14 @@ export default function Question_Combined({ navigation, route }) {
               paddingTop: 70
             }}>
                 
-            <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} />
+            <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} params={{topic: route.params.topic}}/>
 
-            {fromScreen === 'Assignments' && (
-              <QuizNavigation 
+            <QuizNavigation 
                 onPrev={handlePrevQuestion} 
                 onNext={handleNextQuestion}
                 currentQuestionIndex={currentQuestionIndex}
-                totalQuestions={totalQuestions}
-                />
-            )}
+                totalQuestions={allQuestions.length}
+            />
 
               
               {data.message === "No questions" ? (

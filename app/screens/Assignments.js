@@ -102,9 +102,10 @@ export default function Topics({ navigation, route }){
     const questionPress = (question_id) => {
         console.log("[Assignments] Navigate to Question_MC", question_id, assignments.question_arr)
         navigation.navigate('Question_MC', { 
-            question_id: question_id,
-            fromScreen: 'Assignments',
-            question_arr: assignments.question_arr,
+            question_id: question_id, // not used
+            topic: topic,
+            fromScreen: 'Assignments', // not used
+            question_arr: assignments.question_arr, // not used
         })
     }
 
