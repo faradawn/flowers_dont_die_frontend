@@ -15,6 +15,7 @@ export const initializeLocalDatabase = async () => {
     const storedCourses = await AsyncStorage.getItem(STORAGE_KEYS.COURSES);
     if (!storedCourses) {
       await AsyncStorage.setItem(STORAGE_KEYS.COURSES, JSON.stringify(initialCourses));
+      console.log("New Stored initial courses", JSON.stringify(initialCourses));
     }
 
     const storedQuestions = await AsyncStorage.getItem(STORAGE_KEYS.QUESTIONS);
@@ -31,60 +32,83 @@ export const initializeLocalDatabase = async () => {
   }
 };
 
-export const getCourses = async () => {
+export const getCourses = async (uid) => {
   try {
     const courses = await AsyncStorage.getItem(STORAGE_KEYS.COURSES);
-    return courses ? JSON.parse(courses) : [];
-  } catch (error) {
-    console.error('Error getting courses:', error);
-    return [];
-  }
-};
-
-export const getQuestions = async (topicId) => {
-  try {
-    const questions = await AsyncStorage.getItem(STORAGE_KEYS.QUESTIONS);
-    const parsedQuestions = questions ? JSON.parse(questions) : [];
-    return parsedQuestions.filter(q => q.topic_id === topicId);
-  } catch (error) {
-    console.error('Error getting questions:', error);
-    return [];
-  }
-};
-
-export const saveSubmission = async (submission) => {
-  try {
+    const parsedCourses = courses ? JSON.parse(courses) : [];
+    console.log("parsedCourses", parsedCourses);
     const submissions = await AsyncStorage.getItem(STORAGE_KEYS.SUBMISSIONS);
     const parsedSubmissions = submissions ? JSON.parse(submissions) : [];
-    parsedSubmissions.push(submission);
-    await AsyncStorage.setItem(STORAGE_KEYS.SUBMISSIONS, JSON.stringify(parsedSubmissions));
-  } catch (error) {
-    console.error('Error saving submission:', error);
-  }
-};
 
-export const getUser = async () => {
-  try {
-    const user = await AsyncStorage.getItem(STORAGE_KEYS.USER);
-    return user ? JSON.parse(user) : null;
-  } catch (error) {
-    console.error('Error getting user:', error);
-    return null;
-  }
-};
+    console.log("parsedSubmissions", parsedSubmissions);
 
-export const saveUser = async (user) => {
-  try {
-    await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-  } catch (error) {
-    console.error('Error saving user:', error);
-  }
-};
+    const completedQuestions = parsedSubmissions.reduce((acc, sub) => {
+      acc[sub.question_id] = sub.course_id;
+      return acc;
+    }, {});
 
-export const clearUser = async () => {
-  try {
-    await AsyncStorage.removeItem(STORAGE_KEYS.USER);
+    console.log("completedQuestions", completedQuestions);
+
+    let dailyQuestionId = null;
+    let dailyCourseId = null;
+    let dailyTopic = null;
+
+    const resCourses = parsedCourses.map(course => {
+      console.log("=== mapped course", course);
+      console.log("=== mapped course topics", course.topics);
+      const totalQuestions = course.topics.reduce((sum, topic) => sum + topic.questions.length, 0);
+      const completedCourseQuestions = Object.entries(completedQuestions)
+        .filter(([_, courseId]) => courseId === course.id).length;
+
+      // Find the first uncompleted question for daily question
+      if (!dailyQuestionId) {
+        for (const topic of course.topics) {
+          for (const questionId of topic.questions) {
+            if (!completedQuestions[questionId]) {
+              dailyQuestionId = questionId;
+              dailyCourseId = course.id;
+              dailyTopic = topic.topic;
+              break;
+            }
+          }
+          if (dailyQuestionId) break;
+        }
+      }
+
+      return {
+        course_id: course.id,
+        course_title: course.course_name,
+        num_total_questions: totalQuestions,
+        num_completed_questions: completedCourseQuestions
+      };
+    });
+
+    // If all questions are completed, choose the first question as daily
+    if (!dailyQuestionId && parsedCourses.length > 0) {
+      const firstCourse = parsedCourses[0];
+      const firstTopic = firstCourse.topics[0];
+      dailyQuestionId = firstTopic.questions[0];
+      dailyCourseId = firstCourse.id;
+      dailyTopic = firstTopic.topic;
+    }
+
+    return {
+      status: "success",
+      message: "Got courses",
+      daily_question_id: dailyQuestionId,
+      daily_course_id: dailyCourseId,
+      daily_topic: dailyTopic,
+      courses: resCourses
+    };
   } catch (error) {
-    console.error('Error clearing user:', error);
+    console.error('Error getting courses:', error);
+    return {
+      status: "error",
+      message: "Error getting courses",
+      daily_question_id: null,
+      daily_course_id: null,
+      daily_topic: null,
+      courses: []
+    };
   }
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Dimensions, SafeAreaView } from 'react-native';
 
 import * as Font from 'expo-font';
@@ -19,6 +19,7 @@ import Assignments from './screens/Assignments';
 import Question_Daily from './screens/Question_Daily';
 
 import { UserProvider } from './components/UserContext';
+import { initializeLocalDatabase } from './components/localDb';
 
 // Accessing Font
 const getFonts = () => Font.loadAsync({
@@ -114,22 +115,33 @@ function RootStackNavigator() {
     )
 }
 
-export default function App(){
+export default function App() {
     const [fontsLoaded, setFontsLoaded] = useState(false);
+    const [dbInitialized, setDbInitialized] = useState(false);
 
-    if(!fontsLoaded){
+    const loadFontsAndInitDb = async () => {
+        console.log("Loading fonts and initializing database");
+        await Font.loadAsync({
+            'Baloo2-Regular': require('../assets/fonts/Baloo2-Regular.ttf'),
+            'Baloo2-Bold': require('../assets/fonts/Baloo2-Bold.ttf'),
+        });
+        await initializeLocalDatabase();
+        setDbInitialized(true);
+    };
+
+    if (!fontsLoaded || !dbInitialized) {
         return (
             <AppLoading
-                startAsync={getFonts}
-                onFinish={()=>setFontsLoaded(true)}
+                startAsync={loadFontsAndInitDb}
+                onFinish={() => setFontsLoaded(true)}
                 onError={(err) => console.log(err)}
             />
-        )
+        );
     }
 
     return (
         <UserProvider>
-            <RootStackNavigator/>
+            <RootStackNavigator />
         </UserProvider>
-    )
+    );
 }
