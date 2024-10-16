@@ -129,6 +129,23 @@ export default function Profile({ navigation }){
                     justifyContent: 'center',
                 }}
             >
+                {/* Login/Signup Button */}
+                <TouchableOpacity
+                    style={[
+                        { 
+                            backgroundColor: '#004643',
+                            height: 0.06 * height,
+                            width: 0.8 * width,
+                            marginBottom: 0.02 * height,
+                        }, 
+                        globalStyles.button
+                    ]}
+                    onPress={() => navigation.navigate('Login')}
+                >
+                    <Text style={globalStyles.buttonText}>Login/Signup</Text>
+                </TouchableOpacity>
+
+
                 {/* Logout Button */}
                 <TouchableOpacity
                     style={[

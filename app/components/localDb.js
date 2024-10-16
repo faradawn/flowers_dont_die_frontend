@@ -112,3 +112,8 @@ export const getCourses = async (uid) => {
     };
   }
 };
+
+// create a place holder function for now
+export const mergeProgress = async (username) => {
+  console.log("mergeProgress placeholder function");
+};

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, ImageBackground, Dimensions, TextInput,
-    Text, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView
+    Text, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Alert
 } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext'
 import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
-
+import { mergeProgress } from '../components/localDb';
 
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
@@ -15,24 +15,11 @@ export default function Login({ navigation }){
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [infoCorrect, setInfoCorrect] = useState(true);
+    const [showProgressPopup, setShowProgressPopup] = useState(false);
+    const [loginData, setLoginData] = useState(null);
 
     const { updateState } = useUser();
 
-    useEffect(() => {
-        const checkStoredLogin = async () => {
-            const loginInfo = await getLoginInfo();
-            if (loginInfo) {
-                const { uid, username, password } = loginInfo;
-                updateState('uid', uid);
-                updateState('username', username);
-                console.log("Got async login info", loginInfo);
-                navigation.navigate('HomeTab');
-            }else{
-                console.log("No previous login info", loginInfo);
-            }
-        };
-        checkStoredLogin();
-    }, []);
 
     // handles login attempts from the user
     const loginAttempt = async () => {
@@ -52,20 +39,12 @@ export default function Login({ navigation }){
 
             const data = await response.json();
 
+            console.log("Received login data: ", data);
+            setLoginData(data);
+
             if(data.status == 'success') {
-
                 setInfoCorrect(true);
-                updateState( 'uid', data.uid );
-                updateState( 'username', username );
-
-                setUsername('');
-                setPassword('');
-
-                await saveLoginInfo(data.uid, username, password);
-                console.log("Saved login info to async");
-
-                navigation.navigate('HomeTab')
-
+                setShowProgressPopup(true); // Show popup instead of immediately navigating
             } else {
                 setInfoCorrect(false)
             }
@@ -73,6 +52,31 @@ export default function Login({ navigation }){
         } catch(error) {
             console.log('Error fetching data: ', error);
         }
+    }
+
+    const handleProgressDecision = async (uploadProgress) => {
+        if (uploadProgress) {
+            try {
+                await mergeProgress(username);
+                console.log("Local progress merged successfully");
+            } catch (error) {
+                console.error("Error merging progress:", error);
+                Alert.alert("Error", "Failed to merge local progress. Please try again.");
+            }
+        }
+
+        // Update user context and navigate regardless of the decision
+        updateState('uid', loginData.uid);
+        updateState('username', username);
+
+        setUsername('');
+        setPassword('');
+
+        await saveLoginInfo(loginData.uid, username, password);
+        console.log("Saved login info to async");
+
+        setShowProgressPopup(false);
+        navigation.navigate('HomeTab');
     }
 
     return ( 
@@ -84,9 +88,43 @@ export default function Login({ navigation }){
                 ...globalStyles.container
             }}
         >
+                {showProgressPopup && (
+                    <View className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 1000 }}>
+                        <View className="bg-white p-4 rounded-lg shadow-md">
+                            <Text className="text-lg font-semibold text-center mb-4">
+                                Do you want to upload local progress?
+                            </Text>
+                            <View className="flex-row justify-around">
+                                <TouchableOpacity
+                                    className="bg-blue-500 py-2 px-4 rounded-md"
+                                    onPress={() => handleProgressDecision(true)}
+                                >
+                                    <Text className="text-white font-medium">Upload</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    className="bg-gray-300 py-2 px-4 rounded-md"
+                                    onPress={() => handleProgressDecision(false)}
+                                >
+                                    <Text className="text-gray-700 font-medium">Discard</Text>
+                                </TouchableOpacity>
+
+                                {/* Cancel button */}
+                                <TouchableOpacity
+                                    className="bg-gray-300 py-2 px-4 rounded-md"
+                                    onPress={() => setShowProgressPopup(false)}
+                                >
+                                    <Text className="text-gray-700 font-medium">Cancel</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                )}
+
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
-                    
+                <KeyboardAvoidingView 
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+                    style={{flex: 1, alignItems: "center", justifyContent: "center"}}
+                >
                     
                     {/* 1. Flower icon */}
                     <View
@@ -107,7 +145,6 @@ export default function Login({ navigation }){
                         />
                     </View>
 
-
                     {/* 2. Forms */}
                     <View
                         style={{
@@ -117,7 +154,6 @@ export default function Login({ navigation }){
                             justifyContent: 'flex-end',
                         }}
                     >
-                        
                         {/* Username input field */}
                         <Text style={globalStyles.inputKey}> Username </Text>
                         <TextInput 
@@ -187,7 +223,6 @@ export default function Login({ navigation }){
                         style={{ 
                             height: 0.1 * height,
                             width: 0.8 * width,
-
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}
@@ -210,7 +245,6 @@ export default function Login({ navigation }){
                     {/* Sign Up Message */}
                     <View 
                         style={{ 
-
                             height: 0.2 * height, 
                             flexDirection: 'row' 
                         }}
@@ -236,9 +270,9 @@ export default function Login({ navigation }){
                             > Sign up.</Text>
                         </TouchableOpacity>
                     </View>
-
                 </KeyboardAvoidingView>            
             </TouchableWithoutFeedback>
         </ImageBackground>
-    )
+    );
+
 }
