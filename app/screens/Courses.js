@@ -11,6 +11,7 @@ import SwitchButton from '../components/SwitchButton';
 import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
 import { getLoginInfo, saveLoginInfo } from '../components/SecureStoreUtils';
+import { getCourses } from '../components/localDb';
 
 import { myImages } from '../globalStyles/globalStyles';
 
@@ -27,34 +28,29 @@ export default function Courses({ navigation }) {
         useCallback(() => {
             async function checkAndSetupUser() {
                 if (!state.uid) {
-                    console.log("state.uid is not set, checking login info, state info", state);
+                    console.log("[Courses] state.uid is not set, checking login info, state info", state);
                     const loginInfo = await getLoginInfo();
                     if (loginInfo) {
                         updateState('uid', loginInfo.uid);
                         updateState('username', loginInfo.username);
-                        console.log("Got Login info: ", loginInfo);
+                        console.log("[Courses] Got Login info: ", loginInfo);
                     } else {
                         const guestUid = `guest_${Math.random().toString(36).substr(2, 9)}`;
                         const guestUsername = `Guest_${guestUid.slice(-3)}`;
                         updateState('uid', guestUid);
                         updateState('username', guestUsername);
                         await saveLoginInfo(guestUid, guestUsername, null);
-                        console.log("Created and stored guest info", guestUsername, guestUid);
+                        console.log("[Courses] Created and stored guest info", guestUsername, guestUid);
                     }
                 } else {
-                    console.log("User ID already set:", state.uid);
+                    console.log("[Courses] User ID already set:", state.uid);
                 }
             }
 
             async function fetchCourses() {
                 try {
-                    const response = await fetch('https://backend.faradawn.site:8001/get_courses', {
-                        method: 'POST',
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ uid: state.uid }),
-                    });
-                    const data = await response.json();
-                    console.log("Courses Received: ", "uid", state.uid, "courses", data);
+                    const data = await getCourses(state.uid);
+                    console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses);
                     setCourses(data.courses);
                     setDailyQuestionId(data.daily_question_id);
                 } catch (error) {

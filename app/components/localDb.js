@@ -90,26 +90,22 @@ export const getCourses = async (uid) => {
   try {
     const courses = await AsyncStorage.getItem(STORAGE_KEYS.COURSES);
     const parsedCourses = courses ? JSON.parse(courses) : [];
-    console.log("[localDb] parsedCourses", parsedCourses);
     const submissions = await AsyncStorage.getItem(STORAGE_KEYS.SUBMISSIONS);
     const parsedSubmissions = submissions ? JSON.parse(submissions) : [];
 
-    console.log("[localDb] parsedSubmissions", parsedSubmissions);
-    
     const completedQuestions = parsedSubmissions.reduce((acc, sub) => {
       acc[sub.question_id] = sub.course_id;
       return acc;
     }, {});
 
-    console.log("completedQuestions", completedQuestions);
+
 
     let dailyQuestionId = null;
     let dailyCourseId = null;
     let dailyTopic = null;
 
     const resCourses = parsedCourses.map(course => {
-      console.log("=== mapped course", course);
-      console.log("=== mapped course topics", course.topics);
+      
       const totalQuestions = course.topics.reduce((sum, topic) => sum + topic.questions.length, 0);
       const completedCourseQuestions = Object.entries(completedQuestions)
         .filter(([_, courseId]) => courseId === course.id).length;
