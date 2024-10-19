@@ -243,3 +243,141 @@ export const clearSubmissions = async () => {
     };
   }
 };
+
+
+// ======================================================================================
+// ================================ GET TOPICS ==========================================
+// ======================================================================================
+
+export const getTopics = async (uid, courseId) => {
+  try {
+    const coursesJson = await AsyncStorage.getItem(STORAGE_KEYS.COURSES);
+    const courses = coursesJson ? JSON.parse(coursesJson) : [];
+
+    const course = courses.find(c => c.id === courseId);
+    if (!course) {
+      return {
+        status: "error",
+        message: "Course not found",
+        topics: []
+      };
+    }
+
+    const submissionsJson = await AsyncStorage.getItem(STORAGE_KEYS.SUBMISSIONS);
+    const submissions = submissionsJson ? JSON.parse(submissionsJson) : [];
+
+    const completedQuestions = new Set(
+      submissions
+        .filter(sub => sub.uid === uid && sub.course_id === courseId)
+        .map(sub => sub.question_id)
+    );
+
+    const topics = course.topics.map(topic => {
+      const totalQuestions = topic.questions.length;
+      const completedTopicQuestions = topic.questions.filter(qId => completedQuestions.has(qId)).length;
+
+      return {
+        topic: topic.topic,
+        total_questions: totalQuestions,
+        completed_questions: completedTopicQuestions
+      };
+    });
+
+    return {
+      status: "success",
+      message: "Got topics",
+      topics: topics
+    };
+  } catch (error) {
+    console.error('Error getting topics:', error);
+    return {
+      status: "error",
+      message: "Error retrieving topics",
+      topics: []
+    };
+  }
+};
+
+// ======================================================================================
+// ================================ GET ASSIGNMENTS =====================================
+// ======================================================================================
+
+export const getAssignments = async (uid, courseId, topic) => {
+  try {
+    const coursesJson = await AsyncStorage.getItem(STORAGE_KEYS.COURSES);
+    const courses = coursesJson ? JSON.parse(coursesJson) : [];
+
+    const course = courses.find(c => c.id === courseId);
+    if (!course) {
+      return {
+        status: "error",
+        message: "Course not found",
+        num_total_questions: 0,
+        num_completed_questions: 0,
+        question_arr: []
+      };
+    }
+
+    const topicData = course.topics.find(t => t.topic === topic);
+    if (!topicData) {
+      return {
+        status: "error",
+        message: "Topic not found in the course",
+        num_total_questions: 0,
+        num_completed_questions: 0,
+        question_arr: []
+      };
+    }
+
+    const questionIds = topicData.questions;
+
+    const questionsJson = await AsyncStorage.getItem(STORAGE_KEYS.QUESTIONS);
+    const allQuestions = questionsJson ? JSON.parse(questionsJson) : [];
+
+    const submissionsJson = await AsyncStorage.getItem(STORAGE_KEYS.SUBMISSIONS);
+    const submissions = submissionsJson ? JSON.parse(submissionsJson) : [];
+
+    const completedQuestions = submissions
+      .filter(sub => sub.uid === uid && sub.course_id === courseId)
+      .reduce((acc, sub) => {
+        acc[sub.question_id] = sub.score;
+        return acc;
+      }, {});
+
+    const questionArr = questionIds.map(qId => {
+      const question = allQuestions.find(q => q.id === qId);
+      if (!question) return null;
+
+      const questionId = `${question.topic}|${question.difficulty}|${question.slug}`;
+      const isDone = questionId in completedQuestions;
+      const score = isDone ? completedQuestions[questionId] : 0;
+
+      return {
+        question_title: question.slug,
+        question_id: questionId,
+        is_done: isDone,
+        score: score
+      };
+    }).filter(q => q !== null);
+
+    const numTotalQuestions = questionArr.length;
+    const numCompletedQuestions = questionArr.filter(q => q.is_done).length;
+
+    return {
+      status: "success",
+      message: "Got assignments",
+      num_total_questions: numTotalQuestions,
+      num_completed_questions: numCompletedQuestions,
+      question_arr: questionArr
+    };
+  } catch (error) {
+    console.error('Error getting assignments:', error);
+    return {
+      status: "error",
+      message: "Error retrieving assignments",
+      num_total_questions: 0,
+      num_completed_questions: 0,
+      question_arr: []
+    };
+  }
+};

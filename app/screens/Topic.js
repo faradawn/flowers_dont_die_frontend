@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { View, Dimensions, Text, FlatList, ActivityIndicator,
@@ -9,6 +9,7 @@ import { globalStyles, myImages } from '../globalStyles/globalStyles';
 import SwitchButton from '../components/SwitchButton';
 import Card from '../components/TopicsCard';
 import { useUser } from '../components/UserContext';
+import { getTopics } from '../components/localDb'; // Import the local getTopics function
 
 import { Ionicons } from '@expo/vector-icons';
 
@@ -22,26 +23,16 @@ export default function Topics({ navigation }){
     const [topics, setTopics] = useState(null);
     const { state } = useUser();
 
-    // fetching the topics from the backend api
+    // fetching the topics from the local database
     const fetchTopics = async() => {
         try {
-            const response = await fetch(
-                'https://backend.faradawn.site:8001/get_topics', {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        uid: state.uid,
-                        course_id: state.course_id,
-                    }),
-                }
-            )
-
-            const data = await response.json();
-            console.log("Got topics", data);
-            setTopics(data);
-
+            const result = await getTopics(state.uid, state.course_id);
+            console.log("Got topics", result);
+            if (result.status === "success") {
+                setTopics(result);
+            } else {
+                console.log('Error fetching topics:', result.message);
+            }
         } catch(error) {
             console.log('Error fetching data: ', error)
         } finally {
@@ -53,7 +44,7 @@ export default function Topics({ navigation }){
         useCallback(() => {
           fetchTopics();
         }, [])
-      );
+    );
 
     // navigation through clicking a specific topic
     const topicPress = (topic) => {

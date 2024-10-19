@@ -8,6 +8,7 @@ import { View, Dimensions, Text, FlatList, ActivityIndicator,
 import { globalStyles } from '../globalStyles/globalStyles';
 import Card from '../components/AssignmentCard';
 import { useUser } from '../components/UserContext';
+import { getAssignments } from '../components/localDb'; // Import the local getAssignments function
 
 import { Ionicons } from '@expo/vector-icons';
 
@@ -23,28 +24,16 @@ export default function Topics({ navigation, route }){
 
     const topic = route.params?.topic;
 
-    // fetching the assignments from the backend api
+    // fetching the assignments from the local database
     const fetchAssignments = async() => {
         try {
-            const response = await fetch(
-                'https://backend.faradawn.site:8001/get_assignments', {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        uid: state.uid,
-                        course_id: state.course_id,
-                        topic: topic,
-                    }),
-                }
-            )
-            
-            console.log("Fetching topic", topic, "course id", state.course_id);
-            const data = await response.json();
-            console.log("Got assignments: ", data)
-            setAssignments(data);
-
+            const result = await getAssignments(state.uid, state.course_id, topic);
+            console.log("Got assignments: ", result);
+            if (result.status === "success") {
+                setAssignments(result);
+            } else {
+                console.log('Error fetching assignments:', result.message);
+            }
         } catch(error) {
             console.log('Error fetching data: ', error)
         } finally {
@@ -62,51 +51,14 @@ export default function Topics({ navigation, route }){
         }, [])
     );
 
-    // const TopBar = () => (
-    //     <View 
-    //         style={{
-    //             width: width,
-    //             height: height * 0.0625,
-    //             justifyContent: 'flex-end',
-    //         }}
-    //     >
-    //         <TouchableOpacity
-    //             style={{
-    //                 flexDirection: 'row',
-    //                 alignItems: 'center',
-    //             }}
-    //             onPress={() => navigation.navigate('Topics')}
-    //         >
-    //             <Ionicons
-    //                 name='chevron-back'
-    //                 size={16}
-    //                 color='#004643'
-    //                 style={{ 
-    //                     marginLeft: width / 12,
-    //                 }}
-    //             />
-    //             <Text 
-    //                 style={{ 
-    //                     color: '#004643', 
-    //                     marginLeft: 3, 
-    //                     fontSize: 16,
-    //                     fontFamily: 'Baloo2-Bold',
-    //                 }}
-    //             > 
-    //                 Back
-    //             </Text>
-    //         </TouchableOpacity>
-    //     </View>
-    // );
-
     const questionPress = (question_id, index) => {
         console.log("[Assignments] Navigate to Question_MC", question_id, assignments.question_arr)
         navigation.navigate('Question_MC', { 
-            question_id: question_id, // not used
+            question_id: question_id,
             topic: topic,
             index: index,
-            fromScreen: 'Assignments', // not used
-            question_arr: assignments.question_arr, // not used
+            fromScreen: 'Assignments',
+            question_arr: assignments.question_arr,
         })
     }
 
@@ -121,7 +73,6 @@ export default function Topics({ navigation, route }){
             { isLoading ? (<ActivityIndicator />) : 
             (
                 <View>
-
                     <View
                         style={{ 
                             flex: 1,
@@ -149,14 +100,12 @@ export default function Topics({ navigation, route }){
                                 style={{
                                     height: height * 0.06,
                                     width: width,
-
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                 }}
                             >
                                 <Text
                                     style={{
-                                        
                                         fontFamily: 'Baloo2-Bold',
                                         fontSize: 22,
                                     }}
@@ -176,7 +125,6 @@ export default function Topics({ navigation, route }){
                                 style={{
                                     height: 12,
                                     width: 0.7 * width,
-
                                     backgroundColor: 'white',
                                     borderColor: '#004643',
                                     borderWidth: 1,
@@ -194,7 +142,6 @@ export default function Topics({ navigation, route }){
                                 </View>
                             </View>
                         </View>
-
 
                         {/* Flat list of cards */}
                         <View
@@ -221,7 +168,6 @@ export default function Topics({ navigation, route }){
                             />
                         </View>
                     </View>
-
                 </View>
             )}  
         </View>
