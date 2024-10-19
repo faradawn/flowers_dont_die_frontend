@@ -12,7 +12,7 @@ const PrevButton = ({ onPress, disabled }) => (
         padding: 10, 
         opacity: disabled ? 0.5 : 1, 
       }}
-    hitSlop={{ top: 30, bottom: 20, left: 10, right: 10 }} 
+    // hitSlop={{ top: 30, bottom: 20, left: 10, right: 10 }} 
   >
     <Feather name="chevron-left" size={30} color={disabled ? "gray" : "green"} />
     <Text style={{ color: disabled ? "gray" : "green", fontSize: 16, marginLeft: 5 }}>Previous</Text>
