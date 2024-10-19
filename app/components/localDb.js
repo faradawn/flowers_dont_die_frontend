@@ -93,12 +93,13 @@ export const getCourses = async (uid) => {
     const submissions = await AsyncStorage.getItem(STORAGE_KEYS.SUBMISSIONS);
     const parsedSubmissions = submissions ? JSON.parse(submissions) : [];
 
-    const completedQuestions = parsedSubmissions.reduce((acc, sub) => {
-      acc[sub.question_id] = sub.course_id;
-      return acc;
-    }, {});
-
-
+    // Only consider submissions with matching uid
+    const completedQuestions = parsedSubmissions
+      .filter(sub => sub.uid === uid)
+      .reduce((acc, sub) => {
+        acc[sub.question_id] = sub.course_id;
+        return acc;
+      }, {});
 
     let dailyQuestionId = null;
     let dailyCourseId = null;
@@ -107,6 +108,7 @@ export const getCourses = async (uid) => {
     const resCourses = parsedCourses.map(course => {
       
       const totalQuestions = course.topics.reduce((sum, topic) => sum + topic.questions.length, 0);
+      // Only count completed questions for the current user
       const completedCourseQuestions = Object.entries(completedQuestions)
         .filter(([_, courseId]) => courseId === course.id).length;
 
