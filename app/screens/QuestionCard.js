@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-nati
 
 export default function Card({ handlePress, isSelected, option, text, width, height }) {
   return (
-    <View style={
+    <SafeAreaView style={
       [styles.card, 
       { width: width, 
         height: height, 
@@ -31,7 +31,7 @@ export default function Card({ handlePress, isSelected, option, text, width, hei
       >
         <Text style={styles.text}>{text}</Text>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }
 
