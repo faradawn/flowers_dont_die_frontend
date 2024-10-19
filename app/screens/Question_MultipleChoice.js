@@ -17,6 +17,7 @@ import LottieView from 'lottie-react-native';
 import TopBar from '../components/TopBar';
 import PrevButton from '../components/PrevButton';
 import NextButton from '../components/NextButton';
+import { getQuestionSet, storeSubmission } from '../components/localDb';
 
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
@@ -74,25 +75,18 @@ export default function Question_Combined({ navigation, route }) {
     const fetchQuestionSet = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('https://backend.faradawn.site:8001/get_question_set', {
-                method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    uid: state.uid,
-                    course_id: state.course_id,
-                    topic: route.params.topic,
-                }),
-            });
+            const response = await getQuestionSet(
+                state.uid,
+                state.course_id,
+                route.params.topic
+            );
 
-            console.log('fetch parameters: topics, course_id, uid: ', route.params.topic, state.course_id, state.uid);
+            console.log('[Question_MC] Question Set Received: ', response);
 
-            const responseData = await response.json();
-            console.log('[Question_MC] Question Set Received: ', responseData);
-
-            if (responseData.status === 'success') {
-                setAllQuestions(responseData.questions);
+            if (response.status === 'success') {
+                setAllQuestions(response.questions);
             } else {
-                console.log('Error fetching question set (api message):', responseData.message);
+                console.log('Error fetching question set (api message):', response.message);
             }
         } catch(error) {
             console.log('Error fetching question set (try catch): ', error);
@@ -219,8 +213,12 @@ export default function Question_Combined({ navigation, route }) {
                 const response_data = await response.json();
                 console.log("Response data: ", response_data);
                 setAnswerResponse(response_data);
+
+                // Store the submission in local database
+                
+                await storeSubmission(response_data['submission_details']);
             } catch(error) {
-                console.log("Error sending data: ", error);
+                console.log("Error sending data or storing submission: ", error);
             }
             setVoiceSubmitted(true);
 

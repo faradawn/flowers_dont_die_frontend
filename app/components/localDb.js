@@ -163,7 +163,83 @@ export const getCourses = async (uid) => {
   }
 };
 
-// create a place holder function for now
-export const mergeProgress = async (username) => {
-  console.log("mergeProgress placeholder function");
+
+// ======================================================================================
+// ================================ GET QUESTIONS SET ==================================
+// ======================================================================================
+
+
+export const getQuestionSet = async (uid, courseId, topic) => {
+  try {
+    const questionsJson = await AsyncStorage.getItem(STORAGE_KEYS.QUESTIONS);
+    const allQuestions = questionsJson ? JSON.parse(questionsJson) : [];
+
+    const matchingQuestions = allQuestions.filter(question => 
+      question.course_id === courseId && question.topic === topic
+    );
+
+    if (matchingQuestions.length === 0) {
+      return {
+        status: "failed",
+        message: "No questions found for the given course and topic",
+        questions: []
+      };
+    }
+
+    const questionSet = matchingQuestions.map(question => ({
+      question_id: question.id,
+      difficulty: question.difficulty,
+      topic: question.topic,
+      answer: question.answer,
+      question: question.question,
+      question_number: question.question_number,
+      options: question.options,
+      time_limit: question.time_limit,
+      audio_url: `audio_generation/audio_${question.id}.mp3` // Assuming this is how audio URLs are structured
+    }));
+
+    return {
+      status: "success",
+      message: "Question set retrieved successfully",
+      questions: questionSet
+    };
+  } catch (error) {
+    console.error('Error getting question set:', error);
+    return {
+      status: "error",
+      message: "Error retrieving question set",
+      questions: []
+    };
+  }
+};
+
+
+export const storeSubmission = async (submissionDetail) => {
+  try {
+    const submissionsJson = await AsyncStorage.getItem(STORAGE_KEYS.SUBMISSIONS);
+    const submissions = submissionsJson ? JSON.parse(submissionsJson) : [];
+    submissions.push(submissionDetail);
+    await AsyncStorage.setItem(STORAGE_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+    console.log("[localDb] Submission stored successfully");
+  } catch (error) {
+    console.error('[localDb] Error storing submission:', error);
+    
+  }
+};
+
+export const clearSubmissions = async () => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.SUBMISSIONS, JSON.stringify([]));
+    console.log("[localDb] Submissions cleared successfully");
+    return {
+      status: "success",
+      message: "All submissions have been cleared"
+    };
+  } catch (error) {
+    console.error('[localDb] Error clearing submissions:', error);
+    return {
+      status: "error",
+      message: "Failed to clear submissions"
+    };
+  }
 };

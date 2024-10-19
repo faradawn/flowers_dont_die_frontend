@@ -1,17 +1,17 @@
 import React from 'react';
-import { View, Dimensions, Image, Text, TouchableOpacity } from 'react-native';
+import { View, Dimensions, Image, Text, TouchableOpacity, Alert } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext';
-import { deleteLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
+import { deleteLoginInfo } from '../components/SecureStoreUtils';
+import { clearSubmissions } from '../components/localDb'; // Import the new function
 
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 export default function Profile({ navigation }){
-    const { state } = useUser();
-    const { updateState } = useUser();
+    const { state, updateState } = useUser();
 
     // handling deletion of the account
     const handleDelete = async() => {
@@ -54,6 +54,20 @@ export default function Profile({ navigation }){
         }
     };
 
+    const handleResetProgress = async () => {
+        try {
+            const result = await clearSubmissions();
+            if (result.status === "success") {
+                Alert.alert("Success", result.message);
+                // Optionally, you can update any relevant state or trigger a refresh here
+            } else {
+                Alert.alert("Error", result.message);
+            }
+        } catch (error) {
+            console.log('Error resetting progress:', error);
+            Alert.alert("Error", "An unexpected error occurred while resetting progress");
+        }
+    };
 
     return (
         <View 
@@ -122,9 +136,8 @@ export default function Profile({ navigation }){
             {/* Buttons */}
             <View
                 style={{
-                    height: 0.3 * height,
+                    height: 0.38 * height,
                     width: width,
-
                     alignItems: 'center',
                     justifyContent: 'center',
                 }}
@@ -160,6 +173,22 @@ export default function Profile({ navigation }){
                     onPress={() => handleLogout()}
                 >
                     <Text style={globalStyles.buttonText}>Log Out</Text>
+                </TouchableOpacity>
+
+                {/* Reset Progress Button */}
+                <TouchableOpacity
+                    style={[
+                        { 
+                            backgroundColor: '#004643',
+                            height: 0.06 * height,
+                            width: 0.8 * width,
+                            marginBottom: 0.02 * height,
+                        }, 
+                        globalStyles.button
+                    ]}
+                    onPress={handleResetProgress}
+                >
+                    <Text style={globalStyles.buttonText}>Reset Progress</Text>
                 </TouchableOpacity>
 
                 {/* Delete Account Button */}
