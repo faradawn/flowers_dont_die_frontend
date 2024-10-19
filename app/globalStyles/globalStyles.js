@@ -4,7 +4,7 @@ export const globalStyles = StyleSheet.create({
     container: {
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#EFF0F3',
+        backgroundColor: 'white',
     },
 
     button: {
