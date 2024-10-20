@@ -127,37 +127,47 @@ export default function Profile({ navigation }){
                 }}
             >
                 {isEditing ? (
-                    <TextInput
-                        style={{
-                            fontFamily: 'Baloo2-Bold',
-                            fontWeight: 'bold',
-                            fontSize: 30,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#004643',
-                            paddingBottom: 5,
-                        }}
-                        value={newUsername}
-                        onChangeText={setNewUsername}
-                        autoFocus
-                        onBlur={handleUsernameUpdate}
-                    />
+                    <>
+                        <TextInput
+                            style={{
+                                fontFamily: 'Baloo2-Bold',
+                                fontWeight: 'bold',
+                                fontSize: 30,
+                                borderBottomWidth: 1,
+                                borderBottomColor: '#004643',
+                                paddingBottom: 5,
+                            }}
+                            value={newUsername}
+                            onChangeText={setNewUsername}
+                            autoFocus
+                            onSubmitEditing={handleUsernameUpdate}
+                        />
+                        <TouchableOpacity
+                            onPress={cancelEditing}
+                            style={{ marginLeft: 10 }}
+                        >
+                            <Ionicons name="close" size={24} color="#004643" />
+                        </TouchableOpacity>
+                    </>
                 ) : (
-                    <Text
-                        style={{
-                            fontFamily: 'Baloo2-Bold',
-                            fontWeight: 'bold',
-                            fontSize: 30,
-                        }}
-                    >
-                        {state.username}'s Account
-                    </Text>
+                    <>
+                        <Text
+                            style={{
+                                fontFamily: 'Baloo2-Bold',
+                                fontWeight: 'bold',
+                                fontSize: 30,
+                            }}
+                        >
+                            {state.username}'s profile
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => setIsEditing(true)}
+                            style={{ marginLeft: 10 }}
+                        >
+                            <Ionicons name="pencil" size={24} color="#004643" />
+                        </TouchableOpacity>
+                    </>
                 )}
-                <TouchableOpacity
-                    onPress={() => setIsEditing(!isEditing)}
-                    style={{ marginLeft: 10 }}
-                >
-                    <Ionicons name={isEditing ? "close" : "pencil"} size={24} color="#004643" />
-                </TouchableOpacity>
             </View>
 
             {/* Graph Trend */}
@@ -165,7 +175,6 @@ export default function Profile({ navigation }){
                 style={{
                     width: width,
                     height: height * 0.24,
-
                     alignItems: 'center',
                 }}
             >
@@ -187,55 +196,6 @@ export default function Profile({ navigation }){
                     justifyContent: 'center',
                 }}
             >
-                {/* Login/Signup Button */}
-                <TouchableOpacity
-                    style={[
-                        { 
-                            backgroundColor: '#004643',
-                            height: 0.06 * height,
-                            width: 0.8 * width,
-                            marginBottom: 0.02 * height,
-                        }, 
-                        globalStyles.button
-                    ]}
-                    onPress={() => navigation.navigate('Login')}
-                >
-                    <Text style={globalStyles.buttonText}>Login/Signup</Text>
-                </TouchableOpacity>
-
-
-                {/* Logout Button */}
-                <TouchableOpacity
-                    style={[
-                        { 
-                            backgroundColor: '#004643',
-                            height: 0.06 * height,
-                            width: 0.8 * width,
-                            marginBottom: 0.02 * height,
-                        }, 
-                        globalStyles.button
-                    ]}
-                    onPress={() => handleLogout()}
-                >
-                    <Text style={globalStyles.buttonText}>Log Out</Text>
-                </TouchableOpacity>
-
-                {/* Reset Progress Button */}
-                <TouchableOpacity
-                    style={[
-                        { 
-                            backgroundColor: '#004643',
-                            height: 0.06 * height,
-                            width: 0.8 * width,
-                            marginBottom: 0.02 * height,
-                        }, 
-                        globalStyles.button
-                    ]}
-                    onPress={handleResetProgress}
-                >
-                    <Text style={globalStyles.buttonText}>Reset Progress</Text>
-                </TouchableOpacity>
-
                 {/* Delete Account Button */}
                 <TouchableOpacity
                     style={[
@@ -265,7 +225,6 @@ export default function Profile({ navigation }){
                 >
                     <Text style={globalStyles.buttonText}>Delete Account</Text>
                 </TouchableOpacity>
-                
             </View>
         </View>
     )
