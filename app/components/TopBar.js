@@ -7,7 +7,17 @@ const TopBar = ({ navigateTo, backText = 'Back', params = {} }) => {
   const navigation = useNavigation();
 
   return (
-    <View className="absolute top-15 left-0 right-0 h-16 flex-row items-center justify-start z-10">
+    <View style={{
+      position: 'absolute',
+      top: 15,
+      left: 0,
+      right: 0,
+      height: 60,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      zIndex: 10,
+    }}>
       <TouchableOpacity
         className="flex-row items-center px-4 py-2"
         onPress={() => navigation.navigate(navigateTo, params)}

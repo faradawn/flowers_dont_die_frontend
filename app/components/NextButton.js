@@ -17,7 +17,7 @@ const NextButton = ({ onPress, disabled }) => (
   >
     <Text style={{ color: disabled ? "gray" : "green", fontSize: 16, marginRight: 5 }}>Next</Text>
     <Feather name="chevron-right" size={30} color={disabled ? "gray" : "green"} />
-  </TouchableOpacity>
+  </TouchableOpacity> 
 );
 
 export default NextButton;
