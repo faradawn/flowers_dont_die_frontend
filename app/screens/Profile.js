@@ -143,7 +143,7 @@ export default function Profile({ navigation }){
                             onSubmitEditing={handleUsernameUpdate}
                         />
                         <TouchableOpacity
-                            onPress={cancelEditing}
+                            onPress={() => setIsEditing(false)}
                             style={{ marginLeft: 10 }}
                         >
                             <Ionicons name="close" size={24} color="#004643" />
