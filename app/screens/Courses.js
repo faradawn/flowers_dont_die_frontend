@@ -85,7 +85,7 @@ export default function Courses({ navigation }) {
     useFocusEffect(
         useCallback(() => {
             async function checkAndSetupUser() {
-                if (!state.uid) {
+                if (!state.uid || !state.username) {
                     console.log("[Courses] state.uid is not set, checking login info, state info", state);
                     const loginInfo = await getLoginInfo();
                     if (loginInfo) {
@@ -101,7 +101,7 @@ export default function Courses({ navigation }) {
                         console.log("[Courses] Created and stored guest info", guestUsername, guestUid);
                     }
                 } else {
-                    console.log("[Courses] User ID already set:", state.uid);
+                    console.log("[Courses] User ID already set state.uid:", state.uid, "state.username:", state.username);
                 }
 
                 setGreeting(getGreeting(state.username));
