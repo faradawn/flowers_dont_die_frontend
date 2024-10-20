@@ -8,6 +8,8 @@ import { useUser } from '../components/UserContext'
 import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
 import { mergeProgress } from '../components/localDb';
 
+import TopBar from '../components/TopBar';
+
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
@@ -88,6 +90,9 @@ export default function Login({ navigation }){
                 ...globalStyles.container
             }}
         >
+
+            <TopBar navigateTo={'Profile'} backgroundColor={'transparent'} textColor={'white'}/>
+
                 {showProgressPopup && (
                     <View className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 1000 }}>
                         <View className="bg-white p-4 rounded-lg shadow-md">

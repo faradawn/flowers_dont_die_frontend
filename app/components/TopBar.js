@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-const TopBar = ({ navigateTo, backText = 'Back', params = {} }) => {
+const TopBar = ({ navigateTo, backText = 'Back', backgroundColor = '#fff', textColor = '#004643', params = {} }) => {
   const navigation = useNavigation();
 
   return (
@@ -15,7 +15,7 @@ const TopBar = ({ navigateTo, backText = 'Back', params = {} }) => {
       height: 60,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#fff',
+      backgroundColor: backgroundColor,
       zIndex: 10,
     }}>
       <TouchableOpacity
@@ -25,11 +25,11 @@ const TopBar = ({ navigateTo, backText = 'Back', params = {} }) => {
         <Ionicons
           name="chevron-back"
           size={17} 
-          color="#004643"
+          color={textColor}
         />
         <Text
           className="ml-1 text-lg font-bold text-[#004643]"
-          style={{ fontFamily: 'Baloo2-Bold' }}
+          style={{ fontFamily: 'Baloo2-Bold', color: textColor }}
         >
           {backText}
         </Text>
