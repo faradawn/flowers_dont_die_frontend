@@ -23,6 +23,64 @@ export default function Courses({ navigation }) {
     const [courses, setCourses] = useState([]);
     const [dailyQuestionId, setDailyQuestionId] = useState(null); // daily random question
     const { state, updateState } = useUser();
+    const [greeting, setGreeting] = useState('');
+
+    const getGreeting = (username) => {
+        const hour = new Date().getHours();
+        let greetings;
+
+        if (hour >= 6 && hour < 9) {
+            greetings = [
+                `Rise and shine, ${username}!`,
+                `Early bird catches the code, ${username}!`,
+                `Good morning! Ready to tackle the day, ${username}?`
+            ];
+        } else if (hour >= 9 && hour < 12) {
+            greetings = [
+                `Let's make today great, ${username}!`,
+                `Time for some morning code, ${username}!`,
+                `Coffee's ready, ${username}!`
+            ];
+        } else if (hour >= 12 && hour < 14) {
+            greetings = [
+                `Lunch time! Don't skip it, ${username}!`,
+                `Refuel and recharge, ${username}!`,
+                `Midday munchies calling, ${username}!`
+            ];
+        } else if (hour >= 14 && hour < 17) {
+            greetings = [
+                `Keep up the awesome work, ${username}!`,
+                `Afternoon hustle mode: ON, ${username}!`,
+                `You're rocking it, ${username}!`
+            ];
+        } else if (hour >= 17 && hour < 20) {
+            greetings = [
+                `Evening already? Time flies, ${username}!`,
+                `How was your day, ${username}?`,
+                `Great job today, ${username}!`
+            ];
+        } else if (hour >= 20 && hour < 22) {
+            greetings = [
+                `Relax and unwind, ${username}!`,
+                `Evening coding session ahead, ${username}?`,
+                `You've earned some rest, ${username}!`
+            ];
+        } else if (hour >= 22 || hour < 0) {
+            greetings = [
+                `Burning the midnight oil, ${username}?`,
+                `Late-night inspiration strikes, ${username}!`,
+                `Time to wrap up, don't you think, ${username}?`
+            ];
+        } else {
+            greetings = [
+                `Night owl mode activated, ${username}!`,
+                `Don't forget to rest, ${username}!`,
+                `The code can wait till morning, ${username}!`
+            ];
+        }
+
+        return greetings[Math.floor(Math.random() * greetings.length)];
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -45,6 +103,8 @@ export default function Courses({ navigation }) {
                 } else {
                     console.log("[Courses] User ID already set:", state.uid);
                 }
+
+                setGreeting(getGreeting(state.username));
             }
 
             async function fetchCourses() {
@@ -115,13 +175,7 @@ export default function Courses({ navigation }) {
                                     fontSize: 22,
                                 }}
                             >
-                                Select your Course,
-                                <Text
-                                    style={{
-                                        color: '#26C250'
-                                    }}
-                                > {state.username}!
-                                </Text>
+                                {greeting}
                             </Text>
                         </View>
 
