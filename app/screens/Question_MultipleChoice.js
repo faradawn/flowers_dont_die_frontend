@@ -22,12 +22,18 @@ import { getQuestionSet, storeSubmission } from '../components/localDb';
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
 
+// At the top of your file, add this enum
+const QuestionMode = {
+    VOICE: 0,
+    MULTIPLE_CHOICE: 1
+};
+
 export default function Question_Combined({ navigation, route }) {
     const [text, setText] = useState('');
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
-    const [mode, setMode] = useState(0); // 0 for voice, 1 for multiple choice
+    const [mode, setMode] = useState(QuestionMode.VOICE);
     const { question_id: initialQuestionId, fromScreen, question_arr } = route.params;
     // If not from Assignments，then do not calculate totalQuestion and ignore buttons prev/next
     const isAssignment = fromScreen === 'Assignments';
@@ -100,6 +106,12 @@ export default function Question_Combined({ navigation, route }) {
         if (currentQuestionIndex < allQuestions.length - 1) {
             setCurrentQuestionIndex(prevIndex => prevIndex + 1);
             setText('');
+            setCurrentPressed("A");
+            setAnswerResponse('');
+            setTranscribedText({ status: '', message: '', transcribed_text: '' });
+            setAllowSubmit(false);
+            setVoiceSubmitted(false);
+            setMcSubmitted(false);
         }
     };
     
@@ -108,8 +120,19 @@ export default function Question_Combined({ navigation, route }) {
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(prevIndex => prevIndex - 1);
             setText('');
+            setCurrentPressed("A");
+            setAnswerResponse('');
+            setTranscribedText({ status: '', message: '', transcribed_text: '' });
+            setAllowSubmit(false);
+            setVoiceSubmitted(false);
+            setMcSubmitted(false);
         }
     };
+
+    // === MC
+    const handleChooseOption = (option) => { 
+        setCurrentPressed(option);
+    }
 
     const handleScroll = (event) => {
         const xOffset = event.nativeEvent.contentOffset.x;
@@ -192,57 +215,41 @@ export default function Question_Combined({ navigation, route }) {
 
     // Handle submission
     const handleNext = async () => {
-        // If button displays "Submit"
         setIsLoading(true);
 
-        if(mode === 0) {
-            // Voice submission
-            try {
-                const response = await fetch('https://backend.faradawn.site:8001/submit_text_response', {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        uid: state.uid,
-                        course_id: state.course_id,
-                        question_id: data.question_id,
-                        question: data.question,
-                        transcribed_text: text,
-                        practice_type: "ASSIGNMENT"
-                    })
-                });
-                const response_data = await response.json();
-                console.log("Response data: ", response_data);
-                setAnswerResponse(response_data);
+        let score = null;
+        if (mode === QuestionMode.MULTIPLE_CHOICE) {
+            score = currentPressed === data.answer ? 3 : 0;
+        }
 
-                // Store the submission in local database
-                
-                await storeSubmission(response_data['submission_details']);
-            } catch(error) {
-                console.log("Error sending data or storing submission: ", error);
-            }
+        try {
+            const response = await fetch('https://backend.faradawn.site:8001/submit_text_response', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    uid: state.uid,
+                    course_id: state.course_id,
+                    question_id: data.question_id,
+                    question: data.question,
+                    transcribed_text: mode === QuestionMode.VOICE ? text : currentPressed,
+                    practice_type: "ASSIGNMENT",
+                    question_type: mode === QuestionMode.VOICE ? "VOICE" : "MC",
+                    score: score
+                })
+            });
+            const response_data = await response.json();
+            console.log("Response data: ", response_data);
+            setAnswerResponse(response_data);
+
+            // Store the submission in local database
+            await storeSubmission(response_data['submission_details']);
+        } catch(error) {
+            console.log("Error sending data or storing submission: ", error);
+        }
+
+        if (mode === QuestionMode.VOICE) {
             setVoiceSubmitted(true);
-
         } else {
-            // Multiple choice submission
-            try {
-                const response = await fetch('https://backend.faradawn.site:8001/submit_answer', {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        uid: state.uid,
-                        course_id: state.course_id,
-                        topic: topic,
-                        question_id: data.question_id,
-                        response_time: (90 - seconds),
-                        user_answer: currentPressed,
-                        correct_answer: data.answer,
-                    })
-                });
-                const response_data = await response.json();
-                setAnswerResponse(response_data);
-            } catch(error) {
-                console.log('Error fetching data', error);
-            }
             setMcSubmitted(true);
         }
 
@@ -290,7 +297,7 @@ export default function Question_Combined({ navigation, route }) {
     const ModalComponent = () => {
         useEffect(() => {
             if (modalOpen) {
-                if ((mode === 1 && currentPressed === data.answer) || (mode === 0 && answerResponse && answerResponse.grade > 1)) {
+                if ((mode === QuestionMode.MULTIPLE_CHOICE && currentPressed === data.answer) || (mode === QuestionMode.VOICE && answerResponse && answerResponse.grade > 1)) {
                     triggerLongHapticFeedback();
                     triggerConfetti();
                 } else {
@@ -353,7 +360,7 @@ export default function Question_Combined({ navigation, route }) {
                         />
 
                         {/* 1. Star */}
-                        { mode === 0 && answerResponse.grade !== 0 && (
+
                             <Image
                                 source={stars.grade[answerResponse.grade]}
                                 style={{
@@ -362,7 +369,7 @@ export default function Question_Combined({ navigation, route }) {
                                     marginVertical: height * 0.01,
                                 }}
                             />
-                        )}
+
                         
                         {/* 2. Title */}
                         <Text style={{
@@ -370,8 +377,8 @@ export default function Question_Combined({ navigation, route }) {
                             fontSize: 30,
                             textAlign: 'center',
                         }}>
-                            {mode === 0 ? voiceModalTitle : 
-                                (currentPressed === data.answer ? 'Congratulations!' : 'Sorry!')}
+                            {mode === QuestionMode.VOICE ? voiceModalTitle : 
+                                (currentPressed === data.answer ? 'Congratulations!' : 'So close!')}
                         </Text>
                         
                         {/* 3. Body */}
@@ -381,9 +388,9 @@ export default function Question_Combined({ navigation, route }) {
                             textAlign: 'center',
                             paddingTop: height * 0.02,
                         }}>
-                            {mode === 0 ? answerResponse.feedback_body :
-                                (currentPressed === 'Time ran out' ? 'Your time ran out.' : 
-                                (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`))}
+                            {mode === QuestionMode.VOICE ? answerResponse.feedback_body :
+                                
+                                (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`)}
                         </Text>
                     </View>
                 </View>
@@ -542,18 +549,16 @@ export default function Question_Combined({ navigation, route }) {
             marginTop: height * -0.04,
             marginBottom: height * 0.08,
         }}>
-            {/* TODO: understand this logic */}
             <TouchableOpacity
-                activeOpacity={(mode === 0 && !allowSubmit) || (mode === 1 && currentPressed == "Not Touched" && !mcSubmitted) ? 1 : 0.7}
                 style={{
-                    backgroundColor: (mode === 0 && !allowSubmit) || (mode === 1 && currentPressed == 'Not Touched' && !mcSubmitted) ? '#3c716f' : '#004643',
+                    backgroundColor: '#004643',
                     height: height * 0.06,
                     width: width * 0.75,
                     ...globalStyles.button
                 }}
                 onPress={() => handleNext()}
             >
-                <Text style={globalStyles.buttonText}>{((mode == 0 && voiceSubmitted) || (mode == 1 && mcSubmitted)) ? 'Go home' : 'Submit'}</Text>
+                <Text style={globalStyles.buttonText}>Submit</Text>
             </TouchableOpacity>
         </View>
     );
@@ -600,21 +605,21 @@ export default function Question_Combined({ navigation, route }) {
     
 
                   <SwitchButton
-                    FirstText="Practice"
-                    SecondText="Answer"
+                    FirstText="Voice"
+                    SecondText="Multiple Choice"
                     width={width * 0.68}
                     height={0.045 * height}
                     mode={mode}
                     setMode={setMode}
                   />
 
-                    <View style={{height: 20}} />
+                    <View style={{height: 0.01 * height}} />
 
                   {/* Bottom component */}
-                  {mode === 0 ? ( 
+                  {mode === QuestionMode.VOICE ? ( 
                     // Voice answer card
                     <View style={{
-                      height: height * 0.45,
+                      height: height * 0.4,
                       width: width, // originally width
                       justifyContent: 'flex-start',
                       alignItems: 'center',
@@ -634,9 +639,6 @@ export default function Question_Combined({ navigation, route }) {
                         elevation: 10,
                         justifyContent: 'space-between'
                       }}>
-
-                        
-
                         {/* Text box */}
                         <TextInput
                           style={{
@@ -664,22 +666,53 @@ export default function Question_Combined({ navigation, route }) {
                         
                     
                   ) : (
-                    // MC answer component 
+                    // MC answer component (Mark Zhang, commit on mainbranch: 2629865ec6315036ebbc6a70355abe372dbc5f3f)
                     <View style={{
-                        height: height * 0.45,
+                        height: height * 0.4,
                         width: width,
-                        display: 'flex',
                         justifyContent: 'flex-start',
                         alignItems: 'center',
                       }}>
-                        <Card
-                            text={data.options[0]}
-                            width={width * 0.8}
-                            height={height * 0.35}
-                        />      
-                    </View>
+                    <ScrollView
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        alwaysBounceHorizontal={true}
+                        snapToOffsets={data.options.map((_, index) => index * 0.88 * width)}
+                        snapToEnd={false}
+                        decelerationRate='fast'
+                        style={{
+                            width: width,
+                        }}
+                        contentContainerStyle={{
+                            
+                            paddingLeft: 0.1 * width,
+                            paddingRight: 0.1 * width, // Add right padding for better UX
+                            height: height * 0.4, // adjust spacing above
+                            // alignItems: 'center',
+                        }}
+                        onScroll={handleScroll}
+                        scrollEventThrottle={16}
+                        >
+                        {data.options.map((option, index) => {
+                            const optionLetter = String.fromCharCode(65 + index); // Convert 0, 1, 2, etc. to A, B, C, etc.
+                            return (
+                            <Card
+                                key={optionLetter}
+                                option={optionLetter}
+                                text={option}
+                                width={width * 0.8}
+                                height={height * 0.35}
+                                isSelected={currentPressed === optionLetter}
+                                isCardSubmitted={mcSubmitted}
+                                isCardCorrectAnswer={optionLetter == data.answer}
+                            />
+                            );
+                        })}
+                        </ScrollView>
+                        </View>
+
                 )}
-                
+                <NextButtonComponent />
                 </>
               )}
 

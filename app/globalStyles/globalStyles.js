@@ -72,6 +72,7 @@ export const colors = {
 
 export const stars = {
     grade: {
+        '0': require('../../assets/images/question_stars/green_star_1.png'),
         '1': require('../../assets/images/question_stars/green_star_1.png'),
         '2': require('../../assets/images/question_stars/green_star_2.png'),
         '3': require('../../assets/images/question_stars/green_star_3.png')
