@@ -20,6 +20,7 @@ import Question_Daily from './screens/Question_Daily';
 
 import { UserProvider } from './components/UserContext';
 import { initializeLocalDatabase } from './components/localDb';
+import { deleteLoginInfo } from './components/SecureStoreUtils';
 
 // Accessing Font
 const getFonts = () => Font.loadAsync({
@@ -126,6 +127,15 @@ export default function App() {
             'Baloo2-Bold': require('../assets/fonts/Baloo2-Bold.ttf'),
         });
         await initializeLocalDatabase();
+        
+        // Delete login info from secure storage
+        // try {
+        //     await deleteLoginInfo();
+        //     console.log('Login info deleted successfully');
+        // } catch (error) {
+        //     console.error('Error deleting login info:', error);
+        // }
+
         setDbInitialized(true);
     };
 

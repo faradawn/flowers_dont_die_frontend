@@ -86,28 +86,29 @@ export default function Courses({ navigation }) {
         useCallback(() => {
             async function checkAndSetupUser() {
                 if (!state.uid || !state.username) {
-                    console.log("[Courses] state.uid is not set, checking login info, state info", state);
                     const loginInfo = await getLoginInfo();
+                    console.log("[Courses] state.uid is not set, printing state info", state);
                     if (loginInfo) {
-                        updateState('uid', loginInfo.uid);
                         updateState('username', loginInfo.username);
-                        console.log("[Courses] Got Login info: ", loginInfo);
+                        updateState('uid', loginInfo.uid);
+                        console.log("[Courses] Got secure store login info: ", loginInfo);
                     } else {
                         const guestUid = `guest_${Math.random().toString(36).substr(2, 9)}`;
                         const guestUsername = `Guest_${guestUid.slice(-3)}`;
-                        updateState('uid', guestUid);
                         updateState('username', guestUsername);
+                        updateState('uid', guestUid);
                         await saveLoginInfo(guestUid, guestUsername, null);
-                        console.log("[Courses] Created and stored guest info", guestUsername, guestUid);
+                        console.log("[Courses] No secure store login info. Created and stored guest info", guestUsername, guestUid);
                     }
                 } else {
-                    console.log("[Courses] User ID already set state.uid:", state.uid, "state.username:", state.username);
+                    console.log("[Courses] User info already in state:", state);
                 }
 
                 setGreeting(getGreeting(state.username));
             }
 
             async function fetchCourses() {
+                if (!state.uid) return;
                 try {
                     const data = await getCourses(state.uid);
                     console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses);
@@ -121,7 +122,7 @@ export default function Courses({ navigation }) {
             }
 
             checkAndSetupUser().then(() => fetchCourses());
-        }, [state.uid])
+        }, [state.uid, state.username])
     );
 
     // navigation through clicking a specific topic

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Dimensions, Image, Text, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { deleteLoginInfo, saveLoginInfo } from '../components/SecureStoreUtils';
+import { deleteLoginInfo, saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils';
 import { clearSubmissions } from '../components/localDb';
 import { useUser } from '../components/UserContext';
 import { globalStyles } from '../globalStyles/globalStyles';
@@ -13,6 +13,7 @@ export default function Profile({ navigation }){
     const { state, updateState } = useUser();
     const [isEditing, setIsEditing] = useState(false);
     const [newUsername, setNewUsername] = useState(state.username);
+
 
     const handleDelete = async () => {
         try {
@@ -75,18 +76,21 @@ export default function Profile({ navigation }){
         }
 
         try {
-            // Update state
-            updateState('username', newUsername);
+            await updateState('username', newUsername);
+            const currentLoginInfo = await getLoginInfo();
+            if (currentLoginInfo) {
+                await saveLoginInfo(state.uid, newUsername, currentLoginInfo.password);
+            } else {
+                await saveLoginInfo(state.uid, newUsername, null);
+            }
 
-            // Update SecureStore
-            await saveLoginInfo(state.uid, newUsername);
-
-            setIsEditing(false);
-            console.log("[Profile] Username updated successfully");
+            const newlogin = await getLoginInfo();
+            console.log('[Profile] Updated useranme and saved to state and secure storage', newlogin);
         } catch (error) {
-            console.log('Error updating username:', error);
-            Alert.alert('Error', 'Failed to update username');
+            console.error('[Profile] Error updating username:', error);
         }
+
+        setIsEditing(false);
     };
 
     return (
