@@ -1,0 +1,83 @@
+[
+    {
+      "Algo Group": {
+        "topics": [
+          {
+            "topic": "Week 3",
+            "questions": [
+              "Week 3|Easy|Big-O Notation",
+              "Week 3|Easy|Time complexity for Array",
+              "Week 3|Easy|Time complexity for Dynamic Array",
+              "Week 3|Easy|Time complexity for Sorting"
+            ]
+          },
+          {
+            "topic": "Week 4",
+            "questions": [
+              "Week 4|Easy|Array vs List Access",
+              "Week 4|Medium|Sliding Window Technique",
+              "Week 4|Medium|Two Pointers Technique"
+            ]
+          },
+          {
+            "topic": "Week 5",
+            "questions": [
+              "Week 5|Easy|Python Sorting Complexity",
+              "Week 5|Medium|Binary Search",
+              "Week 5|Medium|Hash Tables",
+              "Week 5|Medium|Merge Sort"
+            ]
+          },
+          {
+            "topic": "Week 6",
+            "questions": [
+              "Week 6|Easy|Singly Linked List",
+              "Week 6|Easy|Stacks and Queues",
+              "Week 6|Medium|Linked List Operations"
+            ]
+          },
+          {
+            "topic": "Week 7",
+            "questions": [
+              "Week 7|Hard|BST vs Balanced BST",
+              "Week 7|Medium|Binary Search Tree",
+              "Week 7|Medium|DFS Time Complexity",
+              "Week 7|Medium|DFS vs BFS"
+            ]
+          },
+          {
+            "topic": "Week 8",
+            "questions": [
+              "Week 8|Hard|Heaps"
+            ]
+          },
+          {
+            "topic": "Week 9",
+            "questions": [
+              "Week 9|Hard|Heap Operations"
+            ]
+          }
+        ],
+        "course_name": "Algo Group"
+      }
+    },
+    {
+      "ICPC": {
+        "topics": [
+          {
+            "topic": "Dynamic Programming",
+            "questions": [
+              "Dynamic Programming|Easy|Dynamic Programming"
+            ]
+          },
+          {
+            "topic": "Greedy Algorithm",
+            "questions": [
+              "Greedy Algorithm|Easy|Greedy Algorithm"
+            ]
+          }
+        ],
+        "course_name": "ICPC"
+      }
+    }
+  ]

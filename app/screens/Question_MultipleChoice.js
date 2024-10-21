@@ -17,16 +17,23 @@ import LottieView from 'lottie-react-native';
 import TopBar from '../components/TopBar';
 import PrevButton from '../components/PrevButton';
 import NextButton from '../components/NextButton';
+import { getQuestionSet, storeSubmission } from '../components/localDb';
 
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
+
+// At the top of your file, add this enum
+const QuestionMode = {
+    VOICE: 0,
+    MULTIPLE_CHOICE: 1
+};
 
 export default function Question_Combined({ navigation, route }) {
     const [text, setText] = useState('');
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
-    const [mode, setMode] = useState(0); // 0 for voice, 1 for multiple choice
+    const [mode, setMode] = useState(QuestionMode.VOICE);
     const { question_id: initialQuestionId, fromScreen, question_arr } = route.params;
     // If not from Assignments，then do not calculate totalQuestion and ignore buttons prev/next
     const isAssignment = fromScreen === 'Assignments';
@@ -49,24 +56,19 @@ export default function Question_Combined({ navigation, route }) {
     const [intervalId, setIntervalId] = useState(null);
     const [answerResponse, setAnswerResponse] = useState('');
 
-    
-     // track the current question index
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(() => {
-        if (isAssignment && question_arr) {
-            const index = question_arr.findIndex((q) => q.question_id === initialQuestionId);
-            return index !== -1 ? index : 0;
-        }
-        return 0;
-    });
-    // assume at least one question, update with actual data
-    const totalQuestions = isAssignment ? question_arr.length : 1; 
-    const [questionId, setQuestionId] = useState(initialQuestionId);
+    const [allQuestions, setAllQuestions] = useState([]);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(route.params.index);
 
     useEffect(() => {
-        if (questionId) {
-            fetchQuestions(questionId);
+        fetchQuestionSet();
+    }, []);
+
+    useEffect(() => {
+        if (allQuestions.length > 0) {
+            setData(allQuestions[currentQuestionIndex]);
+            setCurrentPressed("A");
         }
-    }, [questionId]);
+    }, [currentQuestionIndex, allQuestions]);
 
     const animation = useRef(null);
 
@@ -76,84 +78,62 @@ export default function Question_Combined({ navigation, route }) {
         }
       };
 
-
-    // Fetch questions
-    const fetchQuestions = async (questionId) => {
+    const fetchQuestionSet = async () => {
         try {
-            setIsLoading(true)
-            console.log("[Questoin_MC] Send post")
-            const response = await fetch('https://backend.faradawn.site:8001/get_question', {
-                method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    uid: state.uid,
-                    course_id: state.course_id,
-                    question_id: questionId,
-                }),
-            });
+            setIsLoading(true);
+            const response = await getQuestionSet(
+                state.uid,
+                state.course_id,
+                route.params.topic
+            );
 
-            const response_data = await response.json();
-            console.log('[Question_MC] Question Data Received: ', response_data);
+            console.log('[Question_MC] Question Set Received: ', response);
 
-            if (response_data.question_id !== data.question_id) {  
-                setData(response_data);
-                setCurrentPressed("A");
+            if (response.status === 'success') {
+                setAllQuestions(response.questions);
+            } else {
+                console.log('Error fetching question set (api message):', response.message);
             }
         } catch(error) {
-            console.log('Error fetching data: ', error);
+            console.log('Error fetching question set (try catch): ', error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // // Timer logic
-    // useEffect(() => {
-    //     let interval;
-    //     if (!mcSubmitted && !voiceSubmitted) { // if user has not submit
-    //         interval = setInterval(() => {
-    //             setSeconds((prevSeconds) => {
-    //                 if(prevSeconds > 0) return prevSeconds - 1;
-    //                 return 0;
-    //             });
-    //         }, 1000);
-    //     }
-    //     setIntervalId(interval);
-    //     return () => clearInterval(interval);
-    // }, [mcSubmitted, voiceSubmitted]);
-
-
-    // === MC
-    const handleChooseOption = (option) => { 
-        if(mcSubmitted){
-            return;
-        }
-        setCurrentPressed(option);
-    }
-
     // Handle next question
     const handleNextQuestion = () => {
-        if (fromScreen === 'Assignments' &&currentQuestionIndex < totalQuestions - 1) {
-            const nextQuestionIndex = currentQuestionIndex + 1;
-            const nextQuestionId = question_arr[nextQuestionIndex].question_id;
-            console.log('Navigating to next question:', nextQuestionId);
+        if (currentQuestionIndex < allQuestions.length - 1) {
+            setCurrentQuestionIndex(prevIndex => prevIndex + 1);
             setText('');
-            setCurrentQuestionIndex(nextQuestionIndex);
-            setQuestionId(nextQuestionId);
+            setCurrentPressed("A");
+            setAnswerResponse('');
+            setTranscribedText({ status: '', message: '', transcribed_text: '' });
+            setAllowSubmit(false);
+            setVoiceSubmitted(false);
+            setMcSubmitted(false);
         }
     };
     
     // Handle prev question
     const handlePrevQuestion = () => {
-        if (fromScreen === 'Assignments' && currentQuestionIndex > 0) {
-            const prevQuestionIndex = currentQuestionIndex - 1;
-            const prevQuestionId = question_arr[prevQuestionIndex].question_id;
-            console.log('Navigating to previous question:', prevQuestionId);
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(prevIndex => prevIndex - 1);
             setText('');
-            setCurrentQuestionIndex(prevQuestionIndex);
-            setQuestionId(prevQuestionId);
+            setCurrentPressed("A");
+            setAnswerResponse('');
+            setTranscribedText({ status: '', message: '', transcribed_text: '' });
+            setAllowSubmit(false);
+            setVoiceSubmitted(false);
+            setMcSubmitted(false);
         }
     };
-    
+
+    // === MC
+    const handleChooseOption = (option) => { 
+        setCurrentPressed(option);
+    }
+
     const handleScroll = (event) => {
         const xOffset = event.nativeEvent.contentOffset.x;
         const index = Math.round(xOffset / (width * 0.88)); // Calculate the index based on scroll position
@@ -235,53 +215,41 @@ export default function Question_Combined({ navigation, route }) {
 
     // Handle submission
     const handleNext = async () => {
-        // If button displays "Submit"
         setIsLoading(true);
 
-        if(mode === 0) {
-            // Voice submission
-            try {
-                const response = await fetch('https://backend.faradawn.site:8001/submit_text_response', {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        uid: state.uid,
-                        course_id: state.course_id,
-                        question_id: data.question_id,
-                        question: data.question,
-                        transcribed_text: text,
-                        practice_type: "ASSIGNMENT"
-                    })
-                });
-                const response_data = await response.json();
-                console.log("Response data: ", response_data);
-                setAnswerResponse(response_data);
-            } catch(error) {
-                console.log("Error sending data: ", error);
-            }
-            setVoiceSubmitted(true);
+        let score = null;
+        if (mode === QuestionMode.MULTIPLE_CHOICE) {
+            score = currentPressed === data.answer ? 3 : 0;
+        }
 
+        try {
+            const response = await fetch('https://backend.faradawn.site:8001/submit_text_response', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    uid: state.uid,
+                    course_id: state.course_id,
+                    question_id: data.question_id,
+                    question: data.question,
+                    transcribed_text: mode === QuestionMode.VOICE ? text : currentPressed,
+                    practice_type: "ASSIGNMENT",
+                    question_type: mode === QuestionMode.VOICE ? "VOICE" : "MC",
+                    score: score
+                })
+            });
+            const response_data = await response.json();
+            console.log("Response data: ", response_data);
+            setAnswerResponse(response_data);
+
+            // Store the submission in local database
+            await storeSubmission(response_data['submission_details']);
+        } catch(error) {
+            console.log("Error sending data or storing submission: ", error);
+        }
+
+        if (mode === QuestionMode.VOICE) {
+            setVoiceSubmitted(true);
         } else {
-            // Multiple choice submission
-            try {
-                const response = await fetch('https://backend.faradawn.site:8001/submit_answer', {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        uid: state.uid,
-                        course_id: state.course_id,
-                        topic: topic,
-                        question_id: data.question_id,
-                        response_time: (90 - seconds),
-                        user_answer: currentPressed,
-                        correct_answer: data.answer,
-                    })
-                });
-                const response_data = await response.json();
-                setAnswerResponse(response_data);
-            } catch(error) {
-                console.log('Error fetching data', error);
-            }
             setMcSubmitted(true);
         }
 
@@ -329,7 +297,7 @@ export default function Question_Combined({ navigation, route }) {
     const ModalComponent = () => {
         useEffect(() => {
             if (modalOpen) {
-                if ((mode === 1 && currentPressed === data.answer) || (mode === 0 && answerResponse && answerResponse.grade > 1)) {
+                if ((mode === QuestionMode.MULTIPLE_CHOICE && currentPressed === data.answer) || (mode === QuestionMode.VOICE && answerResponse && answerResponse.grade > 1)) {
                     triggerLongHapticFeedback();
                     triggerConfetti();
                 } else {
@@ -392,7 +360,7 @@ export default function Question_Combined({ navigation, route }) {
                         />
 
                         {/* 1. Star */}
-                        { mode === 0 && answerResponse.grade !== 0 && (
+
                             <Image
                                 source={stars.grade[answerResponse.grade]}
                                 style={{
@@ -401,7 +369,7 @@ export default function Question_Combined({ navigation, route }) {
                                     marginVertical: height * 0.01,
                                 }}
                             />
-                        )}
+
                         
                         {/* 2. Title */}
                         <Text style={{
@@ -409,8 +377,8 @@ export default function Question_Combined({ navigation, route }) {
                             fontSize: 30,
                             textAlign: 'center',
                         }}>
-                            {mode === 0 ? voiceModalTitle : 
-                                (currentPressed === data.answer ? 'Congratulations!' : 'Sorry!')}
+                            {mode === QuestionMode.VOICE ? voiceModalTitle : 
+                                (currentPressed === data.answer ? 'Congratulations!' : 'So close!')}
                         </Text>
                         
                         {/* 3. Body */}
@@ -420,9 +388,9 @@ export default function Question_Combined({ navigation, route }) {
                             textAlign: 'center',
                             paddingTop: height * 0.02,
                         }}>
-                            {mode === 0 ? answerResponse.feedback_body :
-                                (currentPressed === 'Time ran out' ? 'Your time ran out.' : 
-                                (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`))}
+                            {mode === QuestionMode.VOICE ? answerResponse.feedback_body :
+                                
+                                (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`)}
                         </Text>
                     </View>
                 </View>
@@ -434,20 +402,22 @@ export default function Question_Combined({ navigation, route }) {
 
     // Prev and next icon
     const QuizNavigation = ({ onPrev, onNext, currentQuestionIndex, totalQuestions }) => {
-      
         return (
-          <View className="absolute top-16 left-0 right-0 flex-row justify-between items-center px-4 z-5" style={{zIndex: 10}}>
-            <PrevButton
-              onPress={onPrev}
-              disabled={currentQuestionIndex === 0}
-            />
-            <NextButton
-              onPress={onNext}
-              disabled={currentQuestionIndex === totalQuestions - 1}
-            />
-          </View>
+            <View className="absolute top-10 left-0 right-0 flex-row justify-between items-center px-4 z-5" style={{zIndex: 10}}>
+                <PrevButton
+                    onPress={onPrev}
+                    disabled={currentQuestionIndex === 0}
+                />
+                <Text style={{fontFamily: 'Baloo2-Regular', fontSize: 16}}>
+                    {`${currentQuestionIndex + 1} / ${totalQuestions}`}
+                </Text>
+                <NextButton
+                    onPress={onNext}
+                    disabled={currentQuestionIndex === totalQuestions - 1}
+                />
+            </View>
         );
-      };
+    };
 
       const SubmissionPanel = () => {
       
@@ -579,18 +549,16 @@ export default function Question_Combined({ navigation, route }) {
             marginTop: height * -0.04,
             marginBottom: height * 0.08,
         }}>
-            {/* TODO: understand this logic */}
             <TouchableOpacity
-                activeOpacity={(mode === 0 && !allowSubmit) || (mode === 1 && currentPressed == "Not Touched" && !mcSubmitted) ? 1 : 0.7}
                 style={{
-                    backgroundColor: (mode === 0 && !allowSubmit) || (mode === 1 && currentPressed == 'Not Touched' && !mcSubmitted) ? '#3c716f' : '#004643',
+                    backgroundColor: '#004643',
                     height: height * 0.06,
                     width: width * 0.75,
                     ...globalStyles.button
                 }}
                 onPress={() => handleNext()}
             >
-                <Text style={globalStyles.buttonText}>{((mode == 0 && voiceSubmitted) || (mode == 1 && mcSubmitted)) ? 'Go home' : 'Submit'}</Text>
+                <Text style={globalStyles.buttonText}>Submit</Text>
             </TouchableOpacity>
         </View>
     );
@@ -615,16 +583,14 @@ export default function Question_Combined({ navigation, route }) {
               paddingTop: 70
             }}>
                 
-            <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} />
+            <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} params={{topic: route.params.topic}}/>
 
-            {fromScreen === 'Assignments' && (
-              <QuizNavigation 
+            <QuizNavigation 
                 onPrev={handlePrevQuestion} 
                 onNext={handleNextQuestion}
                 currentQuestionIndex={currentQuestionIndex}
-                totalQuestions={totalQuestions}
-                />
-            )}
+                totalQuestions={allQuestions.length}
+            />
 
               
               {data.message === "No questions" ? (
@@ -639,21 +605,21 @@ export default function Question_Combined({ navigation, route }) {
     
 
                   <SwitchButton
-                    FirstText="Practice"
-                    SecondText="Answer"
+                    FirstText="Voice"
+                    SecondText="Multiple Choice"
                     width={width * 0.68}
                     height={0.045 * height}
                     mode={mode}
                     setMode={setMode}
                   />
 
-                    <View style={{height: 20}} />
+                    <View style={{height: 0.01 * height}} />
 
                   {/* Bottom component */}
-                  {mode === 0 ? ( 
+                  {mode === QuestionMode.VOICE ? ( 
                     // Voice answer card
                     <View style={{
-                      height: height * 0.45,
+                      height: height * 0.4,
                       width: width, // originally width
                       justifyContent: 'flex-start',
                       alignItems: 'center',
@@ -673,9 +639,6 @@ export default function Question_Combined({ navigation, route }) {
                         elevation: 10,
                         justifyContent: 'space-between'
                       }}>
-
-                        
-
                         {/* Text box */}
                         <TextInput
                           style={{
@@ -703,22 +666,53 @@ export default function Question_Combined({ navigation, route }) {
                         
                     
                   ) : (
-                    // MC answer component 
+                    // MC answer component (Mark Zhang, commit on mainbranch: 2629865ec6315036ebbc6a70355abe372dbc5f3f)
                     <View style={{
-                        height: height * 0.45,
+                        height: height * 0.4,
                         width: width,
-                        display: 'flex',
                         justifyContent: 'flex-start',
                         alignItems: 'center',
                       }}>
-                        <Card
-                            text={data.options[0]}
-                            width={width * 0.8}
-                            height={height * 0.35}
-                        />      
-                    </View>
+                    <ScrollView
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        alwaysBounceHorizontal={true}
+                        snapToOffsets={data.options.map((_, index) => index * 0.88 * width)}
+                        snapToEnd={false}
+                        decelerationRate='fast'
+                        style={{
+                            width: width,
+                        }}
+                        contentContainerStyle={{
+                            
+                            paddingLeft: 0.1 * width,
+                            paddingRight: 0.1 * width, // Add right padding for better UX
+                            height: height * 0.4, // adjust spacing above
+                            // alignItems: 'center',
+                        }}
+                        onScroll={handleScroll}
+                        scrollEventThrottle={16}
+                        >
+                        {data.options.map((option, index) => {
+                            const optionLetter = String.fromCharCode(65 + index); // Convert 0, 1, 2, etc. to A, B, C, etc.
+                            return (
+                            <Card
+                                key={optionLetter}
+                                option={optionLetter}
+                                text={option}
+                                width={width * 0.8}
+                                height={height * 0.35}
+                                isSelected={currentPressed === optionLetter}
+                                isCardSubmitted={mcSubmitted}
+                                isCardCorrectAnswer={optionLetter == data.answer}
+                            />
+                            );
+                        })}
+                        </ScrollView>
+                        </View>
+
                 )}
-                
+                <NextButtonComponent />
                 </>
               )}
 

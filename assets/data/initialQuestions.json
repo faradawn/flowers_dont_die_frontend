@@ -1,0 +1,332 @@
+[
+    {
+      "Dynamic Programming|Easy|Dynamic Programming": {
+        "time_limit": 60,
+        "question": "What is dynamic programming?",
+        "answer": "A",
+        "course_id": "ICPC",
+        "topic": "Dynamic Programming",
+        "question_number": "Dynamic Programming|Easy|Dynamic Programming",
+        "difficulty": "Easy",
+        "options": [
+          "A method to solve complex problems by breaking them into simpler subproblems."
+        ],
+        "slug": "Dynamic Programming"
+      }
+    },
+    {
+      "Greedy Algorithm|Easy|Greedy Algorithm": {
+        "time_limit": 60,
+        "question": "What is a greedy algorithm?",
+        "answer": "A",
+        "course_id": "ICPC",
+        "topic": "Greedy Algorithm",
+        "question_number": "Greedy Algorithm|Easy|Greedy Algorithm",
+        "difficulty": "Easy",
+        "options": [
+          "An algorithm that makes the best immediate choice at each step."
+        ],
+        "slug": "Greedy Algorithm"
+      }
+    },
+    {
+      "Week 3|Easy|Big-O Notation": {
+        "time_limit": 60,
+        "question": "Assume that a computer can execute 10^8 operations in 1 second. If the time limit is 1 to 2 second and input size is 10^8, what is the max acceptable time complexity?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 3",
+        "question_number": "Week 3|Easy|Big-O Notation",
+        "difficulty": "Easy",
+        "options": [
+          "O(n)"
+        ],
+        "slug": "Big-O Notation"
+      }
+    },
+    {
+      "Week 3|Easy|Time complexity for Array": {
+        "time_limit": 60,
+        "question": "What is the time complexity of 1) indexing into an array, 2) appending an element to an array? If one of them is not possible, explain why.",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 3",
+        "question_number": "Week 3|Easy|Time complexity for Array",
+        "difficulty": "Easy",
+        "options": [
+          "1) indexing into an array takes O(1) time. 2) appending to array is not possible, because arrays are statically allocated. Array's length is initialized at the start."
+        ],
+        "slug": "Time complexity for Array"
+      }
+    },
+    {
+      "Week 3|Easy|Time complexity for Dynamic Array": {
+        "time_limit": 60,
+        "question": "What is the time complexity of adding or removing elements in the middle of a Dynamic Array/List? Why?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 3",
+        "question_number": "Week 3|Easy|Time complexity for Dynamic Array",
+        "difficulty": "Easy",
+        "options": [
+          "O(n), becasue of the need to shuffle/move up all the subsequent elements."
+        ],
+        "slug": "Time complexity for Dynamic Array"
+      }
+    },
+    {
+      "Week 3|Easy|Time complexity for Sorting": {
+        "time_limit": 60,
+        "question": "What is the time complexity of sorting an array? What is one sorting algorithm that meets this time complexity?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 3",
+        "question_number": "Week 3|Easy|Time complexity for Sorting",
+        "difficulty": "Easy",
+        "options": [
+          "O(n log n). Merge sort, quick sort, etc."
+        ],
+        "slug": "Time complexity for Sorting"
+      }
+    },
+    {
+      "Week 4|Easy|Array vs List Access": {
+        "time_limit": 60,
+        "question": "Compare time complexities for accessing elements in arrays and lists.",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 4",
+        "question_number": "Week 4|Easy|Array vs List Access",
+        "difficulty": "Easy",
+        "options": [
+          "Arrays and lists: O(1) for access. Lists: O(n) for insert at specific index."
+        ],
+        "slug": "Array vs List Access"
+      }
+    },
+    {
+      "Week 4|Medium|Sliding Window Technique": {
+        "time_limit": 60,
+        "question": "What is the Sliding Window technique and when is it used?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 4",
+        "question_number": "Week 4|Medium|Sliding Window Technique",
+        "difficulty": "Medium",
+        "options": [
+          "Sliding Window is used for subarray problems. It maintains a window over the data and usually runs in O(n) time."
+        ],
+        "slug": "Sliding Window Technique"
+      }
+    },
+    {
+      "Week 4|Medium|Two Pointers Technique": {
+        "time_limit": 60,
+        "question": "Explain the Two Pointers technique and its typical time complexity.",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 4",
+        "question_number": "Week 4|Medium|Two Pointers Technique",
+        "difficulty": "Medium",
+        "options": [
+          "Two Pointers is used with sorted arrays to iterate from both ends towards the center. It typically runs in O(n) time."
+        ],
+        "slug": "Two Pointers Technique"
+      }
+    },
+    {
+      "Week 5|Easy|Python Sorting Complexity": {
+        "time_limit": 60,
+        "question": "What is the time complexity of Python's built-in sorting function?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 5",
+        "question_number": "Week 5|Easy|Python Sorting Complexity",
+        "difficulty": "Easy",
+        "options": [
+          "Python's built-in sorting function has a time complexity of O(n log n)."
+        ],
+        "slug": "Python Sorting Complexity"
+      }
+    },
+    {
+      "Week 5|Medium|Binary Search": {
+        "time_limit": 60,
+        "question": "What is binary search and its time complexity?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 5",
+        "question_number": "Week 5|Medium|Binary Search",
+        "difficulty": "Medium",
+        "options": [
+          "Binary search finds an element in a sorted array by repeatedly halving the search space. Its time complexity is O(log n)."
+        ],
+        "slug": "Binary Search"
+      }
+    },
+    {
+      "Week 5|Medium|Hash Tables": {
+        "time_limit": 60,
+        "question": "What are hash tables and their average time complexities?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 5",
+        "question_number": "Week 5|Medium|Hash Tables",
+        "difficulty": "Medium",
+        "options": [
+          "Hash tables allow O(1) average time for insert, delete, and lookup of key-value pairs."
+        ],
+        "slug": "Hash Tables"
+      }
+    },
+    {
+      "Week 5|Medium|Merge Sort": {
+        "time_limit": 60,
+        "question": "Briefly explain merge sort and its time complexity.",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 5",
+        "question_number": "Week 5|Medium|Merge Sort",
+        "difficulty": "Medium",
+        "options": [
+          "Merge sort recursively splits the array into halves and merges them back. Its time complexity is O(n log n)."
+        ],
+        "slug": "Merge Sort"
+      }
+    },
+    {
+      "Week 6|Easy|Singly Linked List": {
+        "time_limit": 60,
+        "question": "Describe the structure and time complexity of operations in a singly linked list.",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 6",
+        "question_number": "Week 6|Easy|Singly Linked List",
+        "difficulty": "Easy",
+        "options": [
+          "A chain of nodes where each points to the next. Accessing nth element is O(n), adding after nth is O(1)."
+        ],
+        "slug": "Singly Linked List"
+      }
+    },
+    {
+      "Week 6|Easy|Stacks and Queues": {
+        "time_limit": 60,
+        "question": "How are stacks and queues implemented in Python and what are their main operations?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 6",
+        "question_number": "Week 6|Easy|Stacks and Queues",
+        "difficulty": "Easy",
+        "options": [
+          "Stacks use lists (pop(), append()), queues use deque. Both provide O(1) access to top elements."
+        ],
+        "slug": "Stacks and Queues"
+      }
+    },
+    {
+      "Week 6|Medium|Linked List Operations": {
+        "time_limit": 60,
+        "question": "What are the time complexities for main operations in a linked list?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 6",
+        "question_number": "Week 6|Medium|Linked List Operations",
+        "difficulty": "Medium",
+        "options": [
+          "Insertion and deletion at known position: O(1). Search: O(n)."
+        ],
+        "slug": "Linked List Operations"
+      }
+    },
+    {
+      "Week 7|Hard|BST vs Balanced BST": {
+        "time_limit": 60,
+        "question": "Compare time complexities of operations in a BST vs a balanced BST.",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 7",
+        "question_number": "Week 7|Hard|BST vs Balanced BST",
+        "difficulty": "Hard",
+        "options": [
+          "Regular BST: O(n) worst case. Balanced BST: O(log n) for search, insert, delete."
+        ],
+        "slug": "BST vs Balanced BST"
+      }
+    },
+    {
+      "Week 7|Medium|Binary Search Tree": {
+        "time_limit": 60,
+        "question": "What is a binary search tree (BST) and its main advantage?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 7",
+        "question_number": "Week 7|Medium|Binary Search Tree",
+        "difficulty": "Medium",
+        "options": [
+          "A tree where left subtree < node < right subtree. Allows O(log n) search"
+        ],
+        "slug": "Binary Search Tree"
+      }
+    },
+    {
+      "Week 7|Medium|DFS Time Complexity": {
+        "time_limit": 60,
+        "question": "What is the time complexity of depth-first search (DFS) in a tree?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 7",
+        "question_number": "Week 7|Medium|DFS Time Complexity",
+        "difficulty": "Medium",
+        "options": [
+          "The time complexity of DFS in a tree is O(n) where n is the number of nodes."
+        ],
+        "slug": "DFS Time Complexity"
+      }
+    },
+    {
+      "Week 7|Medium|DFS vs BFS": {
+        "time_limit": 60,
+        "question": "Compare DFS and BFS traversal methods and their use cases.",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 7",
+        "question_number": "Week 7|Medium|DFS vs BFS",
+        "difficulty": "Medium",
+        "options": [
+          "DFS uses stack, good for deep trees. BFS uses queue, good for shortest path."
+        ],
+        "slug": "DFS vs BFS"
+      }
+    },
+    {
+      "Week 8|Hard|Heaps": {
+        "time_limit": 60,
+        "question": "What are heaps and their time complexities for main operations?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 8",
+        "question_number": "Week 8|Hard|Heaps",
+        "difficulty": "Hard",
+        "options": [
+          "Heaps are priority queues. Insert and remove: O(log n). Access min/max: O(1)."
+        ],
+        "slug": "Heaps"
+      }
+    },
+    {
+      "Week 9|Hard|Heap Operations": {
+        "time_limit": 60,
+        "question": "What are the time complexities of main heap operations?",
+        "answer": "A",
+        "course_id": "Algo Group",
+        "topic": "Week 9",
+        "question_number": "Week 9|Hard|Heap Operations",
+        "difficulty": "Hard",
+        "options": [
+          "Insert: O(log n). Delete min/max: O(log n). Access min/max: O(1). Heapify: O(n)."
+        ],
+        "slug": "Heap Operations"
+      }
+    }
+  ]

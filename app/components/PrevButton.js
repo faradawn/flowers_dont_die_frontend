@@ -11,6 +11,7 @@ const PrevButton = ({ onPress, disabled }) => (
         alignItems: 'center',
         padding: 10, 
         opacity: disabled ? 0.5 : 1, 
+        width: 100,
       }}
     // hitSlop={{ top: 30, bottom: 20, left: 10, right: 10 }} 
   >

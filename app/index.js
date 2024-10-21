@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Dimensions, SafeAreaView } from 'react-native';
 
 import * as Font from 'expo-font';
@@ -13,13 +13,14 @@ import Login from './screens/Login';
 import SignUp from './screens/Signup';
 import Courses from './screens/Courses';
 import Topics from './screens/Topic';
-import Question_A from './screens/Question_Audio';
 import Question_MC from './screens/Question_MultipleChoice';
 import Profile from './screens/Profile';
 import Assignments from './screens/Assignments';
 import Question_Daily from './screens/Question_Daily';
 
 import { UserProvider } from './components/UserContext';
+import { initializeLocalDatabase } from './components/localDb';
+import { deleteLoginInfo } from './components/SecureStoreUtils';
 
 // Accessing Font
 const getFonts = () => Font.loadAsync({
@@ -72,6 +73,7 @@ function RootStackNavigator() {
         <View style={{ height: height, width: width }}>
             <RootStack.Navigator
                 detachPreviousScreen={true}
+                initialRouteName="HomeTab"
             >
                 <RootStack.Screen 
                     name="Login" 
@@ -98,11 +100,7 @@ function RootStackNavigator() {
                     component={Assignments}
                     options={{headerShown: false}}
                 />
-                <RootStack.Screen 
-                    name="Question_A" 
-                    component={Question_A}
-                    options={{headerShown: false}}
-                />
+               
                 <RootStack.Screen 
                     name="Question_MC" 
                     component={Question_MC}
@@ -118,22 +116,42 @@ function RootStackNavigator() {
     )
 }
 
-export default function App(){
+export default function App() {
     const [fontsLoaded, setFontsLoaded] = useState(false);
+    const [dbInitialized, setDbInitialized] = useState(false);
 
-    if(!fontsLoaded){
+    const loadFontsAndInitDb = async () => {
+        console.log("Loading fonts and initializing database");
+        await Font.loadAsync({
+            'Baloo2-Regular': require('../assets/fonts/Baloo2-Regular.ttf'),
+            'Baloo2-Bold': require('../assets/fonts/Baloo2-Bold.ttf'),
+        });
+        await initializeLocalDatabase();
+        
+        // Delete login info from secure storage
+        // try {
+        //     await deleteLoginInfo();
+        //     console.log('Login info deleted successfully');
+        // } catch (error) {
+        //     console.error('Error deleting login info:', error);
+        // }
+
+        setDbInitialized(true);
+    };
+
+    if (!fontsLoaded || !dbInitialized) {
         return (
             <AppLoading
-                startAsync={getFonts}
-                onFinish={()=>setFontsLoaded(true)}
+                startAsync={loadFontsAndInitDb}
+                onFinish={() => setFontsLoaded(true)}
                 onError={(err) => console.log(err)}
             />
-        )
+        );
     }
 
     return (
         <UserProvider>
-            <RootStackNavigator/>
+            <RootStackNavigator />
         </UserProvider>
-    )
+    );
 }

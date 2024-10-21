@@ -10,6 +10,8 @@ import { globalStyles } from '../globalStyles/globalStyles';
 import SwitchButton from '../components/SwitchButton';
 import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
+import { getLoginInfo, saveLoginInfo } from '../components/SecureStoreUtils';
+import { getCourses } from '../components/localDb';
 
 import { myImages } from '../globalStyles/globalStyles';
 
@@ -21,41 +23,106 @@ export default function Courses({ navigation }) {
     const [courses, setCourses] = useState([]);
     const [dailyQuestionId, setDailyQuestionId] = useState(null); // daily random question
     const { state, updateState } = useUser();
+    const [greeting, setGreeting] = useState('');
 
-    // fetching the topics from the backend api
-    const fetchCourses = async () => {
-        try {
-            const response = await fetch(
-                'https://backend.faradawn.site:8001/get_courses', {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    uid: state.uid,
-                }),
-            }
-            )
-            try{
-                const data = await response.json();
-                console.log("Courses Received: ", data)
-                setCourses(data.courses);
-                setDailyQuestionId(data.daily_question_id);
-            }catch(jsonError){
-                console.error('[Courses] JSON parsing error:', jsonError);
-            }
+    const getGreeting = (username) => {
+        const hour = new Date().getHours();
+        let greetings;
 
-        } catch (error) {
-            console.log('Error fetching data: ', error)
-        } finally {
-            setIsLoading(false);
+        if (hour >= 6 && hour < 9) {
+            greetings = [
+                `Rise and shine, ${username}!`,
+                `Early bird catches the code, ${username}!`,
+                `Good morning! Ready to tackle the day, ${username}?`
+            ];
+        } else if (hour >= 9 && hour < 12) {
+            greetings = [
+                `Let's make today great, ${username}!`,
+                `Time for some morning code, ${username}!`,
+                `Coffee's ready, ${username}!`
+            ];
+        } else if (hour >= 12 && hour < 14) {
+            greetings = [
+                `Lunch time! Don't skip it, ${username}!`,
+                `Refuel and recharge, ${username}!`,
+                `Midday munchies calling, ${username}!`
+            ];
+        } else if (hour >= 14 && hour < 17) {
+            greetings = [
+                `Keep up the awesome work, ${username}!`,
+                `Afternoon hustle mode: ON, ${username}!`,
+                `You're rocking it, ${username}!`
+            ];
+        } else if (hour >= 17 && hour < 20) {
+            greetings = [
+                `Evening already? Time flies, ${username}!`,
+                `How was your day, ${username}?`,
+                `Great job today, ${username}!`
+            ];
+        } else if (hour >= 20 && hour < 22) {
+            greetings = [
+                `Relax and unwind, ${username}!`,
+                `Evening coding session ahead, ${username}?`,
+                `You've earned some rest, ${username}!`
+            ];
+        } else if (hour >= 22 || hour < 0) {
+            greetings = [
+                `Burning the midnight oil, ${username}?`,
+                `Late-night inspiration strikes, ${username}!`,
+                `Time to wrap up, don't you think, ${username}?`
+            ];
+        } else {
+            greetings = [
+                `Night owl mode activated, ${username}!`,
+                `Don't forget to rest, ${username}!`,
+                `The code can wait till morning, ${username}!`
+            ];
         }
-    }
+
+        return greetings[Math.floor(Math.random() * greetings.length)];
+    };
 
     useFocusEffect(
         useCallback(() => {
-            fetchCourses();
-        }, [])
+            async function checkAndSetupUser() {
+                if (!state.uid || !state.username) {
+                    const loginInfo = await getLoginInfo();
+                    console.log("[Courses] state.uid is not set, printing state info", state);
+                    if (loginInfo) {
+                        updateState('username', loginInfo.username);
+                        updateState('uid', loginInfo.uid);
+                        console.log("[Courses] Got secure store login info: ", loginInfo);
+                    } else {
+                        const guestUid = `guest_${Math.random().toString(36).substr(2, 9)}`;
+                        const guestUsername = `Guest_${guestUid.slice(-3)}`;
+                        updateState('username', guestUsername);
+                        updateState('uid', guestUid);
+                        await saveLoginInfo(guestUid, guestUsername, null);
+                        console.log("[Courses] No secure store login info. Created and stored guest info", guestUsername, guestUid);
+                    }
+                } else {
+                    console.log("[Courses] User info already in state:", state);
+                }
+
+                setGreeting(getGreeting(state.username));
+            }
+
+            async function fetchCourses() {
+                if (!state.uid) return;
+                try {
+                    const data = await getCourses(state.uid);
+                    console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses);
+                    setCourses(data.courses);
+                    setDailyQuestionId(data.daily_question_id);
+                } catch (error) {
+                    console.error('[Courses] Error fetching or parsing data:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+
+            checkAndSetupUser().then(() => fetchCourses());
+        }, [state.uid, state.username])
     );
 
     // navigation through clicking a specific topic
@@ -109,13 +176,7 @@ export default function Courses({ navigation }) {
                                     fontSize: 22,
                                 }}
                             >
-                                Select your Course,
-                                <Text
-                                    style={{
-                                        color: '#26C250'
-                                    }}
-                                > {state.username}!
-                                </Text>
+                                {greeting}
                             </Text>
                         </View>
 

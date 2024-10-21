@@ -1,57 +1,97 @@
-import React from 'react';
-import { View, Dimensions, Image, Text, TouchableOpacity } from 'react-native';
-
-import { globalStyles } from '../globalStyles/globalStyles';
+import React, { useState } from 'react';
+import { View, Dimensions, Image, Text, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { deleteLoginInfo, saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils';
+import { clearSubmissions } from '../components/localDb';
 import { useUser } from '../components/UserContext';
-import { deleteLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
-
+import { globalStyles } from '../globalStyles/globalStyles';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 export default function Profile({ navigation }){
-    const { state } = useUser();
-    const { updateState } = useUser();
+    const { state, updateState } = useUser();
+    const [isEditing, setIsEditing] = useState(false);
+    const [newUsername, setNewUsername] = useState(state.username);
 
-    // handling deletion of the account
-    const handleDelete = async() => {
+
+    const handleDelete = async () => {
         try {
-            const response = await fetch(
-                'https://backend.faradawn.site:8001/delete_account', {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                    uid: state.uid,
-                    }),
-                }
-            );
+            // Clear local submissions for this user
+            const result = await clearSubmissions(state.uid);
+            if (result.status !== "success") {
+                throw new Error(result.message);
+            }
 
-            const data = await response.json();
-
+            // Clear login info from secure storage
             await deleteLoginInfo();
+
+            // Clear uid from state
+            updateState('uid', '');
+            updateState('username', '');
+
+            Alert.alert("Account Deleted", "Your account has been successfully deleted.");
             
-            console.log("Account deleted from remote and local", data);
-        } catch(error) {
+            // Navigate to Courses screen
+            navigation.navigate('Courses');
+        } catch (error) {
             console.log('Error deleting account: ', error);
-        } finally {
-            navigation.navigate('Login');
+            Alert.alert("Error", "Failed to delete account. Please try again.");
         }
-    }
+    };
 
     const handleLogout = async () => {
         try {
             await deleteLoginInfo();
             updateState('username', '');
             updateState('uid', '');
-            navigation.navigate('Login');
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             console.log("Done logout and deleted async storage");
+            navigation.navigate('Courses');
         } catch (error) {
             console.log('Error during logout:', error);
         }
     };
 
+    const handleResetProgress = async () => {
+        try {
+            const result = await clearSubmissions();
+            if (result.status === "success") {
+                Alert.alert("Success", result.message);
+                // Optionally, you can update any relevant state or trigger a refresh here
+            } else {
+                Alert.alert("Error", result.message);
+            }
+        } catch (error) {
+            console.log('Error resetting progress:', error);
+            Alert.alert("Error", "An unexpected error occurred while resetting progress");
+        }
+    };
+
+    const handleUsernameUpdate = async () => {
+        if (newUsername.trim() === '') {
+            Alert.alert('Error', 'Username cannot be empty');
+            return;
+        }
+
+        try {
+            await updateState('username', newUsername);
+            const currentLoginInfo = await getLoginInfo();
+            if (currentLoginInfo) {
+                await saveLoginInfo(state.uid, newUsername, currentLoginInfo.password);
+            } else {
+                await saveLoginInfo(state.uid, newUsername, null);
+            }
+
+            const newlogin = await getLoginInfo();
+            console.log('[Profile] Updated useranme and saved to state and secure storage', newlogin);
+        } catch (error) {
+            console.error('[Profile] Error updating username:', error);
+        }
+
+        setIsEditing(false);
+    };
 
     return (
         <View 
@@ -84,19 +124,54 @@ export default function Profile({ navigation }){
                 style={{
                     width: width,
                     height: height * 0.05,
-
                     marginVertical: height * 0.02,
-
                     alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
                 }}
             >
-                <Text
-                    style={{
-                        fontFamily: 'Baloo2-Bold',
-                        fontWeight: 'bold',
-                        fontSize: 30,
-                    }}
-                > { state.username }'s Account </Text>
+                {isEditing ? (
+                    <>
+                        <TextInput
+                            style={{
+                                fontFamily: 'Baloo2-Bold',
+                                fontWeight: 'bold',
+                                fontSize: 30,
+                                borderBottomWidth: 1,
+                                borderBottomColor: '#004643',
+                                paddingBottom: 5,
+                            }}
+                            value={newUsername}
+                            onChangeText={setNewUsername}
+                            autoFocus
+                            onSubmitEditing={handleUsernameUpdate}
+                        />
+                        <TouchableOpacity
+                            onPress={() => setIsEditing(false)}
+                            style={{ marginLeft: 10 }}
+                        >
+                            <Ionicons name="close" size={24} color="#004643" />
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        <Text
+                            style={{
+                                fontFamily: 'Baloo2-Bold',
+                                fontWeight: 'bold',
+                                fontSize: 30,
+                            }}
+                        >
+                            {state.username}'s profile
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => setIsEditing(true)}
+                            style={{ marginLeft: 10 }}
+                        >
+                            <Ionicons name="pencil" size={24} color="#004643" />
+                        </TouchableOpacity>
+                    </>
+                )}
             </View>
 
             {/* Graph Trend */}
@@ -104,7 +179,6 @@ export default function Profile({ navigation }){
                 style={{
                     width: width,
                     height: height * 0.24,
-
                     alignItems: 'center',
                 }}
             >
@@ -120,44 +194,41 @@ export default function Profile({ navigation }){
             {/* Buttons */}
             <View
                 style={{
-                    height: 0.3 * height,
+                    height: 0.38 * height,
                     width: width,
-
                     alignItems: 'center',
                     justifyContent: 'center',
                 }}
             >
-                {/* Logout Button */}
+                {/* Delete Account Button */}
                 <TouchableOpacity
                     style={[
                         { 
                             backgroundColor: '#004643',
                             height: 0.06 * height,
                             width: 0.8 * width,
-                            marginBottom: 0.02 * height,
                         }, 
                         globalStyles.button
                     ]}
-                    onPress={() => handleLogout()}
-                >
-                    <Text style={globalStyles.buttonText}>Log Out</Text>
-                </TouchableOpacity>
-
-                {/* Delete Account Button */}
-                <TouchableOpacity
-                    style={ [
-                        { 
-                            backgroundColor: '#004643',
-                            height: 0.06 * height,
-                            width: 0.8 * width,
-                        }, 
-                        globalStyles.button
-                    ] }
-                    onPress={() => handleDelete()}
+                    onPress={() => {
+                        Alert.alert(
+                            "Delete Account",
+                            "Are you sure you want to delete your account? This will clear all your local progress.",
+                            [
+                                {
+                                    text: "Cancel",
+                                    style: "cancel"
+                                },
+                                { 
+                                    text: "OK", 
+                                    onPress: () => handleDelete()
+                                }
+                            ]
+                        );
+                    }}
                 >
                     <Text style={globalStyles.buttonText}>Delete Account</Text>
                 </TouchableOpacity>
-                
             </View>
         </View>
     )
