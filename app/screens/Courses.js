@@ -25,61 +25,63 @@ export default function Courses({ navigation }) {
     const { state, updateState } = useUser();
     const [greeting, setGreeting] = useState('');
 
-    const getGreeting = (username) => {
+    const getGreeting = () => {
         const hour = new Date().getHours();
+        const dayOfWeek = new Date().getDay(); // 0 (Sunday) to 6 (Saturday)
         let greetings;
 
         if (hour >= 6 && hour < 9) {
             greetings = [
-                `Rise and shine, ${username}!`,
-                `Early bird catches the code, ${username}!`,
-                `Good morning! Ready to tackle the day, ${username}?`
+                "Rise and shine!",
+                "Early bird catches the code!",
+                "Good morning! Ready to tackle the day?"
             ];
         } else if (hour >= 9 && hour < 12) {
             greetings = [
-                `Let's make today great, ${username}!`,
-                `Time for some morning code, ${username}!`,
-                `Coffee's ready, ${username}!`
+                "Let's make today great!",
+                "Time for some morning code!",
+                "Coffee's ready!"
             ];
         } else if (hour >= 12 && hour < 14) {
             greetings = [
-                `Lunch time! Don't skip it, ${username}!`,
-                `Refuel and recharge, ${username}!`,
-                `Midday munchies calling, ${username}!`
+                "Lunch time! Don't skip it!",
+                "Refuel and recharge!",
+                "Midday munchies calling!"
             ];
         } else if (hour >= 14 && hour < 17) {
             greetings = [
-                `Keep up the awesome work, ${username}!`,
-                `Afternoon hustle mode: ON, ${username}!`,
-                `You're rocking it, ${username}!`
+                "Keep up the awesome work!",
+                "Afternoon hustle mode: ON!",
+                "You're rocking it!"
             ];
         } else if (hour >= 17 && hour < 20) {
             greetings = [
-                `Evening already? Time flies, ${username}!`,
-                `How was your day, ${username}?`,
-                `Great job today, ${username}!`
+                "Evening already? Time flies!",
+                "How was your day?",
+                "Great job today!"
             ];
         } else if (hour >= 20 && hour < 22) {
             greetings = [
-                `Relax and unwind, ${username}!`,
-                `Evening coding session ahead, ${username}?`,
-                `You've earned some rest, ${username}!`
+                "Relax and unwind!",
+                "Evening coding session ahead?",
+                "You've earned some rest!"
             ];
         } else if (hour >= 22 || hour < 0) {
             greetings = [
-                `Burning the midnight oil, ${username}?`,
-                `Late-night inspiration strikes, ${username}!`,
-                `Time to wrap up, don't you think, ${username}?`
+                "Burning the midnight oil?",
+                "Late-night inspiration strikes!",
+                "Time to wrap up, don't you think?"
             ];
         } else {
             greetings = [
-                `Night owl mode activated, ${username}!`,
-                `Don't forget to rest, ${username}!`,
-                `The code can wait till morning, ${username}!`
+                "Night owl mode activated!",
+                "Don't forget to rest!",
+                "The code can wait till morning!"
             ];
         }
 
-        return greetings[Math.floor(Math.random() * greetings.length)];
+        // Select greeting based on the day of the week
+        return greetings[dayOfWeek % greetings.length];
     };
 
     useFocusEffect(
@@ -104,7 +106,7 @@ export default function Courses({ navigation }) {
                     console.log("[Courses] User info already in state:", state);
                 }
 
-                setGreeting(getGreeting(state.username));
+                setGreeting(getGreeting());
             }
 
             async function fetchCourses() {
@@ -161,22 +163,26 @@ export default function Courses({ navigation }) {
                         {/* Message At The Top */}
                         <View
                             style={{
-                                height: height * 0.06,
+                                minHeight: height * 0.06,
                                 width: width,
-
-
+                                paddingHorizontal: 30, // Add horizontal padding
                                 alignItems: 'center',
                                 justifyContent: 'center',
                             }}
                         >
                             <Text
                                 style={{
-
                                     fontFamily: 'Baloo2-Bold',
                                     fontSize: 22,
+                                    textAlign: 'center', // Center-align the text
                                 }}
+                                numberOfLines={2} // Allow up to 2 lines
+                                adjustsFontSizeToFit={true} // Automatically adjust font size if needed
                             >
-                                {greeting}
+                                {greeting}{' '}
+                                <Text style={{ color: '#26C250' }}>
+                                    {state.username}!
+                                </Text>
                             </Text>
                         </View>
 
