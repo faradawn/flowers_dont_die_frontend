@@ -461,8 +461,8 @@ export default function Question_Combined({ navigation, route }) {
             {/* Countdown Timer */}
             <View
                 style = { {
-                    width: 80,
-                    height: 80,
+                    width: 50,
+                    height: 50,
 
                     marginTop: 10,
                     borderRadius: 50,
