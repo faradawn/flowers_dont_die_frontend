@@ -242,6 +242,25 @@ export default function Question_Combined({ navigation, route }) {
             await storeSubmission(response_data['submission_details']);
         } catch(error) {
             console.log("Error sending data or storing submission: ", error);
+            
+            // Create a fallback submission object
+            const fallbackSubmission = {
+                course_id: state.course_id,
+                practice_type: "ASSIGNMENT",
+                question_id: data.question_id,
+                question_type: mode === QuestionMode.VOICE ? "VOICE" : "MC",
+                score: mode === QuestionMode.MULTIPLE_CHOICE ? score : null,
+                timestamp: new Date().toISOString(),
+                uid: state.uid,
+                user_response: mode === QuestionMode.VOICE ? text : currentPressed
+            };
+            
+            // only store if multiple choice
+            if(mode === QuestionMode.MULTIPLE_CHOICE){
+                await storeSubmission(fallbackSubmission);
+            }
+
+            
         }
 
         if (mode === QuestionMode.VOICE) {
