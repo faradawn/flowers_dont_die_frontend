@@ -1,63 +1,48 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 
 export default function Card({ isSelected, option, text, width, height, isCardSubmitted, isCardCorrectAnswer }) {
   return (
-    <View style={
-      [styles.card, 
-      { width: width, 
-        height: height, 
+    <TouchableOpacity
+      activeOpacity={0.9}
+      style={{
+        borderRadius: 20,
+        padding: 5,
+        overflow: 'hidden',
+        backgroundColor: isCardSubmitted
+          ? isCardCorrectAnswer
+            ? '#65c465'
+            : '#004643'
+          : isSelected
+          ? '#004643'
+          : '#3c716f',
+        width: width,
+        height: height,
         marginRight: 0.1 * width,
-
-        backgroundColor : isCardSubmitted ?  (isCardCorrectAnswer ? "#65c465" : "#004643") : (isSelected ? '#004643' : '#3c716f'),
-      }
-      ]
-    }
+        alignItems: 'center',
+      }}
     >
-      <TouchableOpacity 
-        activeOpacity={0.9}
-        style={[styles.touchable, { padding: 0 }]}
+      <Text
+        style={{
+          fontFamily: 'Baloo2-Bold',
+          fontSize: 40,
+          color: 'white',
+        }}
       >
-        <Text style={[
-          styles.title,
-          { color: 'white' }
-        ]}>
-          {option}
-        </Text>
-      </TouchableOpacity>
-      <ScrollView 
-        style={[styles.scrollView, {marginTop: 0}]}
-        showsVerticalScrollIndicator={false}  
+        {option}
+      </Text>
+      <Text
+        style={{
+          flex: 1,
+          fontFamily: 'Baloo2-Regular',
+          fontSize: 16,
+          paddingHorizontal: 10,
+          color: 'white',
+          marginTop: 10,
+        }}
       >
-        <Text style={styles.text}>{text}</Text>
-      </ScrollView>
-    </View>
-  )
+        {text}
+      </Text>
+    </TouchableOpacity>
+  );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 20,
-    padding: 5,
-    overflow: 'hidden',
-    backgroundColor: '#3c716f',
-  },
-  touchable: {
-    alignItems: 'center',
-    padding: 3,
-  },
-  title: {
-    fontFamily: 'Baloo2-Bold',
-    fontSize: 40,
-  },
-  scrollView: {
-    flex: 1,
-    marginTop: 10,
-  },
-  text: {
-    fontFamily: 'Baloo2-Regular',
-    fontSize: 16,
-    paddingHorizontal: 10,
-    color: 'white',
-  }
-})

@@ -129,17 +129,14 @@ export default function Question_Combined({ navigation, route }) {
         }
     };
 
-    // === MC
-    const handleChooseOption = (option) => { 
-        setCurrentPressed(option);
-    }
-
+ 
     const handleScroll = (event) => {
         const xOffset = event.nativeEvent.contentOffset.x;
         const index = Math.round(xOffset / (width * 0.88)); // Calculate the index based on scroll position
         const options = ['A', 'B', 'C'];
         if (index >= 0 && index < options.length) {
-            handleChooseOption(options[index]);
+            setCurrentPressed(options[index]);
+            console.log('Current pressed: ', options[index]);
         }
     };
 
