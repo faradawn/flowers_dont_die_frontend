@@ -444,7 +444,7 @@ export default function Question_Combined({ navigation, route }) {
                     onPress={onPrev}
                     disabled={currentQuestionIndex === 0}
                 />
-                <Text style={{fontFamily: 'Baloo2-Regular', fontSize: 16}}>
+                <Text style={{fontFamily: 'Baloo2-Regular', fontSize: 16, marginBottom: 30}}>
                     {`${currentQuestionIndex + 1} / ${totalQuestions}`}
                 </Text>
                 <DirectionButton
@@ -498,12 +498,12 @@ export default function Question_Combined({ navigation, route }) {
             {/* Countdown Timer */}
             <View
                 style = { {
-                    width: 50,
-                    height: 50,
+                    width: 70,
+                    height: 70,
 
                     marginTop: 10,
                     borderRadius: 50,
-                    borderWidth: 3,
+                    borderWidth: 6,
                     borderColor: '#ABD1C6',
                     zIndex: 1,
 
