@@ -181,18 +181,27 @@ export default function Question_Combined({ navigation, route }) {
         const formData = new FormData();
         formData.append('uid', state.uid);
         formData.append('question_id', data.question_id);
+        formData.append('course_id', state.course_id);
         formData.append('audio_file', file);
         try {
-            const response = await fetch('https://backend.faradawn.site:8001/transcribe', {
+            const response = await fetch('https://backend.faradawn.site:8001/transcribe_and_grade', {
                 method: 'POST',
                 headers: { "Content-Type": "multipart/form-data" },
                 body: formData
             });
             const response_data = await response.json();
+            
+            // Set transcribed text as before
             setTranscribedText(response_data);
-            setText((prevText) => `${prevText} ${response_data.transcribed_text}`);
+            setText(response_data.transcribed_text);
+            
+            // Store submission details and show feedback modal
+            await storeSubmission(response_data.submission_details);
+            setAnswerResponse(response_data);
+            setModalOpen(true);
+            setVoiceSubmitted(true);
         } catch(error) {
-            console.log('Error transcribing text: ', error);
+            console.log('Error transcribing and grading text: ', error);
         }
     };
 
