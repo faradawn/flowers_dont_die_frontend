@@ -423,7 +423,7 @@ export default function Question_Combined({ navigation, route }) {
             style={{
                 padding: 10, 
                 opacity: disabled ? 0.5 : 1, 
-                width: 60,
+                width: 90,
                 justifyContent: 'center',
                 alignItems: 'center'
             }}
