@@ -638,7 +638,7 @@ export default function Question_Combined({ navigation, route }) {
 
                   <QuestionComponent />
 
-                  <View style={{height: 20}} />
+                  <View style={{height: 0.01 * height}} />
     
 
                   <SwitchButton
