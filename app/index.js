@@ -55,7 +55,18 @@ function HomeTabNavigator() {
                     tabBarInactiveTintColor: 'grey',
                     headerShown: false,
 
-                    tabBarStyle: { height: 0.1 * height}
+                    tabBarStyle: { 
+                        height: 0.1 * height + 10,
+                        marginBottom: 5,
+                    },
+                    
+                    tabBarIconStyle: {
+                        marginTop: 7,
+                    },
+                    tabBarLabelStyle: {
+                        fontSize: 12,
+                        paddingBottom: 15,
+                    },
                 })}
                 initialRouteName='Courses'
             >
