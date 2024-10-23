@@ -15,8 +15,6 @@ import * as Haptics from 'expo-haptics';
 import LottieView from 'lottie-react-native';
 
 import TopBar from '../components/TopBar';
-import PrevButton from '../components/PrevButton';
-import NextButton from '../components/NextButton';
 import { getQuestionSet, storeSubmission } from '../components/localDb';
 
 const height = Dimensions.get('window').height * 0.95;
@@ -505,7 +503,7 @@ export default function Question_Combined({ navigation, route }) {
 
                     marginTop: 10,
                     borderRadius: 50,
-                    borderWidth: 6,
+                    borderWidth: 3,
                     borderColor: '#ABD1C6',
                     zIndex: 1,
 
