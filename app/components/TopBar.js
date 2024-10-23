@@ -9,8 +9,8 @@ const TopBar = ({ navigateTo, backText = 'Back', backgroundColor = '#fff', textC
   return (
     <View style={{
       position: 'absolute',
-      top: 15,
-      left: 0,
+      top: 5,
+      left: 15,
       right: 0,
       height: 60,
       flexDirection: 'row',

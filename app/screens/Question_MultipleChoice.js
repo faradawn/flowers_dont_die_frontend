@@ -417,17 +417,40 @@ export default function Question_Combined({ navigation, route }) {
 
 
     // Prev and next icon
+    // put direction button inside
+    const DirectionButton = ({ onPress, disabled, direction = 'left' }) => (
+        <TouchableOpacity
+            onPress={onPress}
+            disabled={disabled}
+            style={{
+                padding: 10, 
+                opacity: disabled ? 0.5 : 1, 
+                width: 60,
+                justifyContent: 'center',
+                alignItems: 'center'
+            }}
+        >
+            <Feather 
+                name={`chevron-${direction}`} 
+                size={40} 
+                color={disabled ? "gray" : "green"} 
+            />
+        </TouchableOpacity>
+    );
+
     const QuizNavigation = ({ onPrev, onNext, currentQuestionIndex, totalQuestions }) => {
         return (
-            <View className="absolute top-10 left-0 right-0 flex-row justify-between items-center px-4 z-5" style={{zIndex: 10}}>
-                <PrevButton
+            <View className="absolute top-12 left-0 right-0 flex-row justify-between items-center px-4" style={{zIndex: 10}}>
+                <DirectionButton
+                    direction="left"
                     onPress={onPrev}
                     disabled={currentQuestionIndex === 0}
                 />
                 <Text style={{fontFamily: 'Baloo2-Regular', fontSize: 16}}>
                     {`${currentQuestionIndex + 1} / ${totalQuestions}`}
                 </Text>
-                <NextButton
+                <DirectionButton
+                    direction="right"
                     onPress={onNext}
                     disabled={currentQuestionIndex === totalQuestions - 1}
                 />
