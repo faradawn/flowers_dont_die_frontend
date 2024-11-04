@@ -667,6 +667,9 @@ export default function Question_Combined({ navigation, route }) {
 
                     <View style={{height: 0.01 * height}} />
 
+                
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+
                   {/* Bottom component */}
                   {mode === QuestionMode.VOICE ? ( 
                     // Voice answer card
@@ -764,6 +767,7 @@ export default function Question_Combined({ navigation, route }) {
                         </View>
 
                 )}
+                </TouchableWithoutFeedback>
                 <NextButtonComponent />
                 </>
               )}
