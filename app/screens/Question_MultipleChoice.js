@@ -131,7 +131,7 @@ export default function Question_Combined({ navigation, route }) {
     const handleScroll = (event) => {
         const xOffset = event.nativeEvent.contentOffset.x;
         const index = Math.round(xOffset / (width * 0.88)); // Calculate the index based on scroll position
-        const options = ['A', 'B', 'C'];
+        const options = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
         if (index >= 0 && index < options.length) {
             setCurrentPressed(options[index]);
             console.log('Current pressed: ', options[index]);
@@ -464,6 +464,7 @@ export default function Question_Combined({ navigation, route }) {
             </View>
         );
     };
+    const sampleQuestion = "<p>" + "This is a very long question content to test the scroll functionality. ".repeat(20) + "</p>"    
 
       const SubmissionPanel = () => {
       
@@ -552,15 +553,19 @@ export default function Question_Combined({ navigation, route }) {
                     elevation: 10, // for Android shadow
                 }}
                 >
+
                 <ScrollView
+                    pointerEvents="auto"
+                    showsVerticalScrollIndicator={true}
+                    style={{ flex: 1, maxHeight: height * 0.30 }} // 
                     contentContainerStyle={{
-                        flexGrow: 1,
-                        justifyContent: 'flex-start',
+                      paddingBottom: 25, // 
                     }}
                     >
+                        
                     <RenderHtml
-                        contentWidth={width - 50}  // Adjust based on your padding/margin
-                        source={{ html: data.question }}
+                        contentWidth={width * 0.8}  // Adjust based on your padding/margin
+                        source={{ html: sampleQuestion }}
                         tagsStyles={{
                         body: {
                             marginTop: height * 0.03,
@@ -582,6 +587,7 @@ export default function Question_Combined({ navigation, route }) {
                         }}
                     />
                     </ScrollView>
+
             </View>
         </View>
     );
@@ -611,7 +617,7 @@ export default function Question_Combined({ navigation, route }) {
 
     return (
         <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center", width: width, height: height}}>
 
           {isLoading ? (
@@ -629,7 +635,7 @@ export default function Question_Combined({ navigation, route }) {
               paddingTop: 70
             }}>
                 
-            <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} params={{topic: route.params.topic}}/>
+             <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} params={{topic: route.params.topic}}/>
 
             <QuizNavigation 
                 onPrev={handlePrevQuestion} 
@@ -766,8 +772,8 @@ export default function Question_Combined({ navigation, route }) {
             </View>
           )}
 
-</KeyboardAvoidingView>            
-</TouchableWithoutFeedback>
+        </KeyboardAvoidingView>            
+
         </View>
       );
 }
