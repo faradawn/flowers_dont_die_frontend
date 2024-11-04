@@ -565,14 +565,14 @@ export default function Question_Combined({ navigation, route }) {
                         
                     <RenderHtml
                         contentWidth={width * 0.8}  // Adjust based on your padding/margin
-                        source={{ html: sampleQuestion }}
+                        source={{ html: data.question }}
                         tagsStyles={{
                         body: {
                             marginTop: height * 0.03,
-                            marginHorizontal: 5,
+                            marginHorizontal: 4,
                             padding: 20,
                             fontFamily: 'Baloo2-Bold',
-                            fontSize: 14,
+                            fontSize: 16,
                         },
                         code: {
                             backgroundColor: '#f0f0f0',
