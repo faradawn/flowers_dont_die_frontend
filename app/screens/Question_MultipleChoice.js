@@ -134,7 +134,7 @@ export default function Question_Combined({ navigation, route }) {
         const options = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
         if (index >= 0 && index < options.length) {
             setCurrentPressed(options[index]);
-            console.log('Current pressed: ', options[index]);
+            // console.log('Current pressed: ', options[index]);
         }
     };
 
