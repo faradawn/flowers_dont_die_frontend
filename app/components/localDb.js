@@ -53,7 +53,7 @@ export const initializeLocalDatabase = async () => {
     if (remoteData) {
       await AsyncStorage.setItem(STORAGE_KEYS.COURSES, JSON.stringify(remoteData.courses));
       await AsyncStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify(remoteData.questions));
-      console.log("[localDb] Stored remote courses and questions.", "num courses", remoteData.courses.length, "num questions", remoteData.questions.length);
+      console.log("[localDb] Remote courses:", remoteData.courses.length, "Remote questions:", remoteData.questions.length);
     } else {
       const storedCourses = await AsyncStorage.getItem(STORAGE_KEYS.COURSES);
       if (!storedCourses) {
@@ -74,7 +74,6 @@ export const initializeLocalDatabase = async () => {
       console.log("Stored initial submissions from JSON file");
     }
 
-    console.log("[localDb] Local database initialized");
   } catch (error) {
     console.error('[localDb] Error initializing local database:', error);
   }

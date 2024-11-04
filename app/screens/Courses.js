@@ -11,7 +11,7 @@ import SwitchButton from '../components/SwitchButton';
 import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
 import { getLoginInfo, saveLoginInfo } from '../components/SecureStoreUtils';
-import { getCourses } from '../components/localDb';
+import { getCourses, initializeLocalDatabase } from '../components/localDb';
 
 import { myImages } from '../globalStyles/globalStyles';
 
@@ -112,8 +112,9 @@ export default function Courses({ navigation }) {
             async function fetchCourses() {
                 if (!state.uid) return;
                 try {
+                    await initializeLocalDatabase(); // Initialize database before fetching
                     const data = await getCourses(state.uid);
-                    console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses);
+                    // console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses);
                     setCourses(data.courses);
                     setDailyQuestionId(data.daily_question_id);
                 } catch (error) {

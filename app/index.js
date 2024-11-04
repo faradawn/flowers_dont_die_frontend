@@ -19,14 +19,7 @@ import Assignments from './screens/Assignments';
 import Question_Daily from './screens/Question_Daily';
 
 import { UserProvider } from './components/UserContext';
-import { initializeLocalDatabase } from './components/localDb';
-import { deleteLoginInfo } from './components/SecureStoreUtils';
 
-// Accessing Font
-const getFonts = () => Font.loadAsync({
-    'Baloo2-Regular': require('../assets/fonts/Baloo2-Regular.ttf'),
-    'Baloo2-Bold': require('../assets/fonts/Baloo2-Bold.ttf'),
-});
 
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
@@ -129,28 +122,16 @@ function RootStackNavigator() {
 
 export default function App() {
     const [fontsLoaded, setFontsLoaded] = useState(false);
-    const [dbInitialized, setDbInitialized] = useState(false);
 
     const loadFontsAndInitDb = async () => {
-        console.log("Loading fonts and initializing database");
+        console.log("Loading fonts");
         await Font.loadAsync({
             'Baloo2-Regular': require('../assets/fonts/Baloo2-Regular.ttf'),
             'Baloo2-Bold': require('../assets/fonts/Baloo2-Bold.ttf'),
         });
-        await initializeLocalDatabase();
-        
-        // Delete login info from secure storage
-        // try {
-        //     await deleteLoginInfo();
-        //     console.log('Login info deleted successfully');
-        // } catch (error) {
-        //     console.error('Error deleting login info:', error);
-        // }
-
-        setDbInitialized(true);
     };
 
-    if (!fontsLoaded || !dbInitialized) {
+    if (!fontsLoaded) {
         return (
             <AppLoading
                 startAsync={loadFontsAndInitDb}
