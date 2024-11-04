@@ -51,6 +51,9 @@ export const myImages = {
     courseIcons: {
         'Algo Group': require('../../assets/images/course_icons/algo_group_icon.png'),
         'ICPC': require('../../assets/images/course_icons/icpc_icon.png'),
+        'College Prep': require('../../assets/images/course_icons/study_green_icon.png'),
+        'College Readiness': require('../../assets/images/course_icons/study_orange_icon.png'),
+        'Cloud': require('../../assets/images/course_icons/cloud_icon.png'),
     }
 }
 

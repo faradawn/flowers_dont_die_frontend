@@ -129,6 +129,7 @@ export const getCourses = async (uid) => {
       return {
         course_id: course.id,
         course_title: course.course_name,
+        logo_url: course.logo_url,
         num_total_questions: totalQuestions,
         num_completed_questions: completedCourseQuestions
       };

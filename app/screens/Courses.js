@@ -114,7 +114,7 @@ export default function Courses({ navigation }) {
                 try {
                     await initializeLocalDatabase(); // Initialize database before fetching
                     const data = await getCourses(state.uid);
-                    // console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses);
+                    console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses);
                     setCourses(data.courses);
                     setDailyQuestionId(data.daily_question_id);
                 } catch (error) {
@@ -259,6 +259,7 @@ export default function Courses({ navigation }) {
                                         pressHandler={coursePress}
                                         item={item}
                                         imageSource={myImages.courseIcons[item.course_title]}
+                                        logoUrl={item.logo_url}
                                     />
                                 )}
                             />

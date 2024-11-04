@@ -37,8 +37,7 @@ const ProgressIndicator = ({ totalQuestions, numsDone, height, width }) => {
   );
 };
 
-export default function Card({ index, title, id, height, width, pressHandler, item, imageSource }){
-  
+export default function Card({ index, title, id, height, width, pressHandler, item, imageSource, logoUrl }){
     return (
         <TouchableOpacity
             style={{
@@ -70,7 +69,12 @@ export default function Card({ index, title, id, height, width, pressHandler, it
                     marginLeft: 10,
                     resizeMode: 'contain'
                 }}
-                source={typeof imageSource === 'string' ? { uri: imageSource } : imageSource}
+                source={
+                    logoUrl 
+                        ? { uri: logoUrl }
+                        : (typeof imageSource === 'string' ? { uri: imageSource } : imageSource)
+                }
+                defaultSource={typeof imageSource === 'string' ? { uri: imageSource } : imageSource}
             />
 
             {/* Bulk Info of Card */}
