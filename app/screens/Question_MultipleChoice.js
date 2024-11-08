@@ -463,8 +463,7 @@ export default function Question_Combined({ navigation, route }) {
                 />
             </View>
         );
-    };
-    const sampleQuestion = "<p>" + "This is a very long question content to test the scroll functionality. ".repeat(20) + "</p>"    
+    };  
 
       const SubmissionPanel = () => {
       
