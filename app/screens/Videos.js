@@ -133,7 +133,6 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontFamily: 'Baloo2-Bold',
         color: '#004643',
-        textAlign: 'center',
         marginBottom: height * 0.02,
     },
 
@@ -162,14 +161,14 @@ const styles = StyleSheet.create({
     },
 
     descriptionTitle: {
-        fontSize: 20,
+        fontSize: 22,
         fontFamily: 'Baloo2-Bold',
         color: '#004643',
-        marginBottom: 10,
+        marginBottom: width * 0.02,
     },
 
     descriptionText: {
-        fontSize: 16,
+        fontSize: 18,
         fontFamily: 'Baloo2-Regular',
         color: '#333',
         lineHeight: 24,
