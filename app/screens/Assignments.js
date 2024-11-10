@@ -1,7 +1,7 @@
 import React, { useState, useEffect} from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { View, Dimensions, Text, FlatList, ActivityIndicator,
+import { View, Dimensions, Text, FlatList, ActivityIndicator,StyleSheet,
     TouchableOpacity,
 } from 'react-native';
 
@@ -60,6 +60,16 @@ export default function Topics({ navigation, route }){
             fromScreen: 'Assignments',
             question_arr: assignments.question_arr,
         })
+    }
+
+    // navigation to Videos screen
+    const navigateToVideos = () => {
+        navigation.navigate('Videos', {
+            uid: state.uid,
+            course_id: state.course_id,
+            topic: topic,
+            question_id: null,
+        });
     }
 
     return (
@@ -149,6 +159,8 @@ export default function Topics({ navigation, route }){
                                 flex: 5,
                                 alignItems: 'center',
                                 justifyContent: 'center',
+
+                                paddingBottom: 60 ,
                             }}
                         >
                             <FlatList
@@ -166,7 +178,26 @@ export default function Topics({ navigation, route }){
                                     />
                                 )}
                             />
-                        </View>
+                    {/* New button to navigate to Videos screen */}
+                    {state.course_id === "College Prep" && (
+                    <TouchableOpacity
+                        style={{
+                            width: width * 0.5,
+                            backgroundColor: '#004643',
+                            padding: 10,
+                            borderRadius: 10,
+                            marginTop: 10,
+                            marginBottom: height * 0.15, // Add this to lift button up
+                            alignSelf: 'center',
+                        }}
+                        onPress={navigateToVideos}
+                    >
+                        <Text style={{ color: 'white', fontSize: 16, alignSelf: 'center', }}>Go to Videos</Text>
+                    </TouchableOpacity>
+                    )}
+                    </View>
+                    
+                        
                     </View>
                 </View>
             )}  

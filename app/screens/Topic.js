@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { View, Dimensions, Text, FlatList, ActivityIndicator,
-    TouchableOpacity,
+    TouchableOpacity, Button, StyleSheet
 } from 'react-native';
+import { Video } from 'expo-av';
 
 import { globalStyles, myImages } from '../globalStyles/globalStyles';
 import SwitchButton from '../components/SwitchButton';
@@ -50,7 +51,6 @@ export default function Topics({ navigation }){
     const topicPress = (topic) => {
         navigation.navigate('Assignments', { topic: topic })
     }
-
 
     return (
         <View
@@ -144,3 +144,78 @@ export default function Topics({ navigation }){
         </View>
     )
 }
+
+const Videos = () => {
+    const [videoUri, setVideoUri] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const videoRef = React.useRef(null);
+    const route = useRoute();
+    const { uid, course_id, topic, question_id } = route.params;
+
+    useEffect(() => {
+        const fetchVideo = async () => {
+            try {
+                const response = await fetch('https://backend.faradawn.site:8001/get_video', {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        uid: uid,
+                        course_id: course_id,
+                        topic: topic,
+                        question_id: question_id,
+                    }),
+                });
+                const data = await response.json();
+                setVideoUri(data.videoUrl);
+            } catch (error) {
+                console.error('Error fetching video:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchVideo();
+    }, [uid, course_id, topic, question_id]);
+
+    const handlePlayPause = () => {
+        if (isPlaying) {
+            videoRef.current.pauseAsync();
+        } else {
+            videoRef.current.playAsync();
+        }
+        setIsPlaying(!isPlaying);
+    };
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#0000ff" />;
+    }
+
+    return (
+        <View style={styles.container}>
+            {videoUri && (
+                <Video
+                    ref={videoRef}
+                    source={{ uri: videoUri }}
+                    style={styles.video}
+                    useNativeControls={false}
+                    resizeMode="contain"
+                    isLooping
+                />
+            )}
+            <Button title={isPlaying ? "Pause" : "Play"} onPress={handlePlayPause} />
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    video: {
+        width: '100%',
+        height: '50%',
+    },
+});

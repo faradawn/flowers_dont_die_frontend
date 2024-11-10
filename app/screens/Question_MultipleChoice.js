@@ -266,8 +266,6 @@ export default function Question_Combined({ navigation, route }) {
             if(mode === QuestionMode.MULTIPLE_CHOICE){
                 await storeSubmission(fallbackSubmission);
             }
-
-            
         }
 
         if (mode === QuestionMode.VOICE) {
