@@ -266,8 +266,6 @@ export default function Question_Combined({ navigation, route }) {
             if(mode === QuestionMode.MULTIPLE_CHOICE){
                 await storeSubmission(fallbackSubmission);
             }
-
-            
         }
 
         if (mode === QuestionMode.VOICE) {
@@ -463,8 +461,7 @@ export default function Question_Combined({ navigation, route }) {
                 />
             </View>
         );
-    };
-    const sampleQuestion = "<p>" + "This is a very long question content to test the scroll functionality. ".repeat(20) + "</p>"    
+    };  
 
       const SubmissionPanel = () => {
       
