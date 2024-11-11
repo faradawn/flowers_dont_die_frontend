@@ -178,7 +178,7 @@ export default function Topics({ navigation, route }){
                                     />
                                 )}
                             />
-                    {/* New button to navigate to Videos screen */}
+                    {/* New button to navigate to Videos screen  */}
                     {state.course_id === "College Prep" && (
                     <TouchableOpacity
                         style={{
