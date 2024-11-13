@@ -445,7 +445,17 @@ export default function Question_Combined({ navigation, route }) {
 
     const QuizNavigation = ({ onPrev, onNext, currentQuestionIndex, totalQuestions }) => {
         return (
-            <View className="absolute top-12 left-0 right-0 flex-row justify-between items-center px-4" style={{zIndex: 10}}>
+            <View style={{
+                position: 'absolute',
+                top: 60,
+                left: 0,
+                right: 0,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingHorizontal: 4,
+                zIndex: 10
+            }}>
                 <DirectionButton
                     direction="left"
                     onPress={onPrev}
@@ -466,24 +476,58 @@ export default function Question_Combined({ navigation, route }) {
       const SubmissionPanel = () => {
       
         return (
-          <View className="flex-row items-center justify-between px-14 py-5">
-            <TouchableOpacity onPress={handleErase} className="w-12 h-12 rounded-full bg-white items-center justify-center">
-              <Feather name="rotate-ccw" size={20} color="green" />
+          <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 14,
+              paddingVertical: 5
+          }}>
+            <TouchableOpacity 
+                onPress={handleErase} 
+                style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor: 'white',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+            >
+                <Feather name="rotate-ccw" size={20} color="green" />
             </TouchableOpacity>
             
             <TouchableOpacity 
-              onPress={handleRecord}
-              className={`w-16 h-16 rounded-full items-center justify-center mx-4 ${recording ? 'bg-red-500' : 'bg-green-800'}`}
+                onPress={handleRecord}
+                style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginHorizontal: 4,
+                    backgroundColor: recording ? '#ef4444' : '#166534'
+                }}
             >
-              <Feather 
-                name={recording ? "square" : "mic"} 
-                size={32} 
-                color="white" 
-              />
+                <Feather 
+                    name={recording ? "square" : "mic"} 
+                    size={32} 
+                    color="white" 
+                />
             </TouchableOpacity>
             
-            <TouchableOpacity onPress={handleNext} className="w-12 h-12 rounded-full bg-white items-center justify-center">
-              <Feather name="send" size={20} color="green" />
+            <TouchableOpacity 
+                onPress={handleNext} 
+                style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor: 'white',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+            >
+                <Feather name="send" size={20} color="green" />
             </TouchableOpacity>
           </View>
         );

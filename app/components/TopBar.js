@@ -19,7 +19,12 @@ const TopBar = ({ navigateTo, backText = 'Back', backgroundColor = '#fff', textC
       zIndex: 10,
     }}>
       <TouchableOpacity
-        className="flex-row items-center px-4 py-2"
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          paddingVertical: 8,
+        }}
         onPress={() => navigation.navigate(navigateTo, params)}
       >
         <Ionicons
@@ -28,8 +33,12 @@ const TopBar = ({ navigateTo, backText = 'Back', backgroundColor = '#fff', textC
           color={textColor}
         />
         <Text
-          className="ml-1 text-lg font-bold text-[#004643]"
-          style={{ fontFamily: 'Baloo2-Bold', color: textColor }}
+          style={{
+            marginLeft: 4,
+            fontSize: 18,
+            fontFamily: 'Baloo2-Bold',
+            color: textColor,
+          }}
         >
           {backText}
         </Text>
