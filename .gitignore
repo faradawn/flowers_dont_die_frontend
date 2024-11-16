@@ -1,6 +1,5 @@
 node_modules/
 .expo/
-dist/
 npm-debug.*
 *.jks
 *.p8
@@ -9,6 +8,8 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+
+# dist removed. can re add and only whitelist the web version.
 
 # macOS
 .DS_Store
