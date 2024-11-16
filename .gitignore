@@ -9,7 +9,7 @@ npm-debug.*
 *.orig.*
 web-build/
 
-# dist removed. can re add and only whitelist the web version.
+# dist removed. can re add and only whitelist the web version.`
 
 # macOS
 .DS_Store
