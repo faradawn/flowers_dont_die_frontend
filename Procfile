@@ -1,1 +1,1 @@
-npx serve -s dist
+npx serve -s dist -l $PORT
