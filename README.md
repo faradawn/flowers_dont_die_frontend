@@ -1,14 +1,17 @@
 # Flowers Don't Die - Ace Coding Interview with AI
 
 ### Getting Started
-- Install React Native 
-- Install Expo with `npx install-expo-modules@latest`
-- Install XCode
+- Install [Expo React Native](https://docs.expo.dev/tutorial/create-your-first-app/) (need to install Node js first)
+- Download XCode from App Store
+- Clone this repo and run the following commands
 ```
 npx npm install
 npx expo start
-i 			# to open Apple simulator
 ```
+
+### Making contributions
+- Create a branch such as `feature/leaderboard`
+- Submit a pull request
 
 ### App submission 
 ```
