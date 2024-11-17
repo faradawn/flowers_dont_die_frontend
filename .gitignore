@@ -8,7 +8,7 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
-
+dist/
 # dist removed. can re add and only whitelist the web version.`
 
 # macOS
