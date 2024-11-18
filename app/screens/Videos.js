@@ -5,6 +5,7 @@ import { useUser } from '../components/UserContext';
 import { useRoute, useNavigation } from '@react-navigation/native'; // Add useNavigation
 import { globalStyles } from '../globalStyles/globalStyles';
 import TopBar from '../components/TopBar';
+import { getQuestionSet, storeSubmission } from '../components/localDb';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,41 +25,74 @@ const Videos = () => {
     const route = useRoute();
     const { uid, course_id, topic, question_id } = route.params;
 
+    // Add state for question set
+    const [allQuestions, setAllQuestions] = useState([]);
+
     useEffect(() => {
-        const fetchVideo = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                const response = await fetch('https://backend.faradawn.site:8001/get_video', {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        uid: uid,
-                        course_id: course_id,
-                        topic: topic,
-                        question_id: question_id
+                
+                // Fetch both video and questions in parallel
+                const [videoResponse, questionsResponse] = await Promise.all([
+                    fetch('https://backend.faradawn.site:8001/get_video', {
+                        method: 'POST',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            uid: uid,
+                            course_id: course_id,
+                            topic: topic,
+                            question_id: question_id
+                        }),
                     }),
-                });
-                const data = await response.json();
-                console.log('[Video] parames', route.params);
+                    getQuestionSet(state.uid, state.course_id, topic)
+                ]);
 
-                console.log('[Video] Got Video data:', data);
+                const videoData = await videoResponse.json();
+                console.log('[Video] Got Video data:', videoData);
                 
                 setVideoData({
-                    title: data.title,
-                    videoUrl: data.video_url,
-                    descriptionTitle: data.description_title,
-                    descriptionText: data.description_text
+                    title: videoData.title,
+                    videoUrl: videoData.video_url,
+                    descriptionTitle: videoData.description_title,
+                    descriptionText: videoData.description_text
                 });
+
+                if (questionsResponse.status === 'success') {
+                    setAllQuestions(questionsResponse.questions);
+                    console.log('[Video] Question Set Received:', questionsResponse);
+                } else {
+                    console.log('Error fetching question set:', questionsResponse.message);
+                }
+
             } catch (error) {
-                console.error('Error fetching video:', error);
-                setError('Failed to load video');
+                console.error('Error fetching data:', error);
+                setError('Failed to load data');
             } finally {
                 setLoading(false);
             }
         };
-        fetchVideo();
-    }, [uid, course_id, topic, question_id]);
+
+        fetchData();
+    }, [uid, course_id, topic, question_id, state.uid, state.course_id]);
+
+    // Add navigation handler
+    const handleNextPress = async () => {
+        try {
+            if (allQuestions && allQuestions.length > 0) {
+                navigation.navigate('Question_MC', {
+                    question_id: allQuestions[0].question_id,
+                    topic: topic,
+                    index: 0,
+                    fromScreen: 'Videos',
+                    question_arr: allQuestions
+                });
+            }
+        } catch (error) {
+            console.log('Error navigating to first question:', error);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -100,7 +134,7 @@ const Videos = () => {
                 <View style={styles.bottomSection}>
                     <TouchableOpacity
                         style={styles.nextButton}
-                        onPress={() => navigation.navigate('Assignments', { topic: topic })}
+                        onPress={handleNextPress}
                     >
                         <Text style={styles.nextButtonText}>Next</Text>
                     </TouchableOpacity>

@@ -331,7 +331,6 @@ export default function Question_Combined({ navigation, route }) {
 
         return (
             <>
-
             
             <Modal
                 visible={modalOpen}
