@@ -47,9 +47,25 @@ export default function Topics({ navigation }){
         }, [])
     );
 
+    // navigation to Videos screen
+    const navigateToVideos = (topic) => {
+        navigation.navigate('Videos', {
+            uid: state.uid,
+            course_id: state.course_id,
+            topic: topic,
+            question_id: null,
+        });
+    }
+
+
     // navigation through clicking a specific topic
     const topicPress = (topic) => {
+        if(state.course_id === 'College Prep') {
+            navigateToVideos(topic);
+            return;
+        }
         navigation.navigate('Assignments', { topic: topic })
+
     }
 
     return (

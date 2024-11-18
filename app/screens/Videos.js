@@ -57,14 +57,13 @@ const Videos = () => {
                 setLoading(false);
             }
         };
-
         fetchVideo();
     }, [uid, course_id, topic, question_id]);
 
     return (
         <View style={styles.container}>
             <TopBar 
-                navigateTo="Assignments" 
+                navigateTo="Topics" 
                 backText="Back" 
                 params={{ topic: topic }}
             />
