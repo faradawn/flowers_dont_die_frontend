@@ -195,8 +195,7 @@ export default function Topics({ navigation, route }){
                         <Text style={{ color: 'white', fontSize: 16, alignSelf: 'center', }}>Go to Videos</Text>
                     </TouchableOpacity>
                     )}
-                    </View>
-                    
+                    </View>      
                         
                     </View>
                 </View>
