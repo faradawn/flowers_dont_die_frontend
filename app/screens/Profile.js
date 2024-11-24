@@ -6,15 +6,25 @@ import { clearSubmissions } from '../components/localDb';
 import { useUser } from '../components/UserContext';
 import { globalStyles } from '../globalStyles/globalStyles';
 
+
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 export default function Profile({ navigation }){
-    const { state, updateState } = useUser();
+    const { state } = useUser();
+    //const { state, updateState } = useUser();
     const [isEditing, setIsEditing] = useState(false);
     const [newUsername, setNewUsername] = useState(state.username);
+    console.log("Debug - Profile Component state:", state);
+    console.log("Debug - Profile Component state.uid:", state?.uid);
+    console.log("Debug - Is showing login screen:", !state?.uid);
+    useEffect(() => {
+        console.log("Profile: Current user state:", state);
+    }, [state]);
+    const isLoggedIn = state.uid && state.uid !== '' && !state.uid.includes('guest_');
 
-
+  
+    
     const handleDelete = async () => {
         try {
             // Clear local submissions for this user
@@ -92,6 +102,87 @@ export default function Profile({ navigation }){
 
         setIsEditing(false);
     };
+
+
+    
+    
+
+
+
+    if (!state?.uid || state.uid === '') {
+        
+        return (
+            <View 
+                style={{
+                    height: height,
+                    width: width,
+                    backgroundColor: 'white',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 20,
+                }}
+            >
+                <Text
+                    style={{
+                        fontFamily: 'Baloo2-Bold',
+                        fontSize: 30,
+                        color: '#004642',
+                        marginBottom: 10,
+                    }}
+                >
+                    Welcome!
+                </Text>
+
+                <Text
+                    style={{
+                        fontFamily: 'Baloo2-Regular',
+                        fontSize: 16,
+                        color: '#666',
+                        textAlign: 'center',
+                        marginBottom: 30,
+                        maxWidth: width * 0.8,
+                    }}
+                >
+                    Sign in to access personalized content and track your progress
+                </Text>
+
+                <TouchableOpacity
+                    style={[
+                        {
+                            backgroundColor: '#004642',
+                            height: height * 0.06,
+                            width: width * 0.8,
+                            marginBottom: 15,
+                            borderRadius: 9999,
+                        },
+                        globalStyles.button
+                    ]}
+                    onPress={() => navigation.navigate('Login')}
+                >
+                    <Text style={globalStyles.buttonText}>Sign In</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[
+                        {
+                            backgroundColor: '#004642',
+                            height: height * 0.06,
+                            width: width * 0.8,
+                            borderRadius: 9999,
+                        },
+                        globalStyles.button
+                    ]}
+                    onPress={() => navigation.navigate('SignUp')}
+                >
+                    <Text style={globalStyles.buttonText}>Sign Up</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+
+
+
 
     return (
         <View 
@@ -198,8 +289,28 @@ export default function Profile({ navigation }){
                     width: width,
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: 15,
                 }}
+
+                
             >
+                 {/* Sign Out Button */}
+                 <TouchableOpacity
+                    style={[
+                        { 
+                            backgroundColor: '#004642',
+                            height: 0.06 * height,
+                            width: 0.8 * width,
+                            borderRadius: 9999,
+                        }, 
+                        globalStyles.button
+                    ]}
+                    onPress={handleLogout}
+                >
+                    <Text style={globalStyles.buttonText}>Sign Out</Text>
+                </TouchableOpacity>
+
+                
                 {/* Delete Account Button */}
                 <TouchableOpacity
                     style={[
