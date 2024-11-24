@@ -5,7 +5,7 @@ import { View, Image, ImageBackground, Dimensions, TextInput,
 
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext'
-import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
+import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils';
 import { mergeProgress } from '../components/localDb';
 
 import TopBar from '../components/TopBar';
@@ -22,9 +22,15 @@ export default function Login({ navigation }){
 
     const { updateState } = useUser();
 
+    useEffect(() => {
+        console.log('Login screen mounted');
+        return () => {
+            console.log('Login screen unmounted');
+        };
+    }, []);
 
-    // handles login attempts from the user
     const loginAttempt = async () => {
+        console.log('Attempting login with:', { username, password });
         try {
             const response = await fetch(
                 'https://backend.faradawn.site:8001/login', {
@@ -46,13 +52,14 @@ export default function Login({ navigation }){
 
             if(data.status == 'success') {
                 setInfoCorrect(true);
-                setShowProgressPopup(true); // Show popup instead of immediately navigating
+                setShowProgressPopup(true);
             } else {
                 setInfoCorrect(false)
             }
 
         } catch(error) {
             console.log('Error fetching data: ', error);
+            Alert.alert("Error", "Failed to connect to server. Please try again.");
         }
     }
 
@@ -67,7 +74,6 @@ export default function Login({ navigation }){
             }
         }
 
-        // Update user context and navigate regardless of the decision
         updateState('uid', loginData.uid);
         updateState('username', username);
 
@@ -90,63 +96,112 @@ export default function Login({ navigation }){
                 ...globalStyles.container
             }}
         >
-
             <TopBar navigateTo={'Profile'} backgroundColor={'transparent'} textColor={'white'}/>
 
-                {showProgressPopup && (
-                    <View className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 1000 }}>
-                        <View className="bg-white p-4 rounded-lg shadow-md">
-                            <Text className="text-lg font-semibold text-center mb-4">
-                                Do you want to upload local progress?
-                            </Text>
-                            <View className="flex-row justify-around">
-                                <TouchableOpacity
-                                    className="bg-blue-500 py-2 px-4 rounded-md"
-                                    onPress={() => handleProgressDecision(true)}
-                                >
-                                    <Text className="text-white font-medium">Upload</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    className="bg-gray-300 py-2 px-4 rounded-md"
-                                    onPress={() => handleProgressDecision(false)}
-                                >
-                                    <Text className="text-gray-700 font-medium">Discard</Text>
-                                </TouchableOpacity>
+            {/* Progress Popup */}
+            {showProgressPopup && (
+                <View style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    zIndex: 1000,
+                }}>
+                    <View style={{
+                        backgroundColor: 'white',
+                        padding: 20,
+                        borderRadius: 10,
+                        width: width * 0.8,
+                    }}>
+                        <Text style={{
+                            fontSize: 18,
+                            fontFamily: 'Baloo2-Bold',
+                            textAlign: 'center',
+                            marginBottom: 20,
+                        }}>
+                            Do you want to upload local progress?
+                        </Text>
+                        <View style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-around',
+                        }}>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#004642',
+                                    padding: 10,
+                                    borderRadius: 8,
+                                    width: width * 0.25,
+                                }}
+                                onPress={() => handleProgressDecision(true)}
+                            >
+                                <Text style={{
+                                    color: 'white',
+                                    textAlign: 'center',
+                                    fontFamily: 'Baloo2-Bold',
+                                }}>Upload</Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#e5e5e5',
+                                    padding: 10,
+                                    borderRadius: 8,
+                                    width: width * 0.25,
+                                }}
+                                onPress={() => handleProgressDecision(false)}
+                            >
+                                <Text style={{
+                                    color: '#4a4a4a',
+                                    textAlign: 'center',
+                                    fontFamily: 'Baloo2-Bold',
+                                }}>Discard</Text>
+                            </TouchableOpacity>
 
-                                {/* Cancel button */}
-                                <TouchableOpacity
-                                    className="bg-gray-300 py-2 px-4 rounded-md"
-                                    onPress={() => setShowProgressPopup(false)}
-                                >
-                                    <Text className="text-gray-700 font-medium">Cancel</Text>
-                                </TouchableOpacity>
-                            </View>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#e5e5e5',
+                                    padding: 10,
+                                    borderRadius: 8,
+                                    width: width * 0.25,
+                                }}
+                                onPress={() => setShowProgressPopup(false)}
+                            >
+                                <Text style={{
+                                    color: '#4a4a4a',
+                                    textAlign: 'center',
+                                    fontFamily: 'Baloo2-Bold',
+                                }}>Cancel</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
-                )}
+                </View>
+            )}
 
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <KeyboardAvoidingView 
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
                     style={{flex: 1, alignItems: "center", justifyContent: "center"}}
                 >
-                    
                     {/* 1. Flower icon */}
                     <View
-                        style={ {
+                        style={{
                             height: height * 0.4,
                             width: width,
                             alignItems: 'center',
                             justifyContent: 'flex-end',
-                        } }
+                        }}
                     >
                         <Image
                             source={require('../../assets/images/FlowerIcon.jpg')}
-                            style={ { 
+                            style={{ 
                                 marginBottom: 0.05 * height,
                                 height: 150,
                                 width: 150,
-                            } }
+                            }}
                         />
                     </View>
 
@@ -174,7 +229,6 @@ export default function Login({ navigation }){
                             placeholderTextColor='rgba(255, 255, 255, 0.5)'
                             onChangeText={(val) => setUsername(val)}
                             value={username}
-                            
                             autoCapitalize="none"
                             autoCorrect={false}
                         />
@@ -194,33 +248,26 @@ export default function Login({ navigation }){
                             placeholderTextColor='rgba(255, 255, 255, 0.5)'
                             onChangeText={(val) => setPassword(val)}
                             value={password}
-                            
                             textContentType="oneTimeCode"
                             autoCapitalize="none"
                             autoCorrect={false}
-                            
                             secureTextEntry={true}
                         />
 
                         {/* Error message field */}
-                        { infoCorrect ?
-                            (
-                                <View style={{ height: 23 }}>
-                                </View>
-                            ) 
-                            : 
-                            (
-                                <Text
-                                    style={{
-                                        fontFamily: 'Baloo2-Bold',
-                                        color: '#FFD912',
-                                        alignSelf: 'center',
-                                    }}
-                                >
-                                    Invalid username or wrong password.
-                                </Text>
-                            ) 
-                        }
+                        {infoCorrect ? (
+                            <View style={{ height: 23 }} />
+                        ) : (
+                            <Text
+                                style={{
+                                    fontFamily: 'Baloo2-Bold',
+                                    color: '#FFD912',
+                                    alignSelf: 'center',
+                                }}
+                            >
+                                Invalid username or wrong password.
+                            </Text>
+                        )}
                     </View>
 
                     {/* 3. Login Button */}
@@ -233,14 +280,15 @@ export default function Login({ navigation }){
                         }}
                     >
                         <TouchableOpacity
-                            style={ [
+                            style={[
                                 { 
-                                    backgroundColor: '#F8C660',
+                                    backgroundColor: '#004642',
                                     height: 0.06 * height,
                                     width: 0.8 * width,
+                                    borderRadius: 9999,
                                 }, 
                                 globalStyles.button
-                            ] }
+                            ]}
                             onPress={() => loginAttempt()}
                         >
                             <Text style={globalStyles.buttonText}>Login</Text>
@@ -255,7 +303,7 @@ export default function Login({ navigation }){
                         }}
                     >
                         <Text
-                            style= {{ 
+                            style={{ 
                                 fontFamily: 'Baloo2-Bold',
                                 fontSize: 16,
                                 color: 'white',
@@ -267,7 +315,7 @@ export default function Login({ navigation }){
                             onPress={() => navigation.navigate('SignUp')}
                         >
                             <Text
-                                style= {{
+                                style={{
                                     fontFamily: 'Baloo2-Bold',
                                     fontSize: 16,
                                     color: '#FFD912',
@@ -279,5 +327,4 @@ export default function Login({ navigation }){
             </TouchableWithoutFeedback>
         </ImageBackground>
     );
-
 }
