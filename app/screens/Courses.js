@@ -19,15 +19,34 @@ import { Button } from 'react-native-web';
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
-
 export default function Courses({ navigation }) {
     const [isLoading, setIsLoading] = useState(true);
     const [courses, setCourses] = useState([]);
     const [dailyQuestionId, setDailyQuestionId] = useState(null); // daily random question
     const { state, updateState } = useUser();
     const [greeting, setGreeting] = useState('');
-    const [containerHeight, setContainerHeight] = useState(height * 0.6);
+    const [isSignedIn, setIsSignedIn] = useState(false);
 
+    const fetchIsSignedIn = async (uid) => {
+        try {
+            const response = await fetch('https://backend.faradawn.site:8001/get_courses', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uid }),
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                console.log("[Courses/Get isSigned] is_signed_in:", data.is_signed_in);
+                setIsSignedIn(data.is_signed_in);
+            } else {
+                console.error('Error checking sign-in status:', data.message);
+                setIsSignedIn(false);
+            }
+        } catch (error) {
+            console.error('Error checking sign-in status:', error);
+            setIsSignedIn(false);
+        }
+    };
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -112,6 +131,12 @@ export default function Courses({ navigation }) {
                 }
 
                 setGreeting(getGreeting());
+
+                // Check if user is signed in
+                if (state.uid) {
+                    await fetchIsSignedIn(state.uid);
+                }
+
             }
 
             async function fetchCourses() {
@@ -133,6 +158,12 @@ export default function Courses({ navigation }) {
         }, [state.uid, state.username])
     );
 
+    useEffect(() => {
+        if (state.uid) {
+            fetchIsSignedIn(state.uid);
+        }
+    }, [state.uid]);
+
     // navigation through clicking a specific topic
     const coursePress = (course_id) => {
         updateState('course_id', course_id)
@@ -153,32 +184,12 @@ export default function Courses({ navigation }) {
         }
     };
 
-    const signInPress = () => {
-        navigation.navigate('Login')
-    }
-
-
-    const calculateContainerHeight = useCallback(() => {
-        const itemHeight = height * 0.1; // Height of each Card
-        const padding = height * 0.01; // Extra padding
-        
-        if (courses.length >= 3) {
-            setContainerHeight(height * 0.35);
-        } else {
-            setContainerHeight((courses.length * itemHeight) + padding);
-        }
-    }, [courses, height]);
-    
-    // Add this effect to update height when courses change
-    useEffect(() => {
-        calculateContainerHeight();
-    }, [courses, calculateContainerHeight]);
 
     return (
         <View style={styles.container}>
             {isLoading ? (<ActivityIndicator />) :
                 (
-                    <View >
+                    <View>
 
                         {/* Message At The Top */}
                         <View style={styles.greetingContainer}>
@@ -197,11 +208,18 @@ export default function Courses({ navigation }) {
                         <View style={{ height: 20 }}></View>
                         {/* FlatList Containing Topic Information */}
                         <View
-                            style={{ ...styles.flatListContainer, height: containerHeight }}
+                            style={{
+                                height: height * 0.585,
+                                width: width,
+
+                                marginBottom: height * 0.03,
+
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
                         >
                             <FlatList
-                                style={styles.flatList}
-                                contentContainerStyle={styles.flatListContent}
+                                style={{ flex: 1 }}
                                 data={courses}
                                 keyExtractor={(item) => item.course_id}
                                 showsVerticalScrollIndicator={false}
@@ -219,25 +237,20 @@ export default function Courses({ navigation }) {
                                     />
                                 )}
                             />
-                        </View>
-                        { !state.is_signed_in && (
-                            <View style={styles.signInContainer}>
-                                {/* Illustration */}
-                                <Image
-                                source={require('../../assets/images/notion_avatars/notion_girl_right.png')}
-                                style={styles.signInImage}
-                                />
-
-                                {/* Text */}
-                                <Text style={styles.signInText}>Sign up to unlock more!</Text>
-
-                                {/* Sign In Button */}
-                                <TouchableOpacity onPress={signInPress} style={styles.signInButton}>
-                                <Text style={styles.signInButtonText}>Sign In</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
                         
+                        </View>
+
+                        {isSignedIn === false && (
+                        <TouchableOpacity
+                            style={styles.signUpButton}
+                            onPress={() => navigation.navigate('Login')}
+                        >
+                            <Text style={styles.signUpButtonText}>
+                                Sign up to unlock more
+                            </Text>
+                        </TouchableOpacity>
+                        )}
+
 
                     </View>
                 )}
@@ -249,23 +262,14 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column'
-    },
-    contentContainer: {
-        flex: 1,
-        width: '100%',
-        height: '100%', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        flexDirection: 'column'
     },
     greetingContainer: {
         minHeight: height * 0.09,
         width: width,
         paddingHorizontal: 30,
-        marginTop: height * 0.06,
+        marginTop: height * 0.1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     greetingText: {
         fontFamily: 'Baloo2-Bold',
@@ -275,57 +279,32 @@ const styles = StyleSheet.create({
     usernameText: {
         color: '#26C250',
     },
-    flatListContainer: {
-        width: width,
-        justifyContent: 'center',
-
-    },
     flatList: {
+        flex: 1,
         width: '100%',
     },
     flatListContent: {
-        paddingBottom: height * 0.1, 
+        paddingBottom: height * 0.3, 
         alignItems: 'center',
     },
-    signInContainer: {
-        width: width * 0.8,
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        alignSelf: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3.84,
-        marginBottom: 20,
-        marginTop: height * 0.01,   
-    },
-    signInImage: {
-        width: width * 0.15, 
-        height: width * 0.15, 
-        resizeMode: 'contain',
-        marginBottom: 10,
-    },
-    signInText: {
-        fontSize: 18,
-        fontFamily: 'Baloo2-Bold',
-        color: '#333333',
-        marginBottom: 15,
-        textAlign: 'center',
-    },
-    signInButton: {
-        backgroundColor: '#F8C660',
-        paddingVertical: 12,
-        paddingHorizontal: 30,
+    signUpButton: {
+        backgroundColor: '#0FBB16',
+        padding: 25,
         borderRadius: 25,
+        width: width * 0.6,
         alignItems: 'center',
-        justifyContent: 'center',
-        width: '40%',
+        position: 'absolute',
+        bottom: height * 0.1, 
+        alignSelf: 'center',
+        shadowColor: '#000', 
+        shadowOffset: { width: 0, height: 2 }, 
+        shadowOpacity: 0.3, 
+        shadowRadius: 6, 
+        elevation: 5, // Add elevation for Android shadow
     },
-    signInButtonText: {
-        color: '#ffffff',
-        fontSize: 16,
+    signUpButtonText: {
+        color: 'white',
+        fontSize: 20,
         fontFamily: 'Baloo2-Bold',
     },
 });
