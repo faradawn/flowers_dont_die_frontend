@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Dimensions, Image, Text, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { deleteLoginInfo, saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils';
@@ -6,15 +6,25 @@ import { clearSubmissions } from '../components/localDb';
 import { useUser } from '../components/UserContext';
 import { globalStyles } from '../globalStyles/globalStyles';
 
+
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 export default function Profile({ navigation }){
+    //const { state } = useUser();
     const { state, updateState } = useUser();
     const [isEditing, setIsEditing] = useState(false);
     const [newUsername, setNewUsername] = useState(state.username);
+    console.log("Debug - Profile Component state:", state);
+    console.log("Debug - Profile Component state.uid:", state?.uid);
+    console.log("Debug - Is showing login screen:", !state?.uid);
+    useEffect(() => {
+        console.log("Profile: Current user state:", state);
+    }, [state]);
+    const isLoggedIn = state.uid && state.uid !== '' && !state.uid.includes('guest_');
 
-
+  
+    
     const handleDelete = async () => {
         try {
             // Clear local submissions for this user
@@ -40,19 +50,23 @@ export default function Profile({ navigation }){
         }
     };
 
-    const handleLogout = async () => {
-        try {
-            await deleteLoginInfo();
-            updateState('username', '');
-            updateState('uid', '');
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            console.log("Done logout and deleted async storage");
-            navigation.navigate('Courses');
-        } catch (error) {
-            console.log('Error during logout:', error);
-        }
-    };
+   const handleLogout = async () => {
+    try {
+        // 1. 清理安全存储
+        await deleteLoginInfo();
+        
+        // 2. 更新状态
+        updateState('username', '');
+        updateState('uid', '');
+        
+        // 3. 立即导航到登录页面
+        navigation.replace('Login'); // 使用 replace 而不是 reset
+        
+    } catch (error) {
+        console.error('Logout error:', error);
+        Alert.alert("Error", "Failed to sign out. Please try again.");
+    }
+};
 
     const handleResetProgress = async () => {
         try {
@@ -92,6 +106,87 @@ export default function Profile({ navigation }){
 
         setIsEditing(false);
     };
+
+
+    
+    
+
+
+
+    if (!state?.uid || state.uid === '') {
+        
+        return (
+            <View 
+                style={{
+                    height: height,
+                    width: width,
+                    backgroundColor: 'white',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 20,
+                }}
+            >
+                <Text
+                    style={{
+                        fontFamily: 'Baloo2-Bold',
+                        fontSize: 30,
+                        color: '#004642',
+                        marginBottom: 10,
+                    }}
+                >
+                    Welcome!
+                </Text>
+
+                <Text
+                    style={{
+                        fontFamily: 'Baloo2-Regular',
+                        fontSize: 16,
+                        color: '#666',
+                        textAlign: 'center',
+                        marginBottom: 30,
+                        maxWidth: width * 0.8,
+                    }}
+                >
+                    Sign in to access personalized content and track your progress
+                </Text>
+
+                <TouchableOpacity
+                    style={[
+                        {
+                            backgroundColor: '#004642',
+                            height: height * 0.06,
+                            width: width * 0.8,
+                            marginBottom: 15,
+                            borderRadius: 9999,
+                        },
+                        globalStyles.button
+                    ]}
+                    onPress={() => navigation.navigate('Login')}
+                >
+                    <Text style={globalStyles.buttonText}>Sign In</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[
+                        {
+                            backgroundColor: '#004642',
+                            height: height * 0.06,
+                            width: width * 0.8,
+                            borderRadius: 9999,
+                        },
+                        globalStyles.button
+                    ]}
+                    onPress={() => navigation.navigate('SignUp')}
+                >
+                    <Text style={globalStyles.buttonText}>Sign Up</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+
+
+
 
     return (
         <View 
@@ -198,8 +293,28 @@ export default function Profile({ navigation }){
                     width: width,
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: 15,
                 }}
+
+                
             >
+                 {/* Sign Out Button */}
+                 <TouchableOpacity
+                    style={[
+                        { 
+                            backgroundColor: '#004642',
+                            height: 0.06 * height,
+                            width: 0.8 * width,
+                            borderRadius: 9999,
+                        }, 
+                        globalStyles.button
+                    ]}
+                    onPress={handleLogout}
+                >
+                    <Text style={globalStyles.buttonText}>Sign Out</Text>
+                </TouchableOpacity>
+
+                
                 {/* Delete Account Button */}
                 <TouchableOpacity
                     style={[
