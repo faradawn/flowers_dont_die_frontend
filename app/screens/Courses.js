@@ -184,6 +184,10 @@ export default function Courses({ navigation }) {
         }
     };
 
+    const signInPress = () => {
+        navigation.navigate('Login')
+    }
+
 
     return (
         <View style={styles.container}>
@@ -209,11 +213,8 @@ export default function Courses({ navigation }) {
                         {/* FlatList Containing Topic Information */}
                         <View
                             style={{
-                                height: height * 0.585,
+                                height: height * 0.4,
                                 width: width,
-
-                                marginBottom: height * 0.03,
-
                                 alignItems: 'center',
                                 justifyContent: 'center',
                             }}
@@ -240,17 +241,23 @@ export default function Courses({ navigation }) {
                         
                         </View>
 
-                        {isSignedIn === false && (
-                        <TouchableOpacity
-                            style={styles.signUpButton}
-                            onPress={() => navigation.navigate('Login')}
-                        >
-                            <Text style={styles.signUpButtonText}>
-                                Sign up to unlock more
-                            </Text>
-                        </TouchableOpacity>
-                        )}
+                        { !isSignedIn && (
+                            <View style={styles.signInContainer}>
+                                {/* Illustration */}
+                                <Image
+                                source={require('../../assets/images/notion_avatars/notion_girl_right.png')}
+                                style={styles.signInImage}
+                                />
 
+                                {/* Text */}
+                                <Text style={styles.signInText}>Sign up to unlock more!</Text>
+
+                                {/* Sign In Button */}
+                                <TouchableOpacity onPress={signInPress} style={styles.signInButton}>
+                                <Text style={styles.signInButtonText}>Sign In</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
 
                     </View>
                 )}
@@ -267,7 +274,7 @@ const styles = StyleSheet.create({
         minHeight: height * 0.09,
         width: width,
         paddingHorizontal: 30,
-        marginTop: height * 0.1,
+        marginTop: height * 0.06,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -284,27 +291,48 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     flatListContent: {
-        paddingBottom: height * 0.3, 
+        paddingBottom: height * 0.1, 
         alignItems: 'center',
     },
-    signUpButton: {
-        backgroundColor: '#0FBB16',
-        padding: 25,
-        borderRadius: 25,
-        width: width * 0.6,
+    signInContainer: {
+        width: width * 0.8,
         alignItems: 'center',
-        position: 'absolute',
-        bottom: height * 0.1, 
+        justifyContent: 'center',
+        padding: 20,
+        backgroundColor: '#ffffff',
+        borderRadius: 10,
+        marginTop: 0,
         alignSelf: 'center',
-        shadowColor: '#000', 
-        shadowOffset: { width: 0, height: 2 }, 
-        shadowOpacity: 0.3, 
-        shadowRadius: 6, 
-        elevation: 5, // Add elevation for Android shadow
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3.84,
     },
-    signUpButtonText: {
-        color: 'white',
-        fontSize: 20,
+    signInImage: {
+        width: width * 0.15, 
+        height: width * 0.15, 
+        resizeMode: 'contain',
+        marginBottom: 10,
+    },
+    signInText: {
+        fontSize: 18,
+        fontFamily: 'Baloo2-Bold',
+        color: '#333333',
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    signInButton: {
+        backgroundColor: '#F8C660',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '40%',
+    },
+    signInButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
         fontFamily: 'Baloo2-Bold',
     },
 });
