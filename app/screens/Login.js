@@ -3,25 +3,32 @@ import { View, Image, ImageBackground, Dimensions, TextInput,
     Text, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Alert
 } from 'react-native';
 
+// Add these lines to define height and width
+const height = Dimensions.get('window').height;
+const width = Dimensions.get('window').width;
+
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext'
 import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
 import { mergeProgress } from '../components/localDb';
 
-import TopBar from '../components/TopBar';
-
-const height = Dimensions.get('screen').height;
-const width = Dimensions.get('screen').width;
-
 export default function Login({ navigation }){
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [infoCorrect, setInfoCorrect] = useState(true);
+    const [errorMessage, setErrorMessage] = useState('');
     const [showProgressPopup, setShowProgressPopup] = useState(false);
     const [loginData, setLoginData] = useState(null);
 
     const { updateState } = useUser();
 
+    const handleContinueAsGuest = async () => {
+        const guestId = `guest_${Date.now()}`;
+        updateState('username', `Guest_${guestId}`);
+        updateState('uid', guestId);
+        updateState('is_signed_in', false);
+        navigation.navigate('HomeTab');
+    };
 
     // handles login attempts from the user
     const loginAttempt = async () => {
@@ -90,47 +97,11 @@ export default function Login({ navigation }){
                 ...globalStyles.container
             }}
         >
-
-            <TopBar navigateTo={'Profile'} backgroundColor={'transparent'} textColor={'white'}/>
-
-                {showProgressPopup && (
-                    <View className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 1000 }}>
-                        <View className="bg-white p-4 rounded-lg shadow-md">
-                            <Text className="text-lg font-semibold text-center mb-4">
-                                Do you want to upload local progress?
-                            </Text>
-                            <View className="flex-row justify-around">
-                                <TouchableOpacity
-                                    className="bg-blue-500 py-2 px-4 rounded-md"
-                                    onPress={() => handleProgressDecision(true)}
-                                >
-                                    <Text className="text-white font-medium">Upload</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    className="bg-gray-300 py-2 px-4 rounded-md"
-                                    onPress={() => handleProgressDecision(false)}
-                                >
-                                    <Text className="text-gray-700 font-medium">Discard</Text>
-                                </TouchableOpacity>
-
-                                {/* Cancel button */}
-                                <TouchableOpacity
-                                    className="bg-gray-300 py-2 px-4 rounded-md"
-                                    onPress={() => setShowProgressPopup(false)}
-                                >
-                                    <Text className="text-gray-700 font-medium">Cancel</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                )}
-
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <KeyboardAvoidingView 
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
                     style={{flex: 1, alignItems: "center", justifyContent: "center"}}
                 >
-                    
                     {/* 1. Flower icon */}
                     <View
                         style={ {
@@ -233,47 +204,68 @@ export default function Login({ navigation }){
                         }}
                     >
                         <TouchableOpacity
-                            style={ [
+                            style={[
                                 { 
                                     backgroundColor: '#F8C660',
                                     height: 0.06 * height,
                                     width: 0.8 * width,
                                 }, 
                                 globalStyles.button
-                            ] }
+                            ]}
                             onPress={() => loginAttempt()}
                         >
                             <Text style={globalStyles.buttonText}>Login</Text>
                         </TouchableOpacity>
                     </View>
 
-                    {/* Sign Up Message */}
+                    {/* Sign Up Message and Continue as Guest container */}
                     <View 
                         style={{ 
-                            height: 0.2 * height, 
-                            flexDirection: 'row' 
+                            height: 0.2 * height,
+                            alignItems: 'center'
                         }}
                     >
+                        {/* Sign Up Message */}
+                        <View 
+                            style={{ 
+                                flexDirection: 'row',
+                                marginBottom: 15
+                            }}
+                        >
+                            <Text
+                                style= {{ 
+                                    fontFamily: 'Baloo2-Bold',
+                                    fontSize: 16,
+                                    color: 'white',
+                                }}
+                            >
+                                Don't have an account? 
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('SignUp')}
+                            >
+                                <Text
+                                    style= {{
+                                        fontFamily: 'Baloo2-Bold',
+                                        fontSize: 16,
+                                        color: '#FFD912',
+                                    }}
+                                > Sign up.</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Continue as Guest */}
                         <Text
                             style= {{ 
                                 fontFamily: 'Baloo2-Bold',
                                 fontSize: 16,
-                                color: 'white',
+                                color: '#FFD912',
+                                textDecorationLine: 'underline'
                             }}
+                            onPress={handleContinueAsGuest}
                         >
-                            Don't have an account? 
+                            Continue as Guest
                         </Text>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate('SignUp')}
-                        >
-                            <Text
-                                style= {{
-                                    fontFamily: 'Baloo2-Bold',
-                                    fontSize: 16,
-                                    color: '#FFD912',
-                                }}
-                            > Sign up.</Text>
-                        </TouchableOpacity>
                     </View>
                 </KeyboardAvoidingView>            
             </TouchableWithoutFeedback>

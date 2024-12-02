@@ -7,6 +7,7 @@ import { useUser } from '../components/UserContext';
 import { globalStyles } from '../globalStyles/globalStyles';
 
 
+
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
@@ -21,9 +22,7 @@ export default function Profile({ navigation }){
     useEffect(() => {
         console.log("Profile: Current user state:", state);
     }, [state]);
-    const isLoggedIn = state.uid && state.uid !== '' && !state.uid.includes('guest_');
-
-  
+    const isLoggedIn = state.is_signed_in; 
     
     const handleDelete = async () => {
         try {
@@ -58,9 +57,10 @@ export default function Profile({ navigation }){
         // 2. 更新状态
         updateState('username', '');
         updateState('uid', '');
+        updateState('is_signed_in', false);
         
         // 3. 立即导航到登录页面
-        navigation.replace('Login'); // 使用 replace 而不是 reset
+        navigation.replace('Login'); 
         
     } catch (error) {
         console.error('Logout error:', error);
@@ -107,10 +107,23 @@ export default function Profile({ navigation }){
         setIsEditing(false);
     };
 
-
-    
-    
-
+    const handleContinueAsGuest = async () => {
+        try {
+            // 生成访客 ID
+            const guestId = `guest_${Date.now()}`;
+            
+            // 更新状态
+            updateState('username', `Guest_${guestId}`);
+            updateState('uid', guestId);
+            updateState('is_signed_in', false);
+            
+            // 导航到主页
+            navigation.navigate('HomeTab');
+        } catch (error) {
+            console.error('Guest mode error:', error);
+            Alert.alert("Error", "Failed to continue as guest. Please try again.");
+        }
+    }
 
 
     if (!state?.uid || state.uid === '') {
@@ -180,6 +193,25 @@ export default function Profile({ navigation }){
                 >
                     <Text style={globalStyles.buttonText}>Sign Up</Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                style={[
+                    {
+                        backgroundColor: 'transparent',
+                        height: height * 0.06,
+                        width: width * 0.8,
+                        borderRadius: 9999,
+                        borderWidth: 1,
+                        borderColor: '#004642'
+                    },
+                    globalStyles.button
+                ]}
+                onPress={handleContinueAsGuest}
+            >
+                <Text style={[globalStyles.buttonText, { color: '#004642' }]}>
+                    Continue as Guest
+                </Text>
+            </TouchableOpacity>
             </View>
         );
     }
