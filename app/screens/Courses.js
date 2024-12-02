@@ -300,8 +300,6 @@ const styles = StyleSheet.create({
         width: width,
         paddingHorizontal: 30,
         marginTop: height * 0.06,
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     greetingText: {
         fontFamily: 'Baloo2-Bold',
