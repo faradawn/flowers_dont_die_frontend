@@ -19,6 +19,7 @@ import { Button } from 'react-native-web';
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
+
 export default function Courses({ navigation }) {
     const [isLoading, setIsLoading] = useState(true);
     const [courses, setCourses] = useState([]);
@@ -26,6 +27,8 @@ export default function Courses({ navigation }) {
     const { state, updateState } = useUser();
     const [greeting, setGreeting] = useState('');
     const [isSignedIn, setIsSignedIn] = useState(false);
+    const [containerHeight, setContainerHeight] = useState(height * 0.6);
+
 
     const fetchIsSignedIn = async (uid) => {
         try {
@@ -189,11 +192,27 @@ export default function Courses({ navigation }) {
     }
 
 
+    const calculateContainerHeight = useCallback(() => {
+        const itemHeight = height * 0.1; // Height of each Card
+        const padding = height * 0.01; // Extra padding
+        
+        if (courses.length >= 3) {
+            setContainerHeight(height * 0.35);
+        } else {
+            setContainerHeight((courses.length * itemHeight) + padding);
+        }
+    }, [courses, height]);
+    
+    // Add this effect to update height when courses change
+    useEffect(() => {
+        calculateContainerHeight();
+    }, [courses, calculateContainerHeight]);
+
     return (
         <View style={styles.container}>
             {isLoading ? (<ActivityIndicator />) :
                 (
-                    <View>
+                    <View >
 
                         {/* Message At The Top */}
                         <View style={styles.greetingContainer}>
@@ -212,15 +231,11 @@ export default function Courses({ navigation }) {
                         <View style={{ height: 20 }}></View>
                         {/* FlatList Containing Topic Information */}
                         <View
-                            style={{
-                                height: height * 0.4,
-                                width: width,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
+                            style={{ ...styles.flatListContainer, height: containerHeight }}
                         >
                             <FlatList
-                                style={{ flex: 1 }}
+                                style={styles.flatList}
+                                contentContainerStyle={styles.flatListContent}
                                 data={courses}
                                 keyExtractor={(item) => item.course_id}
                                 showsVerticalScrollIndicator={false}
@@ -238,9 +253,7 @@ export default function Courses({ navigation }) {
                                     />
                                 )}
                             />
-                        
                         </View>
-
                         { !isSignedIn && (
                             <View style={styles.signInContainer}>
                                 {/* Illustration */}
@@ -258,6 +271,7 @@ export default function Courses({ navigation }) {
                                 </TouchableOpacity>
                             </View>
                         )}
+                        
 
                     </View>
                 )}
@@ -269,6 +283,17 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column'
+    },
+    contentContainer: {
+        flex: 1,
+        width: '100%',
+        height: '100%', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        flexDirection: 'column'
     },
     greetingContainer: {
         minHeight: height * 0.09,
@@ -286,8 +311,12 @@ const styles = StyleSheet.create({
     usernameText: {
         color: '#26C250',
     },
+    flatListContainer: {
+        width: width,
+        justifyContent: 'center',
+
+    },
     flatList: {
-        flex: 1,
         width: '100%',
     },
     flatListContent: {
@@ -297,16 +326,16 @@ const styles = StyleSheet.create({
     signInContainer: {
         width: width * 0.8,
         alignItems: 'center',
-        justifyContent: 'center',
         padding: 20,
         backgroundColor: '#ffffff',
         borderRadius: 10,
-        marginTop: 0,
         alignSelf: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 3.84,
+        marginBottom: 20,
+        marginTop: height * 0.01,   
     },
     signInImage: {
         width: width * 0.15, 
