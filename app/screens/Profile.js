@@ -126,100 +126,6 @@ export default function Profile({ navigation }){
     }
 
 
-    if (!state?.uid || state.uid === '') {
-        
-        return (
-            <View 
-                style={{
-                    height: height,
-                    width: width,
-                    backgroundColor: 'white',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 20,
-                }}
-            >
-                <Text
-                    style={{
-                        fontFamily: 'Baloo2-Bold',
-                        fontSize: 30,
-                        color: '#004642',
-                        marginBottom: 10,
-                    }}
-                >
-                    Welcome!
-                </Text>
-
-                <Text
-                    style={{
-                        fontFamily: 'Baloo2-Regular',
-                        fontSize: 16,
-                        color: '#666',
-                        textAlign: 'center',
-                        marginBottom: 30,
-                        maxWidth: width * 0.8,
-                    }}
-                >
-                    Sign in to access personalized content and track your progress
-                </Text>
-
-                <TouchableOpacity
-                    style={[
-                        {
-                            backgroundColor: '#004642',
-                            height: height * 0.06,
-                            width: width * 0.8,
-                            marginBottom: 15,
-                            borderRadius: 9999,
-                        },
-                        globalStyles.button
-                    ]}
-                    onPress={() => navigation.navigate('Login')}
-                >
-                    <Text style={globalStyles.buttonText}>Sign In</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[
-                        {
-                            backgroundColor: '#004642',
-                            height: height * 0.06,
-                            width: width * 0.8,
-                            borderRadius: 9999,
-                        },
-                        globalStyles.button
-                    ]}
-                    onPress={() => navigation.navigate('SignUp')}
-                >
-                    <Text style={globalStyles.buttonText}>Sign Up</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                style={[
-                    {
-                        backgroundColor: 'transparent',
-                        height: height * 0.06,
-                        width: width * 0.8,
-                        borderRadius: 9999,
-                        borderWidth: 1,
-                        borderColor: '#004642'
-                    },
-                    globalStyles.button
-                ]}
-                onPress={handleContinueAsGuest}
-            >
-                <Text style={[globalStyles.buttonText, { color: '#004642' }]}>
-                    Continue as Guest
-                </Text>
-            </TouchableOpacity>
-            </View>
-        );
-    }
-
-
-
-
-
     return (
         <View 
             style={{
@@ -246,60 +152,63 @@ export default function Profile({ navigation }){
                 />
             </View>
 
-            {/* Profile Text */}
-            <View
-                style={{
-                    width: width,
-                    height: height * 0.05,
-                    marginVertical: height * 0.02,
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                }}
-            >
-                {isEditing ? (
-                    <>
-                        <TextInput
-                            style={{
-                                fontFamily: 'Baloo2-Bold',
-                                fontWeight: 'bold',
-                                fontSize: 30,
-                                borderBottomWidth: 1,
-                                borderBottomColor: '#004643',
-                                paddingBottom: 5,
-                            }}
-                            value={newUsername}
-                            onChangeText={setNewUsername}
-                            autoFocus
-                            onSubmitEditing={handleUsernameUpdate}
-                        />
-                        <TouchableOpacity
-                            onPress={() => setIsEditing(false)}
-                            style={{ marginLeft: 10 }}
-                        >
-                            <Ionicons name="close" size={24} color="#004643" />
-                        </TouchableOpacity>
-                    </>
-                ) : (
-                    <>
-                        <Text
-                            style={{
-                                fontFamily: 'Baloo2-Bold',
-                                fontWeight: 'bold',
-                                fontSize: 30,
-                            }}
-                        >
-                            {state.username}'s profile
-                        </Text>
-                        <TouchableOpacity
-                            onPress={() => setIsEditing(true)}
-                            style={{ marginLeft: 10 }}
-                        >
-                            <Ionicons name="pencil" size={24} color="#004643" />
-                        </TouchableOpacity>
-                    </>
-                )}
-            </View>
+            {/* Profile Text - Only show if signed in */}
+            {state.is_signed_in && (
+                <View
+                    style={{
+                        width: width,
+                        height: height * 0.05,
+                        marginVertical: height * 0.02,
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                    }}
+                >
+                    {isEditing ? (
+                        <>
+                            <TextInput
+                                style={{
+                                    fontFamily: 'Baloo2-Bold',
+                                    fontWeight: 'bold',
+                                    fontSize: 30,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: '#004643',
+                                    paddingBottom: 5,
+                                }}
+                                value={newUsername}
+                                onChangeText={setNewUsername}
+                                autoFocus
+                                onSubmitEditing={handleUsernameUpdate}
+                            />
+                            <TouchableOpacity
+                                onPress={() => setIsEditing(false)}
+                                style={{ marginLeft: 10 }}
+                            >
+                                <Ionicons name="close" size={24} color="#004643" />
+                            </TouchableOpacity>
+                        </>
+                    ) : (
+                        <View style={{flexDirection: 'row', alignItems: 'center', maxWidth: width * 0.7}}>
+                            <Text
+                                style={{
+                                    fontFamily: 'Baloo2-Bold',
+                                    fontWeight: 'bold',
+                                    fontSize: 30,
+                                }}
+                                adjustsFontSizeToFit
+                            >
+                                Hey, {state.username}!
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => setIsEditing(true)}
+                                style={{ marginLeft: 10 }}
+                            >
+                                <Ionicons name="pencil" size={24} color="#004643" />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
+            )}
 
             {/* Graph Trend */}
             <View
@@ -318,7 +227,7 @@ export default function Profile({ navigation }){
                 />
             </View>
 
-            {/* Buttons */}
+            {/* Buttons Section */}
             <View
                 style={{
                     height: 0.38 * height,
@@ -327,55 +236,91 @@ export default function Profile({ navigation }){
                     justifyContent: 'center',
                     gap: 15,
                 }}
-
-                
             >
-                 {/* Sign Out Button */}
-                 <TouchableOpacity
-                    style={[
-                        { 
-                            backgroundColor: '#004642',
-                            height: 0.06 * height,
-                            width: 0.8 * width,
-                            borderRadius: 9999,
-                        }, 
-                        globalStyles.button
-                    ]}
-                    onPress={handleLogout}
-                >
-                    <Text style={globalStyles.buttonText}>Sign Out</Text>
-                </TouchableOpacity>
-
-                
-                {/* Delete Account Button */}
-                <TouchableOpacity
-                    style={[
-                        { 
-                            backgroundColor: '#004643',
-                            height: 0.06 * height,
-                            width: 0.8 * width,
-                        }, 
-                        globalStyles.button
-                    ]}
-                    onPress={() => {
-                        Alert.alert(
-                            "Delete Account",
-                            "Are you sure you want to delete your account? This will clear all your local progress.",
-                            [
-                                {
-                                    text: "Cancel",
-                                    style: "cancel"
-                                },
+                {state.is_signed_in ? (
+                    <>
+                        {/* Sign Out Button */}
+                        <TouchableOpacity
+                            style={[
                                 { 
-                                    text: "OK", 
-                                    onPress: () => handleDelete()
-                                }
-                            ]
-                        );
-                    }}
-                >
-                    <Text style={globalStyles.buttonText}>Delete Account</Text>
-                </TouchableOpacity>
+                                    backgroundColor: '#004642',
+                                    height: 0.06 * height,
+                                    width: 0.8 * width,
+                                    borderRadius: 9999,
+                                }, 
+                                globalStyles.button
+                            ]}
+                            onPress={handleLogout}
+                        >
+                            <Text style={globalStyles.buttonText}>Sign Out</Text>
+                        </TouchableOpacity>
+
+                        {/* Delete Account Button */}
+                        <TouchableOpacity
+                            style={[
+                                { 
+                                    backgroundColor: '#004643',
+                                    height: 0.06 * height,
+                                    width: 0.8 * width,
+                                }, 
+                                globalStyles.button
+                            ]}
+                            onPress={() => {
+                                Alert.alert(
+                                    "Delete Account",
+                                    "Are you sure you want to delete your account? This will clear all your local progress.",
+                                    [
+                                        {
+                                            text: "Cancel",
+                                            style: "cancel"
+                                        },
+                                        { 
+                                            text: "OK", 
+                                            onPress: () => handleDelete()
+                                        }
+                                    ]
+                                );
+                            }}
+                        >
+                            <Text style={globalStyles.buttonText}>Delete Account</Text>
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        {/* Login Button */}
+                        <TouchableOpacity
+                            style={[
+                                { 
+                                    backgroundColor: '#004642',
+                                    height: 0.06 * height,
+                                    width: 0.8 * width,
+                                    borderRadius: 9999,
+                                }, 
+                                globalStyles.button
+                            ]}
+                            onPress={() => navigation.navigate('Login')}
+                        >
+                            <Text style={globalStyles.buttonText}>Log In</Text>
+                        </TouchableOpacity>
+
+                        {/* Sign Up Button */}
+                        <TouchableOpacity
+                            style={[
+                                { 
+                                    backgroundColor: '#004643',
+                                    height: 0.06 * height,
+                                    width: 0.8 * width,
+                                    borderRadius: 9999,
+                                }, 
+                                globalStyles.button
+                            ]}
+                            onPress={() => navigation.navigate('SignUp', {redirectTo: 'Profile'})}
+
+                        >
+                            <Text style={globalStyles.buttonText}>Sign Up</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
             </View>
         </View>
     )
