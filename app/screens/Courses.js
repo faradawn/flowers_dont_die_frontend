@@ -26,30 +26,8 @@ export default function Courses({ navigation }) {
     const [dailyQuestionId, setDailyQuestionId] = useState(null); // daily random question
     const { state, updateState } = useUser();
     const [greeting, setGreeting] = useState('');
-    const [isSignedIn, setIsSignedIn] = useState(false);
     const [containerHeight, setContainerHeight] = useState(height * 0.6);
 
-
-    const fetchIsSignedIn = async (uid) => {
-        try {
-            const response = await fetch('https://backend.faradawn.site:8001/get_courses', {
-                method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ uid }),
-            });
-            const data = await response.json();
-            if (data.status === 'success') {
-                console.log("[Courses/Get isSigned] is_signed_in:", data.is_signed_in);
-                setIsSignedIn(data.is_signed_in);
-            } else {
-                console.error('Error checking sign-in status:', data.message);
-                setIsSignedIn(false);
-            }
-        } catch (error) {
-            console.error('Error checking sign-in status:', error);
-            setIsSignedIn(false);
-        }
-    };
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -134,12 +112,6 @@ export default function Courses({ navigation }) {
                 }
 
                 setGreeting(getGreeting());
-
-                // Check if user is signed in
-                if (state.uid) {
-                    await fetchIsSignedIn(state.uid);
-                }
-
             }
 
             async function fetchCourses() {
@@ -160,12 +132,6 @@ export default function Courses({ navigation }) {
             checkAndSetupUser().then(() => fetchCourses());
         }, [state.uid, state.username])
     );
-
-    useEffect(() => {
-        if (state.uid) {
-            fetchIsSignedIn(state.uid);
-        }
-    }, [state.uid]);
 
     // navigation through clicking a specific topic
     const coursePress = (course_id) => {
@@ -254,7 +220,7 @@ export default function Courses({ navigation }) {
                                 )}
                             />
                         </View>
-                        { !isSignedIn && (
+                        { !state.is_signed_in && (
                             <View style={styles.signInContainer}>
                                 {/* Illustration */}
                                 <Image
