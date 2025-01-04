@@ -54,6 +54,7 @@ export default function Login({ navigation }){
                 // Update user context
                 updateState('uid', data.uid);
                 updateState('username', username);
+                updateState('is_signed_in', true);
 
                 setUsername('');
                 setPassword('');

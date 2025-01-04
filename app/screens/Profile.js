@@ -152,63 +152,63 @@ export default function Profile({ navigation }){
                 />
             </View>
 
-            {/* Profile Text - Only show if signed in */}
-            {state.is_signed_in && (
-                <View
-                    style={{
-                        width: width,
-                        height: height * 0.05,
-                        marginVertical: height * 0.02,
-                        alignItems: 'center',
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                    }}
-                >
-                    {isEditing ? (
-                        <>
-                            <TextInput
-                                style={{
-                                    fontFamily: 'Baloo2-Bold',
-                                    fontWeight: 'bold',
-                                    fontSize: 30,
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: '#004643',
-                                    paddingBottom: 5,
-                                }}
-                                value={newUsername}
-                                onChangeText={setNewUsername}
-                                autoFocus
-                                onSubmitEditing={handleUsernameUpdate}
-                            />
-                            <TouchableOpacity
-                                onPress={() => setIsEditing(false)}
-                                style={{ marginLeft: 10 }}
-                            >
-                                <Ionicons name="close" size={24} color="#004643" />
-                            </TouchableOpacity>
-                        </>
-                    ) : (
-                        <View style={{flexDirection: 'row', alignItems: 'center', maxWidth: width * 0.7}}>
-                            <Text
-                                style={{
-                                    fontFamily: 'Baloo2-Bold',
-                                    fontWeight: 'bold',
-                                    fontSize: 30,
-                                }}
-                                adjustsFontSizeToFit
-                            >
-                                Hey, {state.username}!
-                            </Text>
+            {/* Profile Text - Modified to always show */}
+            <View
+                style={{
+                    width: width,
+                    height: height * 0.05,
+                    marginVertical: height * 0.02,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                }}
+            >
+                {isEditing ? (
+                    <>
+                        <TextInput
+                            style={{
+                                fontFamily: 'Baloo2-Bold',
+                                fontWeight: 'bold',
+                                fontSize: 30,
+                                borderBottomWidth: 1,
+                                borderBottomColor: '#004643',
+                                paddingBottom: 5,
+                            }}
+                            value={newUsername}
+                            onChangeText={setNewUsername}
+                            autoFocus
+                            onSubmitEditing={handleUsernameUpdate}
+                        />
+                        <TouchableOpacity
+                            onPress={() => setIsEditing(false)}
+                            style={{ marginLeft: 10 }}
+                        >
+                            <Ionicons name="close" size={24} color="#004643" />
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <View style={{flexDirection: 'row', alignItems: 'center', maxWidth: width * 0.7}}>
+                        <Text
+                            style={{
+                                fontFamily: 'Baloo2-Bold',
+                                fontWeight: 'bold',
+                                fontSize: 30,
+                            }}
+                            adjustsFontSizeToFit
+                        >
+                            Hey, {state.username || 'Guest'}!
+                        </Text>
+                        {state.is_signed_in && (
                             <TouchableOpacity
                                 onPress={() => setIsEditing(true)}
                                 style={{ marginLeft: 10 }}
                             >
                                 <Ionicons name="pencil" size={24} color="#004643" />
                             </TouchableOpacity>
-                        </View>
-                    )}
-                </View>
-            )}
+                        )}
+                    </View>
+                )}
+            </View>
 
             {/* Graph Trend */}
             <View

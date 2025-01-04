@@ -63,6 +63,7 @@ export default function SignUp({ navigation, route }) {
                 setInfoCorrect(true);
                 updateState( 'uid', data.uid )
                 updateState( 'username', username )
+                updateState('is_signed_in', true)
 
                 await saveLoginInfo(data.uid, username, password);
                 console.log("Created and storeged login info", username, data.uid);
