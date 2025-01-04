@@ -131,7 +131,7 @@ export const getCourses = async (uid) => {
         course_title: course.course_name,
         logo_url: course.logo_url,
         num_total_questions: totalQuestions,
-        num_completed_questions: completedCourseQuestions
+        num_completed_questions: completedCourseQuestions,
       };
     });
 
@@ -150,7 +150,7 @@ export const getCourses = async (uid) => {
       daily_question_id: dailyQuestionId,
       daily_course_id: dailyCourseId,
       daily_topic: dailyTopic,
-      courses: resCourses
+      courses: resCourses,
     };
   } catch (error) {
     console.error('Error getting courses:', error);
@@ -160,7 +160,7 @@ export const getCourses = async (uid) => {
       daily_question_id: null,
       daily_course_id: null,
       daily_topic: null,
-      courses: []
+      courses: [],
     };
   }
 };

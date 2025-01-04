@@ -3,7 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import {
     View, Dimensions, Text, FlatList, ActivityIndicator,
-    TouchableOpacity, Image
+    TouchableOpacity, Image, StyleSheet
 } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
@@ -14,9 +14,11 @@ import { getLoginInfo, saveLoginInfo } from '../components/SecureStoreUtils';
 import { getCourses, initializeLocalDatabase } from '../components/localDb';
 
 import { myImages } from '../globalStyles/globalStyles';
+import { Button } from 'react-native-web';
 
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
+
 
 export default function Courses({ navigation }) {
     const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +26,8 @@ export default function Courses({ navigation }) {
     const [dailyQuestionId, setDailyQuestionId] = useState(null); // daily random question
     const { state, updateState } = useUser();
     const [greeting, setGreeting] = useState('');
+    const [containerHeight, setContainerHeight] = useState(height * 0.6);
+
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -103,6 +107,7 @@ export default function Courses({ navigation }) {
                         console.log("[Courses] No secure store login info. Created and stored guest info", guestUsername, guestUid);
                     }
                 } else {
+                    
                     console.log("[Courses] User info already in state:", state);
                 }
 
@@ -114,7 +119,7 @@ export default function Courses({ navigation }) {
                 try {
                     await initializeLocalDatabase(); // Initialize database before fetching
                     const data = await getCourses(state.uid);
-                    console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses);
+                    console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses, );
                     setCourses(data.courses);
                     setDailyQuestionId(data.daily_question_id);
                 } catch (error) {
@@ -139,7 +144,7 @@ export default function Courses({ navigation }) {
         if (dailyQuestionId) {
             console.log('Daily question: ', dailyQuestionId);
             updateState('course_id', 'Algo Group')
-            navigation.navigate('Question_Daily', { 
+            navigation.navigate('Question_Daily', {
                 question_id: dailyQuestionId,
                 fromScreen: 'HomeTab',
             });
@@ -148,104 +153,55 @@ export default function Courses({ navigation }) {
         }
     };
 
+    const signInPress = () => {
+        navigation.navigate('Login')
+    }
+
+
+    const calculateContainerHeight = useCallback(() => {
+        const itemHeight = height * 0.1; // Height of each Card
+        const padding = height * 0.01; // Extra padding
+        
+        if (courses.length >= 3) {
+            setContainerHeight(height * 0.35);
+        } else {
+            setContainerHeight((courses.length * itemHeight) + padding);
+        }
+    }, [courses, height]);
+    
+    // Add this effect to update height when courses change
+    useEffect(() => {
+        calculateContainerHeight();
+    }, [courses, calculateContainerHeight]);
 
     return (
-        <View
-            style={{
-                height: height,
-                width: width,
-                ...globalStyles.container
-            }}
-        >
+        <View style={styles.container}>
             {isLoading ? (<ActivityIndicator />) :
                 (
-                    <View>
+                    <View >
 
                         {/* Message At The Top */}
-                        <View
-                            style={{
-                                minHeight: height * 0.06,
-                                width: width,
-                                paddingHorizontal: 30, // Add horizontal padding
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                        >
+                        <View style={styles.greetingContainer}>
                             <Text
-                                style={{
-                                    fontFamily: 'Baloo2-Bold',
-                                    fontSize: 22,
-                                    textAlign: 'center', // Center-align the text
-                                }}
-                                numberOfLines={2} // Allow up to 2 lines
-                                adjustsFontSizeToFit={true} // Automatically adjust font size if needed
+                                style={styles.greetingText}
+                                numberOfLines={2}
+                                adjustsFontSizeToFit={true}
                             >
                                 {greeting}{' '}
-                                <Text style={{ color: '#26C250' }}>
+                                <Text style={styles.usernameText}>
                                     {state.username}!
                                 </Text>
                             </Text>
                         </View>
 
-                        {/* <View
-                            style={{
-                                height: height * 0.2,
-                                width: width,
-                                
-                                marginBottom: height * 0.03,
-
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-
-                        >
-
-                            <TouchableOpacity
-                                style={{
-                                    marginTop: 20,
-                                    backgroundColor: '#26C250',
-                                    padding: 10,
-                                    borderRadius: 20, 
-                                    
-                                }}
-                                onPress={randomQuestionPress}
-                            >
-                                <Image
-                                    source={require('../../assets/images/app_icon_v2_fat.png')}  
-                                    style={{
-                                        width: 160,       
-                                        height: 160,      
-                                        resizeMode: 'contain',  
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        borderRadius: 20, 
-                                        
-                                    }}
-                                />
-                                <Text style={{
-                                    color: '#fff', fontSize: 18,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginTop: height * 0.008,
-                                }}> Random Question</Text>
-                            </TouchableOpacity>
-                        </View> */}
-
                         <View style={{ height: 20 }}></View>
                         {/* FlatList Containing Topic Information */}
                         <View
-                            style={{
-                                height: height * 0.585,
-                                width: width,
-
-                                marginBottom: height * 0.03,
-
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
+                            style={{ ...styles.flatListContainer, height: containerHeight }}
                         >
                             <FlatList
-                                style={{ flex: 1 }}
+                                style={styles.flatList}
+                                contentContainerStyle={styles.flatListContent}
                                 data={courses}
                                 keyExtractor={(item) => item.course_id}
                                 showsVerticalScrollIndicator={false}
@@ -264,9 +220,112 @@ export default function Courses({ navigation }) {
                                 )}
                             />
                         </View>
+                        { !state.is_signed_in && (
+                            <View style={styles.signInContainer}>
+                                {/* Illustration */}
+                                <Image
+                                source={require('../../assets/images/notion_avatars/notion_girl_right.png')}
+                                style={styles.signInImage}
+                                />
+
+                                {/* Text */}
+                                <Text style={styles.signInText}>Sign up to unlock more!</Text>
+
+                                {/* Sign In Button */}
+                                <TouchableOpacity onPress={signInPress} style={styles.signInButton}>
+                                <Text style={styles.signInButtonText}>Sign In</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        
 
                     </View>
                 )}
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: 'white',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column'
+    },
+    contentContainer: {
+        flex: 1,
+        width: '100%',
+        height: '100%', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        flexDirection: 'column'
+    },
+    greetingContainer: {
+        minHeight: height * 0.09,
+        width: width,
+        paddingHorizontal: 30,
+        marginTop: height * 0.06,
+    },
+    greetingText: {
+        fontFamily: 'Baloo2-Bold',
+        fontSize: 22,
+        textAlign: 'center',
+    },
+    usernameText: {
+        color: '#26C250',
+    },
+    flatListContainer: {
+        width: width,
+        justifyContent: 'center',
+
+    },
+    flatList: {
+        width: '100%',
+    },
+    flatListContent: {
+        paddingBottom: height * 0.1, 
+        alignItems: 'center',
+    },
+    signInContainer: {
+        width: width * 0.8,
+        alignItems: 'center',
+        padding: 20,
+        backgroundColor: '#ffffff',
+        borderRadius: 10,
+        alignSelf: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3.84,
+        marginBottom: 20,
+        marginTop: height * 0.01,   
+    },
+    signInImage: {
+        width: width * 0.15, 
+        height: width * 0.15, 
+        resizeMode: 'contain',
+        marginBottom: 10,
+    },
+    signInText: {
+        fontSize: 18,
+        fontFamily: 'Baloo2-Bold',
+        color: '#333333',
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    signInButton: {
+        backgroundColor: '#F8C660',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '40%',
+    },
+    signInButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontFamily: 'Baloo2-Bold',
+    },
+});
