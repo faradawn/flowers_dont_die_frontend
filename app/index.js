@@ -19,7 +19,8 @@ import Assignments from './screens/Assignments';
 import Question_Daily from './screens/Question_Daily';
 import Video from './screens/Videos';
 
-import { UserProvider } from './components/UserContext';
+import { UserProvider, useUser } from './components/UserContext';
+import { getLoginInfo } from './components/SecureStoreUtils';
 
 
 const height = Dimensions.get('screen').height;
@@ -78,7 +79,7 @@ function RootStackNavigator() {
         <View style={{ height: height, width: width }}>
             <RootStack.Navigator
                 detachPreviousScreen={true}
-                initialRouteName="HomeTab"
+                initialRouteName="Login"
             >
                 <RootStack.Screen 
                     name="Login" 

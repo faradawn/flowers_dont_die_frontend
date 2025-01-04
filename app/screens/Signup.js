@@ -7,11 +7,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext';
 import { saveLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
+import TopBar from '../components/TopBar';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
-export default function SignUp({ navigation }){
+export default function SignUp({ navigation, route }) {
+    const redirectTo = route.params?.redirectTo || 'Login';
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -61,6 +63,7 @@ export default function SignUp({ navigation }){
                 setInfoCorrect(true);
                 updateState( 'uid', data.uid )
                 updateState( 'username', username )
+                updateState('is_signed_in', true)
 
                 await saveLoginInfo(data.uid, username, password);
                 console.log("Created and storeged login info", username, data.uid);
@@ -89,57 +92,35 @@ export default function SignUp({ navigation }){
                 ...globalStyles.container
             }}
         >
+            <TopBar 
+                navigateTo={redirectTo}
+                backText="Back"
+                textColor="#F8C660"
+                backgroundColor="transparent"
+                params={route.params}
+            />
 
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
                 
-                    {/* Signup Icon + Back Button Header */}
                     <View
                         style={ {
                             height: height * 0.4,
                             width: width,
                             alignItems: 'center',
-                            justifyContent: 'flex-start',
+                            justifyContent: 'center',
+                            marginTop: 20,
                         } }
                     >
-                        {/* Horizontal back button line */}
-                        <TouchableOpacity 
-                            style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-
-                                marginLeft: 40,
-                                marginTop: 0.04 * height,
-                                alignSelf: 'flex-start' 
-                            }}
-                            onPress={() => navigation.navigate('Login')}
-                        >
-                            <Ionicons 
-                                size={30}
-                                name="chevron-back-outline"
-                                color='#F8C660'
-                            />
-                            <Text
-                                style={{
-                                    fontFamily: 'Baloo2-Bold',
-                                    fontSize: 20,
-                                    color: '#F8C660'
-                                }}
-                            > Back </Text>
-                        </TouchableOpacity>
-                        
                         {/* Circle icon */}
                         <View
                             style= { {
                                 height: 150, 
                                 width: 150,
                                 borderRadius: 150,
-
                                 backgroundColor: 'white',
-
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                marginTop: 0.065 * height,
                             } }
                         >
                             <Text
@@ -152,7 +133,6 @@ export default function SignUp({ navigation }){
                             </Text>
                         </View>   
                     </View>
-
 
                     {/* Forms */}
                     <View
