@@ -17,7 +17,6 @@ export default function Login({ navigation }){
     const [password, setPassword] = useState('');
     const [infoCorrect, setInfoCorrect] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
-    const [showProgressPopup, setShowProgressPopup] = useState(false);
     const [loginData, setLoginData] = useState(null);
 
     const { updateState } = useUser();
@@ -30,7 +29,7 @@ export default function Login({ navigation }){
         navigation.navigate('HomeTab');
     };
 
-    // handles login attempts from the user
+    // Simplified loginAttempt function
     const loginAttempt = async () => {
         try {
             const response = await fetch(
@@ -47,13 +46,23 @@ export default function Login({ navigation }){
             )
 
             const data = await response.json();
-
             console.log("Received login data: ", data);
             setLoginData(data);
 
             if(data.status == 'success') {
                 setInfoCorrect(true);
-                setShowProgressPopup(true); // Show popup instead of immediately navigating
+                // Update user context
+                updateState('uid', data.uid);
+                updateState('username', username);
+
+                setUsername('');
+                setPassword('');
+
+                await saveLoginInfo(data.uid, username, password);
+                console.log("Saved login info to async");
+
+                // Directly navigate to HomeTab
+                navigation.navigate('HomeTab');
             } else {
                 setInfoCorrect(false)
             }
@@ -61,31 +70,6 @@ export default function Login({ navigation }){
         } catch(error) {
             console.log('Error fetching data: ', error);
         }
-    }
-
-    const handleProgressDecision = async (uploadProgress) => {
-        if (uploadProgress) {
-            try {
-                await mergeProgress(username);
-                console.log("Local progress merged successfully");
-            } catch (error) {
-                console.error("Error merging progress:", error);
-                Alert.alert("Error", "Failed to merge local progress. Please try again.");
-            }
-        }
-
-        // Update user context and navigate regardless of the decision
-        updateState('uid', loginData.uid);
-        updateState('username', username);
-
-        setUsername('');
-        setPassword('');
-
-        await saveLoginInfo(loginData.uid, username, password);
-        console.log("Saved login info to async");
-
-        setShowProgressPopup(false);
-        navigation.navigate('HomeTab');
     }
 
     return ( 
