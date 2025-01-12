@@ -19,7 +19,7 @@ export default function TeacherDashboard() {
 
     const fetchCourseStat = async () => {
         setIsLoading(true);
-        const courseId = "College Prep";
+        const courseId = "Algo Group";
         try {
             const response = await fetch(`https://backend.faradawn.site:8001/get_course_statistics?course_id=${encodeURIComponent(courseId)}`, {
                 method: 'GET',
@@ -122,8 +122,9 @@ export default function TeacherDashboard() {
                                     yAxisInterval={1}
                                     fromZero={true}
                                 />
+                                <Text style={styles.yAxisLabel}>Submissions</Text>
                             </ScrollView>
-                            <Text style={styles.yAxisLabel}>Submissions</Text>
+                            
                         </View>
                     </View>
 
@@ -142,7 +143,7 @@ export default function TeacherDashboard() {
                                         >
                                             <Ionicons name="chevron-back" size={24} color={currentWeekIndex === 0 ? "#ccc" : "#004643"} />
                                         </TouchableOpacity>
-                                        <Text style={styles.weekIndicator}>Week {currentWeekIndex + 1}</Text>
+                                        <Text style={styles.weekIndicator}>Week {currentWeekIndex + 1} / {weeklyQuestionStat.length}</Text>
                                         <TouchableOpacity 
                                             onPress={handleNextWeek}
                                             disabled={currentWeekIndex === weeklyQuestionStat.length - 1}
@@ -216,8 +217,8 @@ const styles = StyleSheet.create({
     },
     yAxisLabel: {
         position: 'absolute',
-        left: -width * 0.03,
-        top: height * 0.16,
+        left: -width * 0.06,
+        top: height * 0.11,
         transform: [{ rotate: '-90deg' }],
         fontSize: 15,
         color: '#000',
