@@ -18,6 +18,7 @@ import Profile from './screens/Profile';
 import Assignments from './screens/Assignments';
 import Question_Daily from './screens/Question_Daily';
 import Video from './screens/Videos';
+import TeacherDashboard from './screens/TeacherDashboard';
 
 import { UserProvider, useUser } from './components/UserContext';
 import { getLoginInfo } from './components/SecureStoreUtils';
@@ -120,6 +121,11 @@ function RootStackNavigator() {
                 <RootStack.Screen 
                     name="Videos" 
                     component={Video}
+                    options={{headerShown: false}}
+                />
+                <RootStack.Screen 
+                    name="TeacherDashboard" 
+                    component={TeacherDashboard}
                     options={{headerShown: false}}
                 />
             </RootStack.Navigator>
