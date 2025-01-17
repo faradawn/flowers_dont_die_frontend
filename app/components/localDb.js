@@ -91,7 +91,7 @@ export const getCourses = async (uid) => {
     const parsedCourses = courses ? JSON.parse(courses) : [];
     const submissions = await AsyncStorage.getItem(STORAGE_KEYS.SUBMISSIONS);
     const parsedSubmissions = submissions ? JSON.parse(submissions) : [];
-
+    
     // Only consider submissions with matching uid and valid scores
     const completedQuestions = parsedSubmissions
       .filter(sub => sub.uid === uid && sub.score != null && sub.score > 0)
@@ -132,6 +132,7 @@ export const getCourses = async (uid) => {
         logo_url: course.logo_url,
         num_total_questions: totalQuestions,
         num_completed_questions: completedCourseQuestions,
+        password: course.password || '', // Keep password field
       };
     });
 
