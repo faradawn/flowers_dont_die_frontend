@@ -107,6 +107,8 @@ async def get_courses(request: GetCoursesRequest):
     logging.info(f"Final Daily question id: {daily_question_id}, course id: {daily_course_id}, topic: {daily_topic}")
     
     
+    is_signed_in = "true"
+    
     res = GetCoursesResponse(
         status="success",
         message="Got courses",

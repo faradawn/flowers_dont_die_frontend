@@ -6,8 +6,6 @@ import { clearSubmissions } from '../components/localDb';
 import { useUser } from '../components/UserContext';
 import { globalStyles } from '../globalStyles/globalStyles';
 
-
-
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
@@ -214,7 +212,7 @@ export default function Profile({ navigation }){
             <View
                 style={{
                     width: width,
-                    height: height * 0.24,
+                    height: height * 0.2,
                     alignItems: 'center',
                 }}
             >
@@ -234,9 +232,24 @@ export default function Profile({ navigation }){
                     width: width,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: 15,
+                    gap: 0.012 * height,
                 }}
             >
+                {/* Teacher Dashboard Button */}
+                <TouchableOpacity
+                    style={[
+                        { 
+                            backgroundColor: '#004642',
+                            height: 0.06 * height,
+                            width: 0.8 * width,
+                        
+                            }, 
+                            globalStyles.button
+                        ]}
+                        onPress={() => navigation.navigate('TeacherDashboard')}
+                > 
+                 <Text style={globalStyles.buttonText}>Teacher Dashboard</Text>   
+                </TouchableOpacity>
                 {state.is_signed_in ? (
                     <>
                         {/* Sign Out Button */}
@@ -262,6 +275,7 @@ export default function Profile({ navigation }){
                                     backgroundColor: '#004643',
                                     height: 0.06 * height,
                                     width: 0.8 * width,
+                                    marginBottom: 0.01 * height,
                                 }, 
                                 globalStyles.button
                             ]}
@@ -295,6 +309,7 @@ export default function Profile({ navigation }){
                                     height: 0.06 * height,
                                     width: 0.8 * width,
                                     borderRadius: 9999,
+
                                 }, 
                                 globalStyles.button
                             ]}
@@ -311,10 +326,11 @@ export default function Profile({ navigation }){
                                     height: 0.06 * height,
                                     width: 0.8 * width,
                                     borderRadius: 9999,
+                                    marginBottom: 0.01 * height,
                                 }, 
                                 globalStyles.button
                             ]}
-                            onPress={() => navigation.navigate('SignUp', {redirectTo: 'Profile'})}
+                            onPress={() => navigation.navigate('SignUp', {redirectTo: 'HomeTab'})}
 
                         >
                             <Text style={globalStyles.buttonText}>Sign Up</Text>
