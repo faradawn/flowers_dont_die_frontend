@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Dimensions, Image, Text, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { deleteLoginInfo, saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils';
@@ -10,11 +10,18 @@ const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 export default function Profile({ navigation }){
+    //const { state } = useUser();
     const { state, updateState } = useUser();
     const [isEditing, setIsEditing] = useState(false);
     const [newUsername, setNewUsername] = useState(state.username);
-
-
+    console.log("Debug - Profile Component state:", state);
+    console.log("Debug - Profile Component state.uid:", state?.uid);
+    console.log("Debug - Is showing login screen:", !state?.uid);
+    useEffect(() => {
+        console.log("Profile: Current user state:", state);
+    }, [state]);
+    const isLoggedIn = state.is_signed_in; 
+    
     const handleDelete = async () => {
         try {
             // Clear local submissions for this user
@@ -40,19 +47,24 @@ export default function Profile({ navigation }){
         }
     };
 
-    const handleLogout = async () => {
-        try {
-            await deleteLoginInfo();
-            updateState('username', '');
-            updateState('uid', '');
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            console.log("Done logout and deleted async storage");
-            navigation.navigate('Courses');
-        } catch (error) {
-            console.log('Error during logout:', error);
-        }
-    };
+   const handleLogout = async () => {
+    try {
+        // 1. 清理安全存储
+        await deleteLoginInfo();
+        
+        // 2. 更新状态
+        updateState('username', '');
+        updateState('uid', '');
+        updateState('is_signed_in', false);
+        
+        // 3. 立即导航到登录页面
+        navigation.replace('Login'); 
+        
+    } catch (error) {
+        console.error('Logout error:', error);
+        Alert.alert("Error", "Failed to sign out. Please try again.");
+    }
+};
 
     const handleResetProgress = async () => {
         try {
@@ -93,6 +105,25 @@ export default function Profile({ navigation }){
         setIsEditing(false);
     };
 
+    const handleContinueAsGuest = async () => {
+        try {
+            // 生成访客 ID
+            const guestId = `guest_${Date.now()}`;
+            
+            // 更新状态
+            updateState('username', `Guest_${guestId}`);
+            updateState('uid', guestId);
+            updateState('is_signed_in', false);
+            
+            // 导航到主页
+            navigation.navigate('HomeTab');
+        } catch (error) {
+            console.error('Guest mode error:', error);
+            Alert.alert("Error", "Failed to continue as guest. Please try again.");
+        }
+    }
+
+
     return (
         <View 
             style={{
@@ -119,7 +150,7 @@ export default function Profile({ navigation }){
                 />
             </View>
 
-            {/* Profile Text */}
+            {/* Profile Text - Modified to always show */}
             <View
                 style={{
                     width: width,
@@ -154,23 +185,26 @@ export default function Profile({ navigation }){
                         </TouchableOpacity>
                     </>
                 ) : (
-                    <>
+                    <View style={{flexDirection: 'row', alignItems: 'center', maxWidth: width * 0.7}}>
                         <Text
                             style={{
                                 fontFamily: 'Baloo2-Bold',
                                 fontWeight: 'bold',
                                 fontSize: 30,
                             }}
+                            adjustsFontSizeToFit
                         >
-                            {state.username}'s profile
+                            Hey, {state.username || 'Guest'}!
                         </Text>
-                        <TouchableOpacity
-                            onPress={() => setIsEditing(true)}
-                            style={{ marginLeft: 10 }}
-                        >
-                            <Ionicons name="pencil" size={24} color="#004643" />
-                        </TouchableOpacity>
-                    </>
+                        {state.is_signed_in && (
+                            <TouchableOpacity
+                                onPress={() => setIsEditing(true)}
+                                style={{ marginLeft: 10 }}
+                            >
+                                <Ionicons name="pencil" size={24} color="#004643" />
+                            </TouchableOpacity>
+                        )}
+                    </View>
                 )}
             </View>
 
@@ -178,7 +212,7 @@ export default function Profile({ navigation }){
             <View
                 style={{
                     width: width,
-                    height: height * 0.24,
+                    height: height * 0.2,
                     alignItems: 'center',
                 }}
             >
@@ -191,44 +225,118 @@ export default function Profile({ navigation }){
                 />
             </View>
 
-            {/* Buttons */}
+            {/* Buttons Section */}
             <View
                 style={{
                     height: 0.38 * height,
                     width: width,
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: 0.012 * height,
                 }}
             >
-                {/* Delete Account Button */}
+                {/* Teacher Dashboard Button */}
                 <TouchableOpacity
                     style={[
                         { 
-                            backgroundColor: '#004643',
+                            backgroundColor: '#004642',
                             height: 0.06 * height,
                             width: 0.8 * width,
-                        }, 
-                        globalStyles.button
-                    ]}
-                    onPress={() => {
-                        Alert.alert(
-                            "Delete Account",
-                            "Are you sure you want to delete your account? This will clear all your local progress.",
-                            [
-                                {
-                                    text: "Cancel",
-                                    style: "cancel"
-                                },
-                                { 
-                                    text: "OK", 
-                                    onPress: () => handleDelete()
-                                }
-                            ]
-                        );
-                    }}
-                >
-                    <Text style={globalStyles.buttonText}>Delete Account</Text>
+                        
+                            }, 
+                            globalStyles.button
+                        ]}
+                        onPress={() => navigation.navigate('TeacherDashboard')}
+                > 
+                 <Text style={globalStyles.buttonText}>Teacher Dashboard</Text>   
                 </TouchableOpacity>
+                {state.is_signed_in ? (
+                    <>
+                        {/* Sign Out Button */}
+                        <TouchableOpacity
+                            style={[
+                                { 
+                                    backgroundColor: '#004642',
+                                    height: 0.06 * height,
+                                    width: 0.8 * width,
+                                    borderRadius: 9999,
+                                }, 
+                                globalStyles.button
+                            ]}
+                            onPress={handleLogout}
+                        >
+                            <Text style={globalStyles.buttonText}>Sign Out</Text>
+                        </TouchableOpacity>
+
+                        {/* Delete Account Button */}
+                        <TouchableOpacity
+                            style={[
+                                { 
+                                    backgroundColor: '#004643',
+                                    height: 0.06 * height,
+                                    width: 0.8 * width,
+                                    marginBottom: 0.01 * height,
+                                }, 
+                                globalStyles.button
+                            ]}
+                            onPress={() => {
+                                Alert.alert(
+                                    "Delete Account",
+                                    "Are you sure you want to delete your account? This will clear all your local progress.",
+                                    [
+                                        {
+                                            text: "Cancel",
+                                            style: "cancel"
+                                        },
+                                        { 
+                                            text: "OK", 
+                                            onPress: () => handleDelete()
+                                        }
+                                    ]
+                                );
+                            }}
+                        >
+                            <Text style={globalStyles.buttonText}>Delete Account</Text>
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        {/* Login Button */}
+                        <TouchableOpacity
+                            style={[
+                                { 
+                                    backgroundColor: '#004642',
+                                    height: 0.06 * height,
+                                    width: 0.8 * width,
+                                    borderRadius: 9999,
+
+                                }, 
+                                globalStyles.button
+                            ]}
+                            onPress={() => navigation.navigate('Login')}
+                        >
+                            <Text style={globalStyles.buttonText}>Log In</Text>
+                        </TouchableOpacity>
+
+                        {/* Sign Up Button */}
+                        <TouchableOpacity
+                            style={[
+                                { 
+                                    backgroundColor: '#004643',
+                                    height: 0.06 * height,
+                                    width: 0.8 * width,
+                                    borderRadius: 9999,
+                                    marginBottom: 0.01 * height,
+                                }, 
+                                globalStyles.button
+                            ]}
+                            onPress={() => navigation.navigate('SignUp', {redirectTo: 'Profile'})}
+
+                        >
+                            <Text style={globalStyles.buttonText}>Sign Up</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
             </View>
         </View>
     )
