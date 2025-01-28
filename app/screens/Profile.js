@@ -330,7 +330,7 @@ export default function Profile({ navigation }){
                                 }, 
                                 globalStyles.button
                             ]}
-                            onPress={() => navigation.navigate('SignUp', {redirectTo: 'Profile'})}
+                            onPress={() => navigation.navigate('SignUp', {redirectTo: 'HomeTab'})}
 
                         >
                             <Text style={globalStyles.buttonText}>Sign Up</Text>
