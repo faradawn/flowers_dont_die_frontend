@@ -45,6 +45,7 @@ export default function Question_Combined({ navigation, route }) {
     const [permissionResponse, requestPermission] = Audio.usePermissions();
     const [allowSubmit, setAllowSubmit] = useState(false);
     const [transcribedText, setTranscribedText] = useState({ status: '', message: '', transcribed_text: '' });
+    const [voiceLoading, setVoiceLoading] = useState(false);
 
     // Common state
     const [voiceSubmitted, setVoiceSubmitted] = useState(false);
@@ -163,7 +164,7 @@ export default function Question_Combined({ navigation, route }) {
         await recording.stopAndUnloadAsync();
         await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
         const uri = recording.getURI();
-        setIsLoading(true);
+        setVoiceLoading(true);
         setOutputURI(uri);
     };
 
@@ -211,7 +212,7 @@ export default function Question_Combined({ navigation, route }) {
 
     useEffect(() => {
         if(transcribedText.status == '') return;
-        setIsLoading(false);
+        setVoiceLoading(false);
         setAllowSubmit(true);
     }, [transcribedText]);
 
@@ -508,11 +509,18 @@ export default function Question_Combined({ navigation, route }) {
                     backgroundColor: recording ? '#ef4444' : '#166534'
                 }}
             >
-                <Feather 
+                {voiceLoading ? (
+                    <ActivityIndicator size="small" color="white" />
+                ) : (
+                    <Feather 
                     name={recording ? "square" : "mic"} 
                     size={32} 
                     color="white" 
                 />
+                )}
+                
+                
+               
             </TouchableOpacity>
             
             <TouchableOpacity 
