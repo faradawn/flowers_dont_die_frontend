@@ -3,7 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import {
     View, Dimensions, Text, FlatList, ActivityIndicator,
-    TouchableOpacity, Image, StyleSheet
+    TouchableOpacity, Image, StyleSheet, NativeScrollEvent, NativeSyntheticEvent
 } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
@@ -27,7 +27,8 @@ export default function Courses({ navigation }) {
     const { state, updateState } = useUser();
     const [greeting, setGreeting] = useState('');
     const [containerHeight, setContainerHeight] = useState(height * 0.6);
-
+    const [shadowVisible, setShadowVisible] = useState(false);
+    const [bottomShadowVisible, setBottomShadowVisible] = useState(false);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -163,7 +164,7 @@ export default function Courses({ navigation }) {
         const padding = height * 0.01; // Extra padding
         
         if (courses.length >= 3) {
-            setContainerHeight(height * 0.35);
+            setContainerHeight(height * 0.4);
         } else {
             setContainerHeight((courses.length * itemHeight) + padding);
         }
@@ -173,6 +174,17 @@ export default function Courses({ navigation }) {
     useEffect(() => {
         calculateContainerHeight();
     }, [courses, calculateContainerHeight]);
+
+
+    const handleScroll = (event) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        const contentHeight = event.nativeEvent.contentSize.height;
+        const layoutHeight = event.nativeEvent.layoutMeasurement.height;
+
+        setShadowVisible(offsetY > height*0.07);
+        setBottomShadowVisible(offsetY + layoutHeight < contentHeight - height*0.07);
+    }
+
 
     return (
         <View style={styles.container}>
@@ -199,6 +211,9 @@ export default function Courses({ navigation }) {
                         <View
                             style={{ ...styles.flatListContainer, height: containerHeight }}
                         >
+                        {/* Top Shadow */}
+                        {shadowVisible && <View style = {styles.topShadow} />}
+                        
                             <FlatList
                                 style={styles.flatList}
                                 contentContainerStyle={styles.flatListContent}
@@ -218,7 +233,11 @@ export default function Courses({ navigation }) {
                                         logoUrl={item.logo_url}
                                     />
                                 )}
+                                onScroll={handleScroll}
+                                scrollEventThrottle={16}
                             />
+                            {/* Bottom Shadow */}
+                            {bottomShadowVisible && <View style={styles.bottomShadow} />}
                         </View>
                         { !state.is_signed_in && (
                             <View style={styles.signInContainer}>
@@ -278,13 +297,12 @@ const styles = StyleSheet.create({
     flatListContainer: {
         width: width,
         justifyContent: 'center',
-
     },
     flatList: {
         width: '100%',
     },
     flatListContent: {
-        paddingBottom: height * 0.1, 
+        paddingBottom: height * 0.05, 
         alignItems: 'center',
     },
     signInContainer: {
@@ -328,4 +346,24 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Baloo2-Bold',
     },
+    topShadow: {
+        position: 'absolute',
+        top: 0,
+        left: width*0.09,
+        right: width*0.09,
+        height: 13,
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        zIndex: 10,
+        borderRadius: 10
+    },
+    bottomShadow: {
+        position: 'absolute',
+        bottom: 0,
+        left: width*0.09,
+        right: width*0.09,
+        height: 13,
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        zIndex: 10,
+        borderRadius: 10
+    }
 });
