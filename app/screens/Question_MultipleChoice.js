@@ -751,7 +751,7 @@ export default function Question_Combined({ navigation, route }) {
                           }}
                           multiline={true}
                           scrollEnabled={true}
-                          placeholder="Type here or record..."
+                          placeholder="E.g. I used BFS algorithm."
                             value={text}
                             onChangeText={setText}
                             keyboardType="default"
