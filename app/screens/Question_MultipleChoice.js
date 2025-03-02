@@ -742,6 +742,28 @@ export default function Question_Combined({ navigation, route }) {
                         elevation: 10,
                         justifyContent: 'space-between'
                       }}>
+
+                        {/* Light bulb button positioned in the top right */}
+                        <TouchableOpacity
+                            onPress={() => {
+                                const answerIndex = data.answer.charCodeAt(0) - 'A'.charCodeAt(0);
+                                const answerText = data.options[answerIndex] || "Answer not available";
+                                setAnswerResponse({
+                                  feedback_title: "Answer",
+                                  feedback_body: answerText,
+                                });
+                                setModalOpen(true);
+                              }}
+                              style={{
+                                position: 'absolute',
+                                top: 15,
+                                right: 15,
+                                zIndex: 2,
+                              }}
+                            >
+                            <MaterialIcons name="lightbulb-outline" size={28} color="orange" />
+                        </TouchableOpacity>
+
                         {/* Text box */}
                         <TextInput
                           style={{
