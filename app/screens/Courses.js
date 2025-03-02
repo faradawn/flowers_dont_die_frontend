@@ -206,7 +206,7 @@ export default function Courses({ navigation }) {
                             </Text>
                         </View>
 
-                        <View style={{ height: 20 }}></View>
+                        
                         {/* FlatList Containing Topic Information */}
                         <View
                             style={{ ...styles.flatListContainer, height: containerHeight }}
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         flexDirection: 'column'
     },
     contentContainer: {
@@ -277,14 +277,14 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%', 
         alignItems: 'center', 
-        justifyContent: 'center',
+        justifyContent: 'flx-start',
         flexDirection: 'column'
     },
     greetingContainer: {
         minHeight: height * 0.09,
         width: width,
         paddingHorizontal: 30,
-        marginTop: height * 0.06,
+        paddingTop: height * 0.15,
     },
     greetingText: {
         fontFamily: 'Baloo2-Bold',
@@ -295,6 +295,7 @@ const styles = StyleSheet.create({
         color: '#26C250',
     },
     flatListContainer: {
+        marginTop: height * 0.05,
         width: width,
         justifyContent: 'center',
     },
