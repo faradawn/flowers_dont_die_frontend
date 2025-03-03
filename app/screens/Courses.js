@@ -185,6 +185,13 @@ export default function Courses({ navigation }) {
         setBottomShadowVisible(offsetY + layoutHeight < contentHeight - height*0.07);
     }
 
+    // set initial shadow visibility
+    useEffect(() => {
+        const contentHeight = courses.length * height*0.09;
+        const layoutHeight = containerHeight;
+
+        setBottomShadowVisible(layoutHeight < contentHeight - height*0.07);
+    }, [courses]);
 
     return (
         <View style={styles.container}>

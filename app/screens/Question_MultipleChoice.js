@@ -51,6 +51,7 @@ export default function Question_Combined({ navigation, route }) {
     const [voiceSubmitted, setVoiceSubmitted] = useState(false);
     const [mcSubmitted, setMcSubmitted] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
+    const [modalContent, setModalContent] = useState("");
     const [seconds, setSeconds] = useState(90);
     const [intervalId, setIntervalId] = useState(null);
     const [answerResponse, setAnswerResponse] = useState('');
@@ -277,6 +278,7 @@ export default function Question_Combined({ navigation, route }) {
 
         setIsLoading(false);
         setModalOpen(true);
+        setModalContent('submission');
         if (intervalId) { 
             clearInterval(intervalId);
         }
@@ -332,14 +334,11 @@ export default function Question_Combined({ navigation, route }) {
 
         return (
             <>
-            
             <Modal
                 visible={modalOpen}
                 transparent={true}
                 animationType="fade"
             >
-                
-
                 <View style={{
                     flex: 1,
                     justifyContent: 'center',
@@ -350,9 +349,9 @@ export default function Question_Combined({ navigation, route }) {
                         width: width * 0.8,
                         paddingVertical: height * 0.05,
                         paddingHorizontal: width * 0.05,
+                        borderRadius: 10,
                         backgroundColor: 'white',
                         justifyContent: 'center',
-                        alignItems: 'center',
                         shadowColor: '#000',
                         shadowOffset: { width: 0, height: 2 },
                         shadowOpacity: 0.25,
@@ -360,15 +359,7 @@ export default function Question_Combined({ navigation, route }) {
                         elevation: 5,
                         position: 'relative',
                     }}>
-
-                        <LottieView
-                            ref={animation}
-                            source={require('../../assets/animations/confettie_bottom.json')}
-                            loop={false}
-                            style={{position: 'absolute', top:0, bottom: 0, left: 0, right: 0}}
-                            resizeMode='cover'
-                        />
-                        {/* 0. close bottom */}
+                        {/* 0. close button */}
                         <Ionicons 
                             name="close-outline"
                             size={25}
@@ -380,39 +371,78 @@ export default function Question_Combined({ navigation, route }) {
                             }}
                         />
 
-                        {/* 1. Star */}
+                        {modalContent === 'submission' ? (
+                            <View style = {{
+                                alignItems: 'center'
+                            }}>
+                                <LottieView
+                                    ref={animation}
+                                    source={require('../../assets/animations/confettie_bottom.json')}
+                                    loop={false}
+                                    style={{position: 'absolute', top:0, bottom: 0, left: 0, right: 0}}
+                                    resizeMode='cover'
+                                />
 
-                            <Image
-                                source={stars.grade[answerResponse.grade]}
-                                style={{
-                                    height: height * 0.04,
-                                    width: width * 0.3,
-                                    marginVertical: height * 0.01,
-                                }}
-                            />
+                                {/* 1. Star */}
 
-                        
-                        {/* 2. Title */}
-                        <Text style={{
-                            fontFamily: 'Baloo2-Bold',
-                            fontSize: 30,
-                            textAlign: 'center',
-                        }}>
-                            {mode === QuestionMode.VOICE ? voiceModalTitle : 
-                                (currentPressed === data.answer ? 'Congratulations!' : 'So close!')}
-                        </Text>
-                        
-                        {/* 3. Body */}
-                        <Text style={{
-                            fontFamily: 'Baloo2-Regular',
-                            fontSize: 16,
-                            textAlign: 'center',
-                            paddingTop: height * 0.02,
-                        }}>
-                            {mode === QuestionMode.VOICE ? answerResponse.feedback_body :
+                                    <Image
+                                        source={stars.grade[answerResponse.grade]}
+                                        style={{
+                                            height: height * 0.04,
+                                            width: width * 0.3,
+                                            marginVertical: height * 0.01,
+                                            resizeMode: 'stretch'
+                                        }}
+                                    />
+
                                 
-                                (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`)}
-                        </Text>
+                                {/* 2. Title */}
+                                <Text style={{
+                                    fontFamily: 'Baloo2-Bold',
+                                    fontSize: 30,
+                                    textAlign: 'center',
+                                }}>
+                                    {mode === QuestionMode.VOICE ? voiceModalTitle : 
+                                        (currentPressed === data.answer ? 'Congratulations!' : 'So close!')}
+                                </Text>
+                                
+                                {/* 3. Body */}
+                                <Text style={{
+                                    fontFamily: 'Baloo2-Regular',
+                                    fontSize: 16,
+                                    textAlign: 'center',
+                                    paddingTop: height * 0.02,
+                                }}>
+                                    {mode === QuestionMode.VOICE ? answerResponse.feedback_body :
+                                        
+                                        (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`)}
+                                </Text>
+                            </View>
+                        ) : ( //showing solution
+                            <View style = {{
+                                alignItems: 'center'
+                            }}>
+                                {/* 1. Title */}
+                                <Text style={{
+                                    fontFamily: 'Baloo2-Bold',
+                                    fontSize: 30,
+                                    textAlign: 'center',
+                                }}>
+                                    Solution
+                                </Text>
+                                
+                                {/* 2. Body */}
+                                <Text style={{
+                                    fontFamily: 'Baloo2-Regular',
+                                    fontSize: 16,
+                                    textAlign: 'center',
+                                    paddingTop: height * 0.02,
+                                }}>
+                                    There is a hint/solution here. 
+                                    {/* fetch solution from backend */}
+                                </Text>
+                            </View>
+                        )}
                     </View>
                 </View>
             </Modal>
@@ -601,6 +631,18 @@ export default function Question_Combined({ navigation, route }) {
                     elevation: 10, // for Android shadow
                 }}
                 >
+                    {/* show solution button */}
+                    <Ionicons 
+                        name="bulb-outline"
+                        size={25}
+                        onPress={() => { setModalOpen(true); setModalContent('solution') }}
+                        style={{
+                            position: 'absolute',
+                            top: 15,
+                            right: 15,
+                            zIndex: 10
+                        }}
+                    />
 
                 <ScrollView
                     pointerEvents="auto"
