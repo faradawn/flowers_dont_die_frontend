@@ -18,6 +18,8 @@ const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
 export default function Topics({ navigation }){
+    //add course description state var, default to empty str
+    const [courseDescription, setCourseDescription] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [topics, setTopics] = useState(null);
     const { state } = useUser();
@@ -44,6 +46,10 @@ export default function Topics({ navigation }){
           fetchTopics();
         }, [])
     );
+    //hardcoded description string
+    useEffect(() => {
+        setCourseDescription('description description description \n description description')
+    }, []);
 
    /*  // navigation to Videos screen
     const navigateToVideos = (topic) => {
@@ -74,8 +80,9 @@ export default function Topics({ navigation }){
                 ...globalStyles.container,
             }}
         >  
-            { isLoading ? (<ActivityIndicator />) : 
-            (
+            { isLoading ? (
+            <ActivityIndicator />
+            ) : (
                 <View>
                     <View
                         style={{ 
@@ -86,8 +93,6 @@ export default function Topics({ navigation }){
                     >
                         <TopBar navigateTo={'HomeTab'}/>
                     </View>
-
-                    {/* Message At The Top */}
                     <View
                         style={{ 
                             flex: 5,
@@ -96,7 +101,7 @@ export default function Topics({ navigation }){
                     >
                     <View
                         style={{
-                            height: height * 0.06,
+                            height: height * 0.04,
                             width: width,
 
                             alignItems: 'center',
@@ -119,6 +124,37 @@ export default function Topics({ navigation }){
                             </Text>
                         </Text>
                     </View>
+
+                    {/*description view added here*/}
+                    <View
+                        style={{
+                            marginHorizontal: width *0.0,
+                            marginBottom: 10,
+                            padding: 10,
+                            borderWidth: 1,
+                            borderColor: '#ccc',
+                            corderRadius: 8,
+                            backgroundColor: '#f9f9f9',
+                            }}
+                        >
+                            <Text
+                                style = {{
+                                    fontFamily: 'Baloo2-SemiBold',
+                                    fontSize: 14,
+                                    color: '#333',
+                                    textAlign: 'center',
+
+                                }}
+                                >
+                                {courseDescription || 'Description'}
+
+                                </Text>
+
+                        </View>
+
+
+                    {/* Message At The Top */}
+                    
 
                     <View style={{height: 20}}></View>
                     {/* FlatList Containing Topic Information */}
