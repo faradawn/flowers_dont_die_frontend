@@ -200,6 +200,7 @@ export default function Question_Combined({ navigation, route }) {
             // Store submission details and show feedback modal
             await storeSubmission(response_data.submission_details);
             setAnswerResponse(response_data);
+            setModalContent('submission');
             setModalOpen(true);
             setVoiceSubmitted(true);
         } catch(error) {
