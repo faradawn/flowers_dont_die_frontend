@@ -418,14 +418,14 @@ export default function Question_Combined({ navigation, route }) {
                                         (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`)}
                                 </Text>
                             </View>
-                        ) : ( //showing solution
+                        ) : ( // hint lightbulb 
                             <View style = {{
                                 alignItems: 'center'
                             }}>
                                 {/* 1. Title */}
                                 <Text style={{
                                     fontFamily: 'Baloo2-Bold',
-                                    fontSize: 30,
+                                    fontSize: 20,
                                     textAlign: 'center',
                                 }}>
                                     Solution
@@ -438,8 +438,7 @@ export default function Question_Combined({ navigation, route }) {
                                     textAlign: 'center',
                                     paddingTop: height * 0.02,
                                 }}>
-                                    There is a hint/solution here. 
-                                    {/* fetch solution from backend */}
+                                    {data.options[data.answer.charCodeAt(0) - 'A'.charCodeAt(0)] || "Answer not available"}
                                 </Text>
                             </View>
                         )}
@@ -788,12 +787,7 @@ export default function Question_Combined({ navigation, route }) {
                         {/* Light bulb button positioned in the top right */}
                         <TouchableOpacity
                             onPress={() => {
-                                const answerIndex = data.answer.charCodeAt(0) - 'A'.charCodeAt(0);
-                                const answerText = data.options[answerIndex] || "Answer not available";
-                                setAnswerResponse({
-                                  feedback_title: "Answer",
-                                  feedback_body: answerText,
-                                });
+                                setModalContent('hint');
                                 setModalOpen(true);
                               }}
                               style={{
