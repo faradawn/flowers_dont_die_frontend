@@ -630,18 +630,7 @@ export default function Question_Combined({ navigation, route }) {
                     elevation: 10, // for Android shadow
                 }}
                 >
-                    {/* show solution button */}
-                    <Ionicons 
-                        name="bulb-outline"
-                        size={25}
-                        onPress={() => { setModalOpen(true); setModalContent('solution') }}
-                        style={{
-                            position: 'absolute',
-                            top: 15,
-                            right: 15,
-                            zIndex: 10
-                        }}
-                    />
+                   
 
                 <ScrollView
                     pointerEvents="auto"
