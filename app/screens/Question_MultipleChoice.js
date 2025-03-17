@@ -200,6 +200,7 @@ export default function Question_Combined({ navigation, route }) {
             // Store submission details and show feedback modal
             await storeSubmission(response_data.submission_details);
             setAnswerResponse(response_data);
+            setModalContent('submission');
             setModalOpen(true);
             setVoiceSubmitted(true);
         } catch(error) {
@@ -418,14 +419,14 @@ export default function Question_Combined({ navigation, route }) {
                                         (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`)}
                                 </Text>
                             </View>
-                        ) : ( //showing solution
+                        ) : ( // hint lightbulb 
                             <View style = {{
                                 alignItems: 'center'
                             }}>
                                 {/* 1. Title */}
                                 <Text style={{
                                     fontFamily: 'Baloo2-Bold',
-                                    fontSize: 30,
+                                    fontSize: 20,
                                     textAlign: 'center',
                                 }}>
                                     Solution
@@ -438,8 +439,7 @@ export default function Question_Combined({ navigation, route }) {
                                     textAlign: 'center',
                                     paddingTop: height * 0.02,
                                 }}>
-                                    There is a hint/solution here. 
-                                    {/* fetch solution from backend */}
+                                    {data.options[data.answer.charCodeAt(0) - 'A'.charCodeAt(0)] || "Answer not available"}
                                 </Text>
                             </View>
                         )}
@@ -631,18 +631,7 @@ export default function Question_Combined({ navigation, route }) {
                     elevation: 10, // for Android shadow
                 }}
                 >
-                    {/* show solution button */}
-                    <Ionicons 
-                        name="bulb-outline"
-                        size={25}
-                        onPress={() => { setModalOpen(true); setModalContent('solution') }}
-                        style={{
-                            position: 'absolute',
-                            top: 15,
-                            right: 15,
-                            zIndex: 10
-                        }}
-                    />
+                   
 
                 <ScrollView
                     pointerEvents="auto"
@@ -788,12 +777,7 @@ export default function Question_Combined({ navigation, route }) {
                         {/* Light bulb button positioned in the top right */}
                         <TouchableOpacity
                             onPress={() => {
-                                const answerIndex = data.answer.charCodeAt(0) - 'A'.charCodeAt(0);
-                                const answerText = data.options[answerIndex] || "Answer not available";
-                                setAnswerResponse({
-                                  feedback_title: "Answer",
-                                  feedback_body: answerText,
-                                });
+                                setModalContent('hint');
                                 setModalOpen(true);
                               }}
                               style={{
@@ -815,7 +799,7 @@ export default function Question_Combined({ navigation, route }) {
                           }}
                           multiline={true}
                           scrollEnabled={true}
-                          placeholder="E.g. I used BFS algorithm."
+                          placeholder="E.g. My idea is to use DFS ..."
                             value={text}
                             onChangeText={setText}
                             keyboardType="default"
