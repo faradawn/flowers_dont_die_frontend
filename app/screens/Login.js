@@ -69,7 +69,7 @@ export default function Login({ navigation }){
             }
 
         } catch(error) {
-            console.log('Error fetching data: ', error);
+            console.log=('Error fetching data: ', error);
         }
     }
 
@@ -130,7 +130,8 @@ export default function Login({ navigation }){
                             placeholderTextColor='rgba(255, 255, 255, 0.5)'
                             onChangeText={(val) => setUsername(val)}
                             value={username}
-                            
+                            textContentType="username"
+                            autoComplete="username"
                             autoCapitalize="none"
                             autoCorrect={false}
                         />
@@ -150,8 +151,8 @@ export default function Login({ navigation }){
                             placeholderTextColor='rgba(255, 255, 255, 0.5)'
                             onChangeText={(val) => setPassword(val)}
                             value={password}
-                            
-                            textContentType="oneTimeCode"
+                            textContentType="password"
+                            autoComplete="password"
                             autoCapitalize="none"
                             autoCorrect={false}
                             
