@@ -82,7 +82,11 @@ export default function Login({ navigation }){
                 ...globalStyles.container
             }}
         >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <TouchableWithoutFeedback onPress={(event) => {
+                if (event.target.tagName !== 'INPUT') {
+                    Keyboard.dismiss();
+                }
+            }}>
                 <KeyboardAvoidingView 
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
                     style={{flex: 1, alignItems: "center", justifyContent: "center"}}
