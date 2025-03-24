@@ -3,6 +3,8 @@ import { View, Image, ImageBackground, Dimensions, TextInput,
     Text, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Alert
 } from 'react-native';
 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
 // Add these lines to define height and width
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -83,10 +85,15 @@ export default function Login({ navigation }){
             }}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <KeyboardAvoidingView 
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-                    style={{flex: 1, alignItems: "center", justifyContent: "center"}}
+                <KeyboardAwareScrollView 
+                    contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingBottom: height * 0.1 }}
+                    extraScrollHeight={height * 0.06}
+                    enableOnAndroid={true}
+                    keyboardShouldPersistTaps="handled"
+                    bounces={false}
+                    showsVerticalScrollIndicator={false}
                 >
+                    
                     {/* 1. Flower icon */}
                     <View
                         style={ {
@@ -109,10 +116,10 @@ export default function Login({ navigation }){
                     {/* 2. Forms */}
                     <View
                         style={{
-                            height: height * 0.3,
+
                             width: width * 0.8,
-                            alignItems: 'flex-start',
-                            justifyContent: 'flex-end',
+                            alignItems: 'flex-start ',
+                            justifyContent: 'center',
                         }}
                     >
                         {/* Username input field */}
@@ -131,7 +138,7 @@ export default function Login({ navigation }){
                             onChangeText={(val) => setUsername(val)}
                             value={username}
                             textContentType="username"
-                            autoComplete="username"
+
                             autoCapitalize="none"
                             autoCorrect={false}
                         />
@@ -152,11 +159,11 @@ export default function Login({ navigation }){
                             onChangeText={(val) => setPassword(val)}
                             value={password}
                             textContentType="password"
-                            autoComplete="password"
+
                             autoCapitalize="none"
                             autoCorrect={false}
                             
-                            secureTextEntry={true}
+
                         />
 
                         {/* Error message field */}
@@ -253,7 +260,7 @@ export default function Login({ navigation }){
                             Continue as Guest
                         </Text>
                     </View>
-                </KeyboardAvoidingView>            
+                </KeyboardAwareScrollView>         
             </TouchableWithoutFeedback>
         </ImageBackground>
     );
