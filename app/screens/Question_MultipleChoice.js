@@ -28,7 +28,11 @@ const QuestionMode = {
 
 export default function Question_Combined({ navigation, route }) {
     const [text, setText] = useState('');
-    const [data, setData] = useState([]);
+    const [data, setData] = useState({
+        message: "",
+        options: [],
+        answer: "",
+    });
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
     const [mode, setMode] = useState(QuestionMode.VOICE);
@@ -747,7 +751,11 @@ export default function Question_Combined({ navigation, route }) {
                     <View style={{height: 0.01 * height}} />
 
                 
-                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <TouchableWithoutFeedback onPress={(event) => {
+                        if (event.target.tagName !== 'INPUT' || event.target.tagName !== 'TEXTAREA') {
+                            Keyboard.dismiss();
+                        }
+                    }}>
 
                   {/* Bottom component */}
                   {mode === QuestionMode.VOICE ? ( 
