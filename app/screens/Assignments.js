@@ -1,8 +1,8 @@
 import React, { useState, useEffect} from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { View, Dimensions, Text, FlatList, ActivityIndicator,StyleSheet,
-    TouchableOpacity,
+import { View, Text, FlatList, ActivityIndicator,StyleSheet,
+    TouchableOpacity, useWindowDimensions
 } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
@@ -14,10 +14,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 import TopBar from '../components/TopBar';
 
-const height = Dimensions.get('screen').height;
-const width = Dimensions.get('screen').width;
-
 export default function Topics({ navigation, route }){
+    // define height and width
+    const {height, width} = useWindowDimensions();
+
+
     const [isLoading, setIsLoading] = useState(true);
     const [assignments, setAssignments] = useState([]);
     const { state } = useUser();
@@ -88,6 +89,7 @@ export default function Topics({ navigation, route }){
                             flex: 1,
                             alignItems: 'center',
                             justifyContent: 'center',
+                            paddingBottom: height*0.05,
                         }}
                     >
                         <TopBar navigateTo={'Topics'}/>

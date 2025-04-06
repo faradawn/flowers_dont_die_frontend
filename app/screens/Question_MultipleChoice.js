@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView } from 'react-native';
+import { ScrollView, Text, View, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, useWindowDimensions} from 'react-native';
 import { Ionicons, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -17,9 +17,6 @@ import LottieView from 'lottie-react-native';
 import TopBar from '../components/TopBar';
 import { getQuestionSet, storeSubmission } from '../components/localDb';
 
-const height = Dimensions.get('window').height * 0.95;
-const width = Dimensions.get('window').width;
-
 // At the top of your file, add this enum
 const QuestionMode = {
     VOICE: 0,
@@ -27,6 +24,9 @@ const QuestionMode = {
 };
 
 export default function Question_Combined({ navigation, route }) {
+    // define height and width
+    const {height, width} = useWindowDimensions();
+
     const [text, setText] = useState('');
     const [data, setData] = useState({
         message: "",
@@ -327,10 +327,14 @@ export default function Question_Combined({ navigation, route }) {
         useEffect(() => {
             if (modalOpen) {
                 if ((mode === QuestionMode.MULTIPLE_CHOICE && currentPressed === data.answer) || (mode === QuestionMode.VOICE && answerResponse && answerResponse.grade > 1)) {
-                    triggerLongHapticFeedback();
+                    if (Platform.OS === 'ios') {
+                        triggerLongHapticFeedback();
+                    }
                     triggerConfetti();
                 } else {
-                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                    if (Platform.OS === 'ios') {
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                    }
                 } 
             }
         }, [modalOpen]);
@@ -352,6 +356,7 @@ export default function Question_Combined({ navigation, route }) {
                 }}>
                     <View style={{
                         width: width * 0.8,
+                        height: height * 0.8,
                         paddingVertical: height * 0.05,
                         paddingHorizontal: width * 0.05,
                         borderRadius: 10,
@@ -378,7 +383,7 @@ export default function Question_Combined({ navigation, route }) {
 
                         {modalContent === 'submission' ? (
                             <View style = {{
-                                alignItems: 'center'
+                                alignItems: 'center',
                             }}>
                                 <LottieView
                                     ref={animation}
@@ -393,10 +398,9 @@ export default function Question_Combined({ navigation, route }) {
                                     <Image
                                         source={stars.grade[answerResponse.grade]}
                                         style={{
-                                            height: height * 0.04,
-                                            width: width * 0.3,
-                                            marginVertical: height * 0.01,
-                                            resizeMode: 'stretch'
+                                            width: height * 0.6,
+                                            height: height * 0.2,
+                                            resizeMode: 'stretch',
                                         }}
                                     />
 
@@ -534,8 +538,8 @@ export default function Question_Combined({ navigation, route }) {
             <TouchableOpacity 
                 onPress={handleRecord}
                 style={{
-                    width: 64,
-                    height: 64,
+                    width: height*0.07,
+                    height: height*0.07,
                     borderRadius: 32,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -548,7 +552,7 @@ export default function Question_Combined({ navigation, route }) {
                 ) : (
                     <Feather 
                     name={recording ? "square" : "mic"} 
-                    size={32} 
+                    size={height*0.04} 
                     color="white" 
                 />
                 )}
@@ -699,7 +703,7 @@ export default function Question_Combined({ navigation, route }) {
     );
 
     return (
-        <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
+        <View style={{display: 'flex', justifyContent: 'center', alignItems:'stretch'}}>
 
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center", width: width, height: height}}>
 
@@ -752,7 +756,7 @@ export default function Question_Combined({ navigation, route }) {
 
                 
                     <TouchableWithoutFeedback onPress={(event) => {
-                        if (event.target.tagName !== 'INPUT' || event.target.tagName !== 'TEXTAREA') {
+                        if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
                             Keyboard.dismiss();
                         }
                     }}>

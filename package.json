@@ -15,8 +15,10 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@dotlottie/react-player": "^1.6.19",
     "@expo/vector-icons": "^14.0.3",
     "@ffmpeg/ffmpeg": "^0.12.10",
+    "@lottiefiles/react-lottie-player": "^3.6.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/voice": "^1.1.9",
     "@react-native-vector-icons/material-icons": "^0.0.1-alpha.16",
@@ -40,6 +42,7 @@
     "expo-web-browser": "~13.0.3",
     "formik": "^2.4.6",
     "jest-expo": "~51.0.4",
+    "lottie-react": "^2.4.1",
     "lottie-react-native": "6.7.0",
     "material-icons": "^1.13.12",
     "nativewind": "^2.0.11",

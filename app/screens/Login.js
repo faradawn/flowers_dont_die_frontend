@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, ImageBackground, Dimensions, TextInput,
-    Text, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Alert
+    Text, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Alert, useWindowDimensions
 } from 'react-native';
-
-// Add these lines to define height and width
-const height = Dimensions.get('window').height;
-const width = Dimensions.get('window').width;
 
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext'
@@ -18,6 +14,8 @@ export default function Login({ navigation }){
     const [infoCorrect, setInfoCorrect] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
     const [loginData, setLoginData] = useState(null);
+    // define height and width
+    const {height, width} = useWindowDimensions();
 
     const { updateState } = useUser();
 
@@ -83,7 +81,7 @@ export default function Login({ navigation }){
             }}
         >
             <TouchableWithoutFeedback onPress={(event) => {
-                if (event.target.tagName !== 'INPUT' || event.target.tagName !== 'TEXTAREA') {
+                if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
                     Keyboard.dismiss();
                 }
             }}>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { View, Dimensions, Text, FlatList, ActivityIndicator,
-    TouchableOpacity, Button, StyleSheet
+import { View, Text, FlatList, ActivityIndicator,
+    TouchableOpacity, Button, StyleSheet, useWindowDimensions
 } from 'react-native';
 import { Video } from 'expo-av';
 
@@ -14,10 +14,10 @@ import { getTopics } from '../components/localDb'; // Import the local getTopics
 
 import TopBar from '../components/TopBar';
 
-const height = Dimensions.get('screen').height;
-const width = Dimensions.get('screen').width;
-
 export default function Topics({ navigation }){
+    // define height and width
+    const {height, width} = useWindowDimensions();
+
     const [isLoading, setIsLoading] = useState(true);
     const [topics, setTopics] = useState({ topics: [] });
     const { state } = useUser();
@@ -101,6 +101,7 @@ export default function Topics({ navigation }){
                             flex: 1,
                             alignItems: 'center',
                             justifyContent: 'center',
+                            paddingBottom: height*0.05,
                         }}
                     >
                         <TopBar navigateTo={'HomeTab'}/>
@@ -109,7 +110,7 @@ export default function Topics({ navigation }){
                     {/* Message At The Top */}
                     <View
                         style={{ 
-                            flex: 5,
+                            flex: 10,
                             alignItems: 'center',
                         }}
                     >
@@ -153,7 +154,16 @@ export default function Topics({ navigation }){
                         }}
                     >
                     {/* Top Shadow */}
-                    {shadowVisible && <View style = {styles.topShadow} />}
+                    {shadowVisible && <View style = {{
+                        position: 'absolute',
+                        top: 0,
+                        left: width*0.09,
+                        right: width*0.09,
+                        height: 13,
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                        borderRadius: 10
+                    }} />}
                         <FlatList
                             style={{ flex: 1 }}
                             data={topics.topics}
@@ -175,7 +185,16 @@ export default function Topics({ navigation }){
                             scrollEventThrottle={16}
                         />
                     {/* Bottom Shadow */}
-                    {bottomShadowVisible && <View style={styles.bottomShadow} />}
+                    {bottomShadowVisible && <View style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: width*0.09,
+                        right: width*0.09,
+                        height: 13,
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                        borderRadius: 10
+                    }} />}
                     </View>
                     </View>
                 </View>
@@ -257,24 +276,4 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '50%',
     },
-    topShadow: {
-        position: 'absolute',
-        top: 0,
-        left: width*0.09,
-        right: width*0.09,
-        height: 13,
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        zIndex: 10,
-        borderRadius: 10
-    },
-    bottomShadow: {
-        position: 'absolute',
-        bottom: 0,
-        left: width*0.09,
-        right: width*0.09,
-        height: 13,
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        zIndex: 10,
-        borderRadius: 10
-    }
 });

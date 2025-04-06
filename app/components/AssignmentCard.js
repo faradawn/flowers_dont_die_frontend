@@ -1,11 +1,12 @@
 import React from 'react';
-import { Text, View, TouchableOpacity, Dimensions} from 'react-native';
+import { Text, View, TouchableOpacity, useWindowDimensions} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
-const height = Dimensions.get('screen').height;
-const width = Dimensions.get('screen').width;
 
 export default function Card({ index, id, title, num_stars, pressHandler }) {
+     // define height and width
+     const {height, width} = useWindowDimensions(); 
+
     const renderStars = () => {
         if (!num_stars || num_stars <= 0) {
           return null;

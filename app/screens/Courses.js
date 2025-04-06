@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import {
-    View, Dimensions, Text, FlatList, ActivityIndicator,
-    TouchableOpacity, Image, StyleSheet, NativeScrollEvent, NativeSyntheticEvent
+    View, Text, FlatList, ActivityIndicator,
+    TouchableOpacity, Image, StyleSheet, NativeScrollEvent, NativeSyntheticEvent, useWindowDimensions
 } from 'react-native';
 
 import { globalStyles } from '../globalStyles/globalStyles';
@@ -16,11 +16,11 @@ import { getCourses, initializeLocalDatabase } from '../components/localDb';
 import { myImages } from '../globalStyles/globalStyles';
 import { Button } from 'react-native-web';
 
-const height = Dimensions.get('screen').height;
-const width = Dimensions.get('screen').width;
-
 
 export default function Courses({ navigation }) {
+    // define height and width
+    const {height, width} = useWindowDimensions();
+
     const [isLoading, setIsLoading] = useState(true);
     const [courses, setCourses] = useState([]);
     const [dailyQuestionId, setDailyQuestionId] = useState(null); // daily random question
@@ -198,9 +198,13 @@ export default function Courses({ navigation }) {
             {isLoading ? (<ActivityIndicator />) :
                 (
                     <View >
-
                         {/* Message At The Top */}
-                        <View style={styles.greetingContainer}>
+                        <View style={{
+                            minHeight: height * 0.09,
+                            width: width,
+                            paddingHorizontal: 30,
+                            marginTop: height * 0.15,
+                        }}>
                             <Text
                                 style={styles.greetingText}
                                 numberOfLines={2}
@@ -213,17 +217,33 @@ export default function Courses({ navigation }) {
                             </Text>
                         </View>
 
-                        <View style={{ height: 20 }}></View>
+                        <View style={{ height: height*0.03 }}></View>
                         {/* FlatList Containing Topic Information */}
                         <View
-                            style={{ ...styles.flatListContainer, height: containerHeight }}
+                            style={{
+                                width: width,
+                                height: height*0.5,
+                                justifyContent: 'center',
+                            }}
                         >
                         {/* Top Shadow */}
-                        {shadowVisible && <View style = {styles.topShadow} />}
+                        {shadowVisible && <View style = {{
+                            position: 'absolute',
+                            top: 0,
+                            left: width*0.09,
+                            right: width*0.09,
+                            height: 13,
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                            zIndex: 10,
+                            borderRadius: 10
+                        }} />}
                         
                             <FlatList
                                 style={styles.flatList}
-                                contentContainerStyle={styles.flatListContent}
+                                contentContainerStyle={{
+                                    paddingBottom: height * 0.05, 
+                                    alignItems: 'center',
+                                }}
                                 data={courses}
                                 keyExtractor={(item) => item.course_id}
                                 showsVerticalScrollIndicator={false}
@@ -244,14 +264,41 @@ export default function Courses({ navigation }) {
                                 scrollEventThrottle={16}
                             />
                             {/* Bottom Shadow */}
-                            {bottomShadowVisible && <View style={styles.bottomShadow} />}
+                            {bottomShadowVisible && <View style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                left: width*0.09,
+                                right: width*0.09,
+                                height: 13,
+                                backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                                zIndex: 10,
+                                borderRadius: 10
+                            }} />}
                         </View>
                         { !state.is_signed_in && (
-                            <View style={styles.signInContainer}>
+                            <View style={{
+                                width: width * 0.8,
+                                alignItems: 'center',
+                                padding: 20,
+                                backgroundColor: '#ffffff',
+                                borderRadius: 10,
+                                alignSelf: 'center',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.2,
+                                shadowRadius: 3.84,
+                                marginBottom: 20,
+                                marginTop: height * 0.01,   
+                            }}>
                                 {/* Illustration */}
                                 <Image
                                 source={require('../../assets/images/notion_avatars/notion_girl_right.png')}
-                                style={styles.signInImage}
+                                style={{
+                                    width: width * 0.15, 
+                                    height: width * 0.15, 
+                                    resizeMode: 'contain',
+                                    marginBottom: 10,
+                                }}
                                 />
 
                                 {/* Text */}
@@ -275,8 +322,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: 'stretch',
+        justifyContent: 'start',
         flexDirection: 'column'
     },
     contentContainer: {
@@ -287,12 +334,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexDirection: 'column'
     },
-    greetingContainer: {
-        minHeight: height * 0.09,
-        width: width,
-        paddingHorizontal: 30,
-        marginTop: height * 0.06,
-    },
     greetingText: {
         fontFamily: 'Baloo2-Bold',
         fontSize: 22,
@@ -301,36 +342,8 @@ const styles = StyleSheet.create({
     usernameText: {
         color: '#26C250',
     },
-    flatListContainer: {
-        width: width,
-        justifyContent: 'center',
-    },
     flatList: {
         width: '100%',
-    },
-    flatListContent: {
-        paddingBottom: height * 0.05, 
-        alignItems: 'center',
-    },
-    signInContainer: {
-        width: width * 0.8,
-        alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        alignSelf: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3.84,
-        marginBottom: 20,
-        marginTop: height * 0.01,   
-    },
-    signInImage: {
-        width: width * 0.15, 
-        height: width * 0.15, 
-        resizeMode: 'contain',
-        marginBottom: 10,
     },
     signInText: {
         fontSize: 18,
@@ -353,24 +366,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Baloo2-Bold',
     },
-    topShadow: {
-        position: 'absolute',
-        top: 0,
-        left: width*0.09,
-        right: width*0.09,
-        height: 13,
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        zIndex: 10,
-        borderRadius: 10
-    },
-    bottomShadow: {
-        position: 'absolute',
-        bottom: 0,
-        left: width*0.09,
-        right: width*0.09,
-        height: 13,
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        zIndex: 10,
-        borderRadius: 10
-    }
 });
