@@ -29,19 +29,28 @@ export default function Login({ navigation }) {
   // 添加键盘状态跟踪
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  // 添加键盘事件监听
+  // 修改键盘监听方式，使用强制更新方法
   useEffect(() => {
+    // 键盘显示监听
     const keyboardWillShowListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
       () => {
         setKeyboardVisible(true);
+        // 添加调试日志
+
       }
     );
     
+    // 键盘隐藏监听
     const keyboardWillHideListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
       () => {
-        setKeyboardVisible(false);
+        // 确保状态可靠地更新
+        setTimeout(() => {
+          setKeyboardVisible(false);
+          // 添加调试日志
+
+        }, 50); // 短暂延迟确保状态更新后触发渲染
       }
     );
     
@@ -79,22 +88,29 @@ export default function Login({ navigation }) {
     }
   };
 
-  // 点击空白区域关闭键盘
+  // 添加强制重新渲染辅助函数
   const dismissKeyboard = () => {
     Keyboard.dismiss();
+    setTimeout(() => {
+      setKeyboardVisible(false);
+    }, 50);
   };
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
-      // 调整键盘弹出时的 offset，使 sign in 区域上移更多
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      // 减小offset值可能有助于解决问题
+
+      // 添加这个属性
+      contentContainerStyle={{ flex: 1 }}
+      enabled={true}
     >
       <View style={[
         styles.backgroundContainer,
-        // 根据键盘状态调整布局
-        keyboardVisible ? { justifyContent: 'flex-start' } : { justifyContent: 'space-between' }
+        // 更明确的样式对比
+        keyboardVisible 
+          ? { justifyContent: 'flex-start', paddingTop: 0 } 
+          : { justifyContent: 'space-between', paddingTop: 0 }
       ]}>
         {/* 顶部图标区域，可点击关闭键盘 */}
         <TouchableWithoutFeedback onPress={dismissKeyboard}>

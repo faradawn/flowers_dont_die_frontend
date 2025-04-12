@@ -110,7 +110,7 @@ export default function SignUp({ navigation }) {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+
     >
       <View
         style={[
