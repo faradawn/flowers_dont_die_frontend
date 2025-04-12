@@ -16,7 +16,7 @@ import {
 import { useUser } from '../components/UserContext';
 import { saveLoginInfo } from '../components/SecureStoreUtils';
 
-// 屏幕尺寸常量
+
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
@@ -26,31 +26,26 @@ export default function Login({ navigation }) {
   const [infoCorrect, setInfoCorrect] = useState(true);
   const { updateState } = useUser();
   
-  // 添加键盘状态跟踪
+
+  // Keyboard visibility state for UI adjustment
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  // 修改键盘监听方式，使用强制更新方法
+  // Listen for keyboard events to adjust UI layout
   useEffect(() => {
-    // 键盘显示监听
     const keyboardWillShowListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
       () => {
         setKeyboardVisible(true);
-        // 添加调试日志
-
       }
     );
     
-    // 键盘隐藏监听
+    // Use timeout to ensure UI adjusts after keyboard is fully hidden
     const keyboardWillHideListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
       () => {
-        // 确保状态可靠地更新
         setTimeout(() => {
           setKeyboardVisible(false);
-          // 添加调试日志
-
-        }, 50); // 短暂延迟确保状态更新后触发渲染
+        }, 50); 
       }
     );
     
@@ -60,7 +55,7 @@ export default function Login({ navigation }) {
     };
   }, []);
 
-  // 登录功能
+  // Handle login request
   const loginAttempt = async () => {
     try {
       const response = await fetch('https://backend.faradawn.site:8001/login', {
@@ -88,7 +83,7 @@ export default function Login({ navigation }) {
     }
   };
 
-  // 添加强制重新渲染辅助函数
+  // Dismiss keyboard and update UI
   const dismissKeyboard = () => {
     Keyboard.dismiss();
     setTimeout(() => {
@@ -99,24 +94,20 @@ export default function Login({ navigation }) {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
-      // 减小offset值可能有助于解决问题
 
-      // 添加这个属性
       contentContainerStyle={{ flex: 1 }}
       enabled={true}
     >
       <View style={[
         styles.backgroundContainer,
-        // 更明确的样式对比
         keyboardVisible 
           ? { justifyContent: 'flex-start', paddingTop: 0 } 
           : { justifyContent: 'space-between', paddingTop: 0 }
       ]}>
-        {/* 顶部图标区域，可点击关闭键盘 */}
+
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <View style={[
             styles.iconContainer,
-            // 根据键盘状态调整图标区域高度和间距
             keyboardVisible && { 
               height: height * 0.15, 
               paddingTop: height * 0.05 
@@ -131,7 +122,7 @@ export default function Login({ navigation }) {
           </View>
         </TouchableWithoutFeedback>
         
-        {/* 登录表单区域 */}
+
         <View style={styles.signInContainer}>
           <Text style={styles.signInTitle}>Sign In</Text>
 
@@ -142,7 +133,7 @@ export default function Login({ navigation }) {
           )}
 
           <View style={styles.fields}>
-            {/* 用户名输入 */}
+
             <View style={styles.textInputGroup}>
               <Text style={styles.inputLabel}>Username</Text>
               <View style={styles.inputBox}>
@@ -154,7 +145,7 @@ export default function Login({ navigation }) {
                   value={username}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  // 禁用iOS输入建议
+
                   autoComplete="off"
                   textContentType="username"
                   secureTextEntry={false}
@@ -163,7 +154,7 @@ export default function Login({ navigation }) {
               </View>
             </View>
 
-            {/* 密码输入 */}
+
             <View style={styles.textInputGroup}>
               <Text style={styles.inputLabel}>Password</Text>
               <View style={styles.inputBox}>
@@ -176,7 +167,7 @@ export default function Login({ navigation }) {
                   secureTextEntry={true}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  // 禁用iOS输入建议的完整组合
+
                   autoComplete="off"
                   textContentType="oneTimeCode"
                 />
@@ -192,11 +183,11 @@ export default function Login({ navigation }) {
           </Text>
 
           <View style={styles.button}>
-            {/* 登录按钮 */}
+
             <TouchableOpacity
               style={styles.largeButton}
               onPress={() => {
-                // 先关闭键盘，再执行登录
+
                 Keyboard.dismiss();
                 setTimeout(loginAttempt, 100);
               }}
@@ -204,7 +195,7 @@ export default function Login({ navigation }) {
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
             
-            {/* 忘记密码文本 */}
+
             <Text style={styles.forgetPassword}>Forget Password?</Text>
           </View>
         </View>
@@ -221,7 +212,7 @@ const styles = StyleSheet.create({
   backgroundContainer: {
     flex: 1,
     width: width,
-    justifyContent: 'space-between', // 确保图标区域在上，表单区域在下
+    justifyContent: 'space-between', 
   },
 
   iconContainer: {

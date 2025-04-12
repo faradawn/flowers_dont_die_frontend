@@ -20,20 +20,17 @@ const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 export default function SignUp({ navigation }) {
-  // 本地状态
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [infoCorrect, setInfoCorrect] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // 键盘显示/隐藏状态
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  // 从 UserContext 获取更新全局状态的方法
   const { updateState } = useUser();
 
-  // 监听键盘事件
   useEffect(() => {
     const keyboardWillShowListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
@@ -49,12 +46,9 @@ export default function SignUp({ navigation }) {
     };
   }, []);
 
-  // 点击空白处隐藏键盘
   const dismissKeyboard = () => Keyboard.dismiss();
 
-  // 提交注册
   const signupAttempt = async () => {
-    // 简单的本地校验
     if (username.length < 3) {
       setInfoCorrect(false);
       setErrorMessage('Username must be at least 3 characters');
@@ -71,7 +65,6 @@ export default function SignUp({ navigation }) {
       return;
     }
 
-    // 向后端发出请求
     try {
       const response = await fetch('https://backend.faradawn.site:8001/create_user', {
         method: 'POST',
@@ -82,15 +75,12 @@ export default function SignUp({ navigation }) {
 
       if (data.status === 'success') {
         setInfoCorrect(true);
-        // 更新全局用户信息
         updateState('uid', data.uid);
         updateState('username', username);
         updateState('is_signed_in', true);
 
-        // 保存登录信息
         await saveLoginInfo(data.uid, username, password);
 
-        // 跳转到主界面（或其他页面）
         navigation.navigate('HomeTab');
       } else if (data.message === 'User already exists') {
         setInfoCorrect(false);
@@ -110,7 +100,6 @@ export default function SignUp({ navigation }) {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
-
     >
       <View
         style={[
@@ -118,7 +107,6 @@ export default function SignUp({ navigation }) {
           keyboardVisible ? { justifyContent: 'flex-start' } : { justifyContent: 'space-between' },
         ]}
       >
-        {/* 顶部花朵Logo和标题 */}
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <View
             style={[
@@ -138,14 +126,11 @@ export default function SignUp({ navigation }) {
           </View>
         </TouchableWithoutFeedback>
 
-        {/* 注册表单区域 */}
+
         <View style={styles.signInContainer}>
           <Text style={styles.signInTitle}>Sign Up</Text>
-
-          {/* 如果有错误，显示提示 */}
           {!infoCorrect && <Text style={styles.errorText}>{errorMessage}</Text>}
 
-          {/* 用户名输入框 */}
           <View style={styles.fields}>
             <View style={styles.textInputGroup}>
               <Text style={styles.inputLabel}>Username</Text>
@@ -164,7 +149,6 @@ export default function SignUp({ navigation }) {
               </View>
             </View>
 
-            {/* 密码输入框 */}
             <View style={styles.textInputGroup}>
               <Text style={styles.inputLabel}>Password</Text>
               <View style={styles.inputBox}>
@@ -183,7 +167,7 @@ export default function SignUp({ navigation }) {
               </View>
             </View>
 
-            {/* 确认密码输入框 */}
+
             <View style={styles.textInputGroup}>
               <Text style={styles.inputLabel}>Confirm your password</Text>
               <View style={styles.inputBox}>
@@ -203,7 +187,6 @@ export default function SignUp({ navigation }) {
             </View>
           </View>
 
-          {/* 已有账号? 链接到登录 */}
           <Text style={styles.signupText}>
             Already have an account?{' '}
             <Text style={styles.signupLink} onPress={() => navigation.navigate('Login')}>
@@ -211,7 +194,6 @@ export default function SignUp({ navigation }) {
             </Text>
           </Text>
 
-          {/* 注册按钮 */}
           <View style={styles.button}>
             <TouchableOpacity
               style={styles.largeButton}
@@ -229,7 +211,6 @@ export default function SignUp({ navigation }) {
   );
 }
 
-// 与 login 保持相同配色与布局风格
 const styles = StyleSheet.create({
   container: {
     flex: 1,
