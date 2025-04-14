@@ -147,7 +147,9 @@ export default function Question_Combined({ navigation, route }) {
     // === Voice recording functions
     const startRecording = async () => {
         if(outputURI != ''){
-            await FileSystem.deleteAsync(outputURI, { idempotent: true });
+            if (Platform.OS !== 'web') {
+                await FileSystem.deleteAsync(outputURI, { idempotent: true });
+            }
         }
         try {
             if (permissionResponse.status !== 'granted') {
@@ -398,8 +400,10 @@ export default function Question_Combined({ navigation, route }) {
                                     <Image
                                         source={stars.grade[answerResponse.grade]}
                                         style={{
-                                            width: height * 0.6,
-                                            height: height * 0.2,
+                                            position: 'fixed',
+                                            top: height*0.2,
+                                            width: height * 0.45,
+                                            height: height * 0.15,
                                             resizeMode: 'stretch',
                                         }}
                                     />
@@ -407,6 +411,8 @@ export default function Question_Combined({ navigation, route }) {
                                 
                                 {/* 2. Title */}
                                 <Text style={{
+                                    position: 'fixed',
+                                    top: height*0.4,
                                     fontFamily: 'Baloo2-Bold',
                                     fontSize: 30,
                                     textAlign: 'center',
@@ -417,6 +423,9 @@ export default function Question_Combined({ navigation, route }) {
                                 
                                 {/* 3. Body */}
                                 <Text style={{
+                                    position: 'fixed',
+                                    top: height*0.6,
+                                    width: width*0.6,
                                     fontFamily: 'Baloo2-Regular',
                                     fontSize: 16,
                                     textAlign: 'center',

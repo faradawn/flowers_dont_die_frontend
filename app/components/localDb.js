@@ -94,7 +94,7 @@ export const getCourses = async (uid) => {
     
     // Only consider submissions with matching uid and valid scores
     const completedQuestions = parsedSubmissions
-      .filter(sub => sub.uid === uid && sub.score != null && sub.score > 0)
+      .filter(sub => sub && sub.uid === uid && sub.score != null && sub.score > 0)
       .reduce((acc, sub) => {
         acc[sub.question_id] = sub.course_id;
         return acc;
@@ -177,7 +177,7 @@ export const getQuestionSet = async (uid, courseId, topic) => {
     const questionsJson = await AsyncStorage.getItem(STORAGE_KEYS.QUESTIONS);
     const allQuestions = questionsJson ? JSON.parse(questionsJson) : [];
 
-    const matchingQuestions = allQuestions.filter(question => 
+    const matchingQuestions = allQuestions.filter(question => question &&
       question.course_id === courseId && question.topic === topic
     );
 
@@ -271,7 +271,7 @@ export const getTopics = async (uid, courseId) => {
 
     const completedQuestions = new Set(
       submissions
-        .filter(sub => sub.uid === uid && sub.course_id === courseId && sub.score != null && sub.score > 0)
+        .filter(sub => sub && sub.uid === uid && sub.course_id === courseId && sub.score != null && sub.score > 0)
         .map(sub => sub.question_id)
     );
 
@@ -310,7 +310,7 @@ export const getAssignments = async (uid, courseId, topic) => {
     const coursesJson = await AsyncStorage.getItem(STORAGE_KEYS.COURSES);
     const courses = coursesJson ? JSON.parse(coursesJson) : [];
 
-    const course = courses.find(c => c.id === courseId);
+    const course = courses.find(c => c && c.id === courseId);
     if (!course) {
       return {
         status: "error",
@@ -321,7 +321,7 @@ export const getAssignments = async (uid, courseId, topic) => {
       };
     }
 
-    const topicData = course.topics.find(t => t.topic === topic);
+    const topicData = course?.topics?.find(t => t && t.topic === topic);
     if (!topicData) {
       return {
         status: "error",
@@ -341,14 +341,14 @@ export const getAssignments = async (uid, courseId, topic) => {
     const submissions = submissionsJson ? JSON.parse(submissionsJson) : [];
 
     const completedQuestions = submissions
-      .filter(sub => sub.uid === uid && sub.course_id === courseId && sub.score != null && sub.score > 0)
+      .filter(sub => sub && sub.uid === uid && sub.course_id === courseId && sub.score != null && sub.score > 0)
       .reduce((acc, sub) => {
         acc[sub.question_id] = sub.score;
         return acc;
       }, {});
 
     const questionArr = questionIds.map(qId => {
-      const question = allQuestions.find(q => q.id === qId);
+      const question = allQuestions.find(q => q && q.id === qId);
       if (!question) return null;
 
       const questionId = `${question.topic}|${question.difficulty}|${question.slug}`;

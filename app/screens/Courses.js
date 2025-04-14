@@ -120,6 +120,7 @@ export default function Courses({ navigation }) {
                 try {
                     await initializeLocalDatabase(); // Initialize database before fetching
                     const data = await getCourses(state.uid);
+                    console.log("state.uid is: ", state.uid);
                     console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses, );
                     setCourses(data.courses);
                     setDailyQuestionId(data.daily_question_id);
@@ -279,16 +280,15 @@ export default function Courses({ navigation }) {
                             <View style={{
                                 width: width * 0.8,
                                 alignItems: 'center',
+                                alignSelf: 'start',
                                 padding: 20,
                                 backgroundColor: '#ffffff',
                                 borderRadius: 10,
-                                alignSelf: 'center',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
                                 shadowOpacity: 0.2,
                                 shadowRadius: 3.84,
                                 marginBottom: 20,
-                                marginTop: height * 0.01,   
+                                marginTop: height * 0.01,
+                                marginLeft: width*0.1,
                             }}>
                                 {/* Illustration */}
                                 <Image
