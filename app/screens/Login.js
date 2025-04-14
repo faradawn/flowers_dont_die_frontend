@@ -195,8 +195,8 @@ export default function Login({ navigation }) {
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
             
-
-            <Text style={styles.forgetPassword}>Forget Password?</Text>
+            {/* TODO: Add forget password feature */}
+            {/* <Text style={styles.forgetPassword}>Forget Password?</Text> */}
           </View>
         </View>
       </View>
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     paddingBottom: height * 0.03,
   },
   signInTitle: {
-    fontFamily: 'Baloo2-Bold',
+    fontFamily: 'Montserrat-SemiBold',
     fontSize: 22,
     fontWeight: '700',
     color: '#000',
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   errorText: {
-    fontFamily: 'Baloo2-Bold',
+    fontFamily: 'Nunito-Regular',
     color: 'red',
     fontSize: 14,
     alignSelf: 'flex-start',
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     color: '#000',
-    fontFamily: 'Baloo2-Regular',
+    fontFamily: 'Nunito-Regular',
   },
   inputBox: {
     borderRadius: 14,
@@ -300,10 +300,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 11,
     width: '100%',
-    marginBottom: 10,
+    marginBottom: height * 0.05, // Todo: remove this line fater implement forget password feature
   },
   buttonText: {
-    fontSize: 20,
+    fontSize: 23,
     color: '#fff',
     fontFamily: 'Baloo2-SemiBold',
     fontWeight: '600',

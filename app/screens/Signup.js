@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.068,
   },
   buttonText: {
-    fontSize: 20,
+    fontSize: 22,
     color: '#fff',
     fontFamily: 'Baloo2-SemiBold',
     fontWeight: '600',
