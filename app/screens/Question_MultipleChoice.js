@@ -63,6 +63,10 @@ export default function Question_Combined({ navigation, route }) {
     const [allQuestions, setAllQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(route.params.index);
 
+    const mediaRecorderRef = useRef(null);
+    const [audioChunks, setAudioChunks] = useState([]);
+    const [audioBlob, setAudioBlob] = useState(null)
+
     useEffect(() => {
         fetchQuestionSet();
     }, []);
@@ -146,34 +150,78 @@ export default function Question_Combined({ navigation, route }) {
 
     // === Voice recording functions
     const startRecording = async () => {
-        if(outputURI != ''){
-            if (Platform.OS !== 'web') {
+        if (Platform.OS !== 'web') {
+            if (outputURI !== '') {
                 await FileSystem.deleteAsync(outputURI, { idempotent: true });
             }
-        }
-        try {
-            if (permissionResponse.status !== 'granted') {
-                await requestPermission();
+            try {
+                if (permissionResponse.status !== 'granted') {
+                    await requestPermission();
+                }
+                await Audio.setAudioModeAsync({
+                    allowsRecordingIOS: true,
+                    playsInSilentModeIOS: true,
+                });
+                const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+                setRecording(recording);
+            } catch (err) {
+                console.error('Failed to start recording', err);
             }
-            await Audio.setAudioModeAsync({
-                allowsRecordingIOS: true,
-                playsInSilentModeIOS: true,
-            });
-            const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-            setRecording(recording);
-        } catch (err) {
-            console.error('Failed to start recording', err);
+        } else {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const options = { mimeType: 'audio/webm' };
+                const mediaRecorder = new MediaRecorder(stream, options);
+    
+                let chunks = [];
+    
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        chunks.push(event.data);
+                    }
+                };
+    
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
+                    const url = URL.createObjectURL(blob);
+                    setAudioBlob(blob);
+                    setOutputURI(url);
+                    setVoiceLoading(true);
+                    setRecording(null);
+                };
+    
+                mediaRecorderRef.current = mediaRecorder;
+                setAudioChunks(chunks);
+                setRecording(true);
+                mediaRecorder.start();
+            } catch (err) {
+                console.error('Error starting web recorder:', err);
+            }
         }
     };
 
     const stopRecording = async () => {
-        setRecording(undefined);
-        await recording.stopAndUnloadAsync();
-        await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
-        const uri = recording.getURI();
-        setVoiceLoading(true);
-        setOutputURI(uri);
+        if (Platform.OS !== 'web') {
+            setRecording(undefined);
+            await recording.stopAndUnloadAsync();
+            await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+            const uri = recording.getURI();
+            setVoiceLoading(true);
+            setOutputURI(uri);
+        } else {
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                mediaRecorderRef.current.stop(); // Triggers `onstop` and sets outputURI
+            }
+        }
     };
+
+    useEffect(() => {
+        return () => {
+            if (mediaRecorderRef.current?.stream) {
+                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, []);
 
     const handleRecord = () => {
         if(recording) stopRecording();
@@ -181,35 +229,42 @@ export default function Question_Combined({ navigation, route }) {
     };
 
     const transcribeText = async () => {
-        const file = {
-            uri: outputURI,
-            name: 'user_recording.m4a',
-            type: 'audio/m4a'
-        };
+        let file;
+        if (Platform.OS === 'web') {
+            // Fetch blob from the output URI
+            file = new File([audioBlob], 'user_recording.webm', { type: 'audio/webm' });
+        } else {
+            // Native platforms (iOS/Android)
+            file = {
+                uri: outputURI,
+                name: 'user_recording.m4a',
+                type: 'audio/m4a'
+            };
+        }
+    
         const formData = new FormData();
         formData.append('uid', state.uid);
         formData.append('question_id', data.question_id);
         formData.append('course_id', state.course_id);
         formData.append('audio_file', file);
+    
         try {
             const response = await fetch('https://backend.faradawn.site:8001/transcribe_and_grade', {
                 method: 'POST',
-                headers: { "Content-Type": "multipart/form-data" },
-                body: formData
+                body: formData,
             });
+    
             const response_data = await response.json();
-            
-            // Set transcribed text as before
+    
             setTranscribedText(response_data);
             setText(response_data.transcribed_text);
-            
-            // Store submission details and show feedback modal
+    
             await storeSubmission(response_data.submission_details);
             setAnswerResponse(response_data);
             setModalContent('submission');
             setModalOpen(true);
             setVoiceSubmitted(true);
-        } catch(error) {
+        } catch (error) {
             console.log('Error transcribing and grading text: ', error);
         }
     };
