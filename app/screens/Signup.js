@@ -143,7 +143,7 @@ export default function SignUp({ navigation }) {
                   value={username}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  autoComplete="off"
+                  autoComplete="username"
                   textContentType="username"
                 />
               </View>
@@ -161,8 +161,8 @@ export default function SignUp({ navigation }) {
                   secureTextEntry={true}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  autoComplete="off"
-                  textContentType="oneTimeCode"
+                  textContentType="newPassword"
+                  autoComplete="password-new"
                 />
               </View>
             </View>
@@ -180,8 +180,8 @@ export default function SignUp({ navigation }) {
                   secureTextEntry={true}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  autoComplete="off"
-                  textContentType="oneTimeCode"
+                  textContentType="newPassword"
+                  autoComplete="password-new"
                 />
               </View>
             </View>

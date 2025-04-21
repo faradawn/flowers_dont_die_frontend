@@ -14,8 +14,7 @@ import {
 } from 'react-native';
 
 import { useUser } from '../components/UserContext';
-import { saveLoginInfo } from '../components/SecureStoreUtils';
-
+import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -26,6 +25,16 @@ export default function Login({ navigation }) {
   const [infoCorrect, setInfoCorrect] = useState(true);
   const { updateState } = useUser();
   
+  useEffect(() => {
+    (async () => {
+      const saved = await getLoginInfo();          // { uid, username, password } | null
+      if (saved) {
+        updateState('uid', saved.uid);
+        setUsername(saved.username);
+        setPassword(saved.password);
+      }
+    })();
+  }, []);
 
   // Keyboard visibility state for UI adjustment
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -70,9 +79,14 @@ export default function Login({ navigation }) {
         updateState('uid', data.uid);
         updateState('username', username);
         updateState('is_signed_in', true);
+        
+        // Save login credentials to secure storage
+        await saveLoginInfo(data.uid, username, password);
+        
+        // Clear form fields after successful login
         setUsername('');
         setPassword('');
-        await saveLoginInfo(data.uid, username, password);
+        
         navigation.navigate('HomeTab');
       } else {
         setInfoCorrect(false);
@@ -145,10 +159,8 @@ export default function Login({ navigation }) {
                   value={username}
                   autoCapitalize="none"
                   autoCorrect={false}
-
-                  autoComplete="off"
                   textContentType="username"
-                  secureTextEntry={false}
+                  autoComplete="username"
                   keyboardType="default"
                 />
               </View>
@@ -167,9 +179,8 @@ export default function Login({ navigation }) {
                   secureTextEntry={true}
                   autoCapitalize="none"
                   autoCorrect={false}
-
-                  autoComplete="off"
-                  textContentType="oneTimeCode"
+                  textContentType="password"
+                  autoComplete="password"
                 />
               </View>
             </View>
@@ -300,10 +311,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 11,
     width: '100%',
-    marginBottom: height * 0.05, // Todo: remove this line fater implement forget password feature
+    marginBottom: height * 0.068, // Todo: remove this line fater implement forget password feature
   },
   buttonText: {
-    fontSize: 23,
+    fontSize: 20,
     color: '#fff',
     fontFamily: 'Baloo2-SemiBold',
     fontWeight: '600',
@@ -311,7 +322,7 @@ const styles = StyleSheet.create({
   forgetPassword: {
     fontSize: 14,
     color: '#515856',
-    fontFamily: 'Baloo2-Regular',
+    fontFamily: 'Baloo2-Regular', // Todo: change font family after implement forget password feature
     marginBottom: height * 0.05,
   },
   signupText: {
