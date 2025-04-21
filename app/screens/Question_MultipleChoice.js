@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Animated, PanResponder } from 'react-native';
 import { Ionicons, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -16,14 +16,48 @@ import LottieView from 'lottie-react-native';
 
 import TopBar from '../components/TopBar';
 import { getQuestionSet, storeSubmission } from '../components/localDb';
+import { useFocusEffect } from '@react-navigation/native';
 
 const height = Dimensions.get('window').height * 0.95;
 const width = Dimensions.get('window').width;
 
 // At the top of your file, add this enum
+//HERE
 const QuestionMode = {
     VOICE: 0,
     MULTIPLE_CHOICE: 1
+};
+
+const CustomHeaderBar = ({navigation, fromScreen, currentQuestionIndex, totalQuestions, data}) => {
+    return (
+        <View style = {{
+            width,
+            backgroundColor: 'white',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 15,
+            paddingVertical: 10
+        }}>
+            <TouchableOpacity onPress={()=> navigation.goBack()}>
+                <Ionicons name = "close" size={24} color="black"/>
+            </TouchableOpacity>
+            <Text style = {{
+                color: 'black',
+                fontFamily: 'Baloo2-Bold', 
+                fontSize: 16
+            }}>
+                {`${currentQuestionIndex + 1} / ${totalQuestions}`}
+            </Text>
+            <Text style = {{
+                color: 'black', 
+                fontFamily: 'Baloo2-Bold',
+                fontSize: 16
+            }}>
+                {data && data.difficulty}
+            </Text>
+        </View>
+    );
 };
 
 export default function Question_Combined({ navigation, route }) {
@@ -58,9 +92,13 @@ export default function Question_Combined({ navigation, route }) {
     const [allQuestions, setAllQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(route.params.index);
 
-    useEffect(() => {
-        fetchQuestionSet();
-    }, []);
+    //fix bug where after hitting x, and reentering q, q and other data is wrong
+    //fetch questuin set everytime you reload screen
+    useFocusEffect(
+        useCallback(() => {
+            fetchQuestionSet();
+        }, [])
+    );
 
     useEffect(() => {
         if (allQuestions.length > 0) {
@@ -102,6 +140,7 @@ export default function Question_Combined({ navigation, route }) {
 
     // Handle next question
     const handleNextQuestion = () => {
+        setModalOpen(false);
         if (currentQuestionIndex < allQuestions.length - 1) {
             setCurrentQuestionIndex(prevIndex => prevIndex + 1);
             setText('');
@@ -125,6 +164,7 @@ export default function Question_Combined({ navigation, route }) {
             setAllowSubmit(false);
             setVoiceSubmitted(false);
             setMcSubmitted(false);
+            setModalOpen(false);
         }
     };
 
@@ -283,8 +323,22 @@ export default function Question_Combined({ navigation, route }) {
     };
 
     // handle erase ansswer 
-    const handleErase = () => {
+    //const handleErase = () => {
+    //    setText('');
+    //};
+    //logic for try again ->reset to pre submission state
+    const resetQuestion = () => {
         setText('');
+        setCurrentPressed("A");
+        setAnswerResponse('');
+        setTranscribedText({status: '', message: '', transcribed_text: '' });
+        setAllowSubmit(false);
+        setVoiceSubmitted(false);
+        setModalOpen(false);
+    };
+    const handleTryAgain = () => {
+        resetQuestion();
+
     };
     
 
@@ -316,10 +370,13 @@ export default function Question_Combined({ navigation, route }) {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       };
 
-    const ModalComponent = () => {
+      
+    
+      const ModalComponent = () => {
         useEffect(() => {
             if (modalOpen) {
-                if ((mode === QuestionMode.MULTIPLE_CHOICE && currentPressed === data.answer) || (mode === QuestionMode.VOICE && answerResponse && answerResponse.grade > 1)) {
+                const isCorrect = (mode === QuestionMode.MULTIPLE_CHOICE && currentPressed === data.answer) || (mode === QuestionMode.VOICE && answerResponse && answerResponse.grade > 1);
+                if (isCorrect){
                     triggerLongHapticFeedback();
                     triggerConfetti();
                 } else {
@@ -328,151 +385,250 @@ export default function Question_Combined({ navigation, route }) {
             }
         }, [modalOpen]);
 
-        const voiceModalTitle =  answerResponse.feedback_title || 'Not Submitted';
+        const isCorrect = (mode === QuestionMode.MULTIPLE_CHOICE && currentPressed === data.answer) || (mode === QuestionMode.VOICE && answerResponse && answerResponse.grade > 1) ;
+
+        const feedbackTitle = isCorrect
+            ? '🎉 You got the right answer'
+            : '💭 Want to try again';
+        
+        const solutionText = data.options && data.answer
+            //make solution text correct
+            ? data.options[data.answer.charCodeAt(0) - 65]  
+            : (mode === QuestionMode.VOICE ? text : currentPressed);
+
+        
+        //const voiceModalTitle =  answerResponse.feedback_title || 'Not Submitted';
+        const collapsedHeight = height * 0.35; //height with only feedback showiing so solution only shows after scroll
+        const expandedHeight = height * 0.8; //show solution after scroll
+        const handleHeight = 30; //swipe when showing only feedback ->collapsed modal
+        const [modalStatus, setModalStatus] = useState('collapsed');
+        const modalHeightAnim = useRef(new Animated.Value(collapsedHeight)).current;
+
+        const panResponder = useRef(
+            PanResponder.create({
+                onStartShouldSetPanResponder: () => true,
+                onPanResponderMove: (evt, gestureState) => {
+                    let currentHeight = modalStatus === 'expanded' ? expandedHeight: collapsedHeight;
+                    let newHeight = currentHeight - gestureState.dy;
+                    if (newHeight > expandedHeight) newHeight = expandedHeight;
+                    if (newHeight < handleHeight) newHeight = handleHeight;
+                    modalHeightAnim.setValue(newHeight);
+                },
+                onPanResponderRelease: (evt, gestureState) => {
+                    if (gestureState.dy < -50) {
+                        Animated.timing(modalHeightAnim, {
+                            toValue: expandedHeight,
+                            duration: 300,
+                            useNativeDriver: false,
+                        }).start(() => setModalStatus('expanded'));
+                    }else if (gestureState.dy >50) {
+                        if(modalStatus === 'expanded'){
+                            Animated.timing(modalHeightAnim, {
+                                toValue: collapsedHeight, 
+                                duration: 300,
+                                useNativeDriver: false,
+                            }).start(() => setModalStatus('collapsed'));
+                        }else if (modalStatus === 'collapsed'){
+                            Animated.timing(modalHeightAnim, {
+                                toValue: handleHeight,
+                                duration: 300,
+                                useNativeDriver: false,
+                            }).start(() => {
+                            setModalStatus('minimized')
+                            resetQuestion()
+                        });
+                            //dismiss modal
+
+                        } else if (modalStatus === 'minimized'){
+                            //setModalOpen(false);
+                            resetQuestion();
+                            //modalHeightAnim.setValue(collapsedHeight);
+                        }
+                    }else{
+                        //not swiped snoughed
+                        let targetHeight = modalStatus === 'expanded' ? expandedHeight : (modalStatus === 'collapsed' ? collapsedHeight : handleHeight);
+                        Animated.timing(modalHeightAnim, {
+                            toValue: targetHeight,
+                            duration: 300,
+                            useNativeDriver: false,
+                        }).start();
+                    }
+                },
+            })
+        ).current;
 
         return (
-            <>
-            
             <Modal
                 visible={modalOpen}
                 transparent={true}
-                animationType="fade"
+                animationType="slide"
             >
-                
-
                 <View style={{
                     flex: 1,
-                    justifyContent: 'center',
+                    justifyContent: 'flex-end',
                     alignItems: 'center',
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                 }}>
-                    <View style={{
-                        width: width * 0.8,
-                        paddingVertical: height * 0.05,
-                        paddingHorizontal: width * 0.05,
+                    <Animated.View style={{
+                        width:'100%',
+                        height: modalHeightAnim,
+                        //maxHeight: height * 0.6, //maybe make smaller
+                        //paddingHorizontal: width * 0.05,
                         backgroundColor: 'white',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 4,
-                        elevation: 5,
+                        borderTopLeftRadius: 25,
+                        borderTopRightRadius: 25,
+                        paddingTop: 20,
+                        paddingBottom: 60,
+                        //paddingVertical: height * 0.03,
+                        paddingHorizontal: 20,
+                        //justifyContent: 'flex-start',
+                        //alignItems: 'center',
+                        //shadowColor: '#000',
+                        //shadowOffset: { width: 0, height: 2 },
+                        //shadowOpacity: 0.25,
+                        //shadowRadius: 4,
+                        //elevation: 5,
                         position: 'relative',
-                    }}>
-
+                    }}
+                    {...panResponder.panHandlers}>
+                             {/* 0. close bottom (removed and repalced with scroll bar)*/}
+                        <View
+                            style = {{
+                                width: 40,
+                                height: 4,
+                                backgroundColor: 'gray',
+                                borderRadius: 2,
+                                alignSelf: 'center',
+                                marginBottom: 8
+                            }} />
+                        
+                        
                         <LottieView
+                        //confetti
                             ref={animation}
                             source={require('../../assets/animations/confettie_bottom.json')}
                             loop={false}
                             style={{position: 'absolute', top:0, bottom: 0, left: 0, right: 0}}
                             resizeMode='cover'
                         />
-                        {/* 0. close bottom */}
-                        <Ionicons 
-                            name="close-outline"
-                            size={25}
-                            onPress={() => { setModalOpen(false) }}
-                            style={{
-                                position: 'absolute',
-                                top: 20,
-                                right: 20,
-                            }}
-                        />
+                        <ScrollView
+                            showsVerticalScrollIndicator={true}
+                            contentContainerStyle = {{paddingBottom:20}}>
 
-                        {/* 1. Star */}
+                            <Text style={{
+                                fontFamily: 'Baloo2-Bold',
+                                fontSize: 16,
+                                textAlign: 'center',
+                                marginBottom: 12
+                            }}>
+                                {feedbackTitle}
+                            </Text>
 
-                            <Image
-                                source={stars.grade[answerResponse.grade]}
-                                style={{
-                                    height: height * 0.04,
-                                    width: width * 0.3,
-                                    marginVertical: height * 0.01,
-                                }}
+                            {/* "Feedback" label + feedback body */}
+                            <Text style={{ 
+                                fontFamily: 'Baloo2-Bold', 
+                                fontSize: 14, 
+                                marginBottom: 4 
+                            }}>
+                                Feedback
+                            </Text>
+                            <Text style={{
+                                fontFamily: 'Baloo2-Regular',
+                                fontSize: 14,
+                                marginBottom: 16
+                            }}>
+                                {answerResponse && answerResponse.feedback_body
+                                    ? answerResponse.feedback_body
+                                    : 'No feedback available.'}
+                            </Text>
+
+                            {/* "Solution" label + user-submitted solution (scrollable if large) */}
+                            <Text style={{ 
+                                fontFamily: 'Baloo2-Bold', 
+                                fontSize: 14, 
+                                marginBottom: 4 
+                            }}>
+                                Solution
+                            </Text>
+                            <RenderHtml //Faradawn feedback -> Make soluton render html
+                                contentWidth={width * 0.9}
+                                source = {{html: solutionText}}
                             />
+                        </ScrollView>
+                            {isCorrect ? (
+                                <TouchableOpacity
+                                style={{
+                                    position: 'absolute',
+                                    bottom: 10,
+                                    left: 20,
+                                    right: 20,
+                                    backgroundColor: 'green',
+                                    borderRadius: 8,
+                                    height: 45,
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}
+                                onPress={handleNextQuestion}
+                            >
+                                <Text style={{ color: 'white', fontFamily: 'Baloo2-Bold' }}>
+                                    Next
+                                </Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <View style={{
+                                position: 'absolute',
+                                bottom: 10,
+                                left: 20,
+                                right: 20,
+                                flexDirection: 'row'
+                            }}>
+                                <TouchableOpacity
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: 'green',
+                                        borderRadius: 8,
+                                        height: 45,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        marginRight: 5
+                                    }}
+                                    onPress={handleTryAgain}
+                                >
+                                    <Text style={{ color: 'white', fontFamily: 'Baloo2-Bold' }}>
+                                        Try Again
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: 'gray',
+                                        borderRadius: 8,
+                                        height: 45,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        marginLeft: 5
+                                    }}
+                                    onPress={handleNextQuestion}
+                                >
+                                    <Text style={{ color: 'white', fontFamily: 'Baloo2-Bold' }}>
+                                        Next
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
 
-                        
-                        {/* 2. Title */}
-                        <Text style={{
-                            fontFamily: 'Baloo2-Bold',
-                            fontSize: 30,
-                            textAlign: 'center',
-                        }}>
-                            {mode === QuestionMode.VOICE ? voiceModalTitle : 
-                                (currentPressed === data.answer ? 'Congratulations!' : 'So close!')}
-                        </Text>
-                        
-                        {/* 3. Body */}
-                        <Text style={{
-                            fontFamily: 'Baloo2-Regular',
-                            fontSize: 16,
-                            textAlign: 'center',
-                            paddingTop: height * 0.02,
-                        }}>
-                            {mode === QuestionMode.VOICE ? answerResponse.feedback_body :
-                                
-                                (currentPressed === data.answer ? 'You are correct!' : `The correct answer is ${data.answer || 'not available'}`)}
-                        </Text>
-                    </View>
+
+                            )}
+                    </Animated.View>
                 </View>
             </Modal>
-            </>
-        )
-    }
+        );
+    };
 
+    //deleted quiz nav
 
     // Prev and next icon
     // put direction button inside
-    const DirectionButton = ({ onPress, disabled, direction = 'left' }) => (
-        <TouchableOpacity
-            onPress={onPress}
-            disabled={disabled}
-            style={{
-                padding: 10, 
-                opacity: disabled ? 0.5 : 1, 
-                width: 90,
-                justifyContent: 'center',
-                alignItems: 'center'
-            }}
-        >
-            <Feather 
-                name={`chevron-${direction}`} 
-                size={40} 
-                color={disabled ? "gray" : "green"} 
-            />
-        </TouchableOpacity>
-    );
-
-    const QuizNavigation = ({ onPrev, onNext, currentQuestionIndex, totalQuestions }) => {
-        return (
-            <View style={{
-                position: 'absolute',
-                top: 60,
-                left: 0,
-                right: 0,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingHorizontal: 4,
-                zIndex: 10
-            }}>
-                <DirectionButton
-                    direction="left"
-                    onPress={onPrev}
-                    disabled={currentQuestionIndex === 0}
-                />
-                <Text style={{fontFamily: 'Baloo2-Regular', fontSize: 16, marginBottom: 30}}>
-                    {`${currentQuestionIndex + 1} / ${totalQuestions}`}
-                </Text>
-                <DirectionButton
-                    direction="right"
-                    onPress={onNext}
-                    disabled={currentQuestionIndex === totalQuestions - 1}
-                />
-            </View>
-        );
-    };  
-
+    //removed quiz nav and direction button
       const SubmissionPanel = () => {
       
         return (
@@ -484,7 +640,7 @@ export default function Question_Combined({ navigation, route }) {
               paddingVertical: 5
           }}>
             <TouchableOpacity 
-                onPress={handleErase} 
+                onPress={handleTryAgain} 
                 style={{
                     width: 48,
                     height: 48,
@@ -547,80 +703,36 @@ export default function Question_Combined({ navigation, route }) {
         <View
             style = { { 
                 width: width,
-                height: height * 0.35,
-                justifyContent: 'center',
-                alignItems: 'center',
+                //height: height * 0.35, //remove to test text layout
+                //justifyContent: 'center',
+                //alignItems: 'center',
+                paddingHorizontal: 20,
                 marginTop: 10
             } } 
         >
-            {/* Countdown Timer */}
-            <View
-                style = { {
-                    width: 70,
-                    height: 70,
-
-                    marginTop: 10,
-                    borderRadius: 50,
-                    borderWidth: 6,
-                    borderColor: '#ABD1C6',
-                    zIndex: 1,
-
-                    backgroundColor: 'white',
-                    
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                } }
-            >
-         
-                <Text
-                    style = { { 
-                        color: '#0c2d1c',
-                        fontSize: 15, // previously 20
-                        fontWeight: 'bold',
-                        fontFamily: 'Baloo2-Bold' 
-                    } }
-                > 
-                    { data.difficulty } 
-                </Text>
-            </View>
+           
             
-
-            {/* Question Card */}
-            <View
-                style={{
-                    height: height * 0.30,
-                    width: width * 0.85,
-                    borderRadius: 20,
-                    backgroundColor: 'white',
-                    marginTop: -0.04 * height,
-                    // styling shadow
-                    shadowColor: '#000', // black shadow color
-                    shadowOffset: { width: 0, height: 20 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 30,
-                    elevation: 10, // for Android shadow
-                }}
-                >
-
                 <ScrollView
                     pointerEvents="auto"
                     showsVerticalScrollIndicator={true}
-                    style={{ flex: 1, maxHeight: height * 0.30 }} // 
+                    style={{maxHeight: height * 0.3 }} // 
                     contentContainerStyle={{
                       paddingBottom: 25, // 
                     }}
                     >
                         
                     <RenderHtml
-                        contentWidth={width * 0.8}  // Adjust based on your padding/margin
+                        contentWidth={width * 0.9}  // Adjust based on your padding/margin
                         source={{ html: data.question }}
                         tagsStyles={{
                         body: {
-                            marginTop: height * 0.03,
-                            marginHorizontal: 4,
-                            padding: 20,
+                            //marginTop: height * 0.03,
+                            //marginHorizontal: 4,
+                            margin: 0,
+                            padding: 0,
                             fontFamily: 'Baloo2-Bold',
                             fontSize: 16,
+                            lineHeight: 22,
                         },
                         code: {
                             backgroundColor: '#f0f0f0',
@@ -635,19 +747,19 @@ export default function Question_Combined({ navigation, route }) {
                         }}
                     />
                     </ScrollView>
-
-            </View>
         </View>
     );
 
+   //removed voice answer card
     const NextButtonComponent = () => (
         <View style={{ 
             width: width,
-            height: height * 0.08,
+            marginTop: 20,
+            marginBottom: height * 0.08,
             alignItems: 'center',
             justifyContent: 'center',
-            marginTop: height * -0.04,
-            marginBottom: height * 0.08,
+            //marginTop: height * -0.04,
+            //marginBottom: height * 0.08,
         }}>
             <TouchableOpacity
                 style={{
@@ -680,40 +792,85 @@ export default function Question_Combined({ navigation, route }) {
               display: 'flex',
               justifyContent: 'flex-start',
               alignItems: 'center',
-              paddingTop: 70
+              //paddingTop: 70
             }}>
                 
-             <TopBar navigateTo={fromScreen === 'HomeTab' ? 'HomeTab' : 'Assignments'} params={{topic: route.params.topic}}/>
-
-            <QuizNavigation 
-                onPrev={handlePrevQuestion} 
-                onNext={handleNextQuestion}
+            <CustomHeaderBar
+                navigation={navigation}
+                fromScreen={fromScreen}
                 currentQuestionIndex={currentQuestionIndex}
                 totalQuestions={allQuestions.length}
+                data={data}
+                //here
             />
 
+
+
+            
+            <View style={{ width: '100%', height: 1, backgroundColor: 'black' }} />
+
+            
               
               {data.message === "No questions" ? (
                   <NoQuestionView />
                 ) : (
                     <>
-                  <ModalComponent />
-
+                  <ModalComponent /> 
+                    <View style = {{
+                        width: '100%',
+                        height: height * 0.3
+                    }}>
                   <QuestionComponent />
-
-                  <View style={{height: 0.01 * height}} />
-    
-
-                  <SwitchButton
-                    FirstText="Voice"
-                    SecondText="Multiple Choice"
-                    width={width * 0.68}
-                    height={0.045 * height}
+                  </View>
+                
+                  <View style={{
+                    width: '100%',
+                    height: height * 0.7,
+                    alignItems: 'center',
+                    }} >
+                        <View style = {{
+                            flexDirection: 'row',
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                            marginTop: 8,
+                            width: '90%'
+                        }}>
+                    <Text style = {{
+                        fontFamily: 'Baloo2-Bold',
+                        fontSize: 16,
+                        color: 'black',
+                        marginRight: 8
+                    }}>
+                            See options
+                        </Text>
+                        <View style = {{
+                            shadowColor: '#000',
+                            shadowOffset: {width: 0, height: 2},
+                            shadowOpacity: 0.3,
+                            shadowRadius: 4,
+                            elevation: 3,
+                            backgroundColor: mode === QuestionMode.VOICE ? '#FFFFFF' : '#FADADD', // light pink background
+                            borderRadius: 16,
+                        }}>
+                            <SwitchButton
                     mode={mode}
                     setMode={setMode}
+                    FirstText=""
+                    SecondText=""
+                    //TouchableOpacity={100}
+                    //shadowOpacity = {100}
+                    width={66}
+                    height={32}
+                    //spacing= {-32}
+                    activeColor = "#E28089"
+                    inactiveColor = "#E28089"
+                    backgroundColor={mode === 0 ? '#FFFFFF' : '#F9DADA'} 
                   />
 
-                    <View style={{height: 0.01 * height}} />
+                        </View>
+                  </View>
+
+                    <View style={{height: 0.02 * height}} />
 
                 
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -721,6 +878,8 @@ export default function Question_Combined({ navigation, route }) {
                   {/* Bottom component */}
                   {mode === QuestionMode.VOICE ? ( 
                     // Voice answer card
+                    //<VoiceAnswerCard />
+                  //) : (
                     <View style={{
                       height: height * 0.4,
                       width: width, // originally width
@@ -817,6 +976,7 @@ export default function Question_Combined({ navigation, route }) {
                 )}
                 </TouchableWithoutFeedback>
                 <NextButtonComponent />
+                </View>
                 </>
               )}
 
