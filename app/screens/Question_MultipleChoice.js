@@ -4,6 +4,9 @@ import { Ionicons, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 
+//Change background color and change toggle
+//new hex value #4B7C7B
+
 import { globalStyles, stars } from '../globalStyles/globalStyles';
 import Card from '../components/QuestionCard';
 import { useUser } from '../components/UserContext';
@@ -562,7 +565,7 @@ export default function Question_Combined({ navigation, route }) {
                                     bottom: 10,
                                     left: 20,
                                     right: 20,
-                                    backgroundColor: 'green',
+                                    backgroundColor: '#4B7C7B',
                                     borderRadius: 8,
                                     height: 45,
                                     justifyContent: 'center',
@@ -662,7 +665,7 @@ export default function Question_Combined({ navigation, route }) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginHorizontal: 4,
-                    backgroundColor: recording ? '#ef4444' : '#166534'
+                    backgroundColor: recording ? '#ef4444' : '#4B7C7B'
                 }}
             >
                 {voiceLoading ? (
@@ -749,31 +752,59 @@ export default function Question_Combined({ navigation, route }) {
                     </ScrollView>
         </View>
     );
-
-   //removed voice answer card
-    const NextButtonComponent = () => (
-        <View style={{ 
-            width: width,
-            marginTop: 20,
-            marginBottom: height * 0.08,
-            alignItems: 'center',
-            justifyContent: 'center',
-            //marginTop: height * -0.04,
-            //marginBottom: height * 0.08,
-        }}>
-            <TouchableOpacity
-                style={{
-                    backgroundColor: '#004643',
-                    height: height * 0.06,
-                    width: width * 0.75,
-                    ...globalStyles.button
-                }}
-                onPress={() => handleNext()}
-            >
-                <Text style={globalStyles.buttonText}>Submit</Text>
-            </TouchableOpacity>
-        </View>
-    );
+    //removed voice answer card
+   const NextButtonComponent = () => (
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 20,
+      marginBottom: height * 0.08,
+    }}>
+      <TouchableOpacity
+        onPress={handlePrevQuestion}
+        disabled={currentQuestionIndex === 0}
+        style={{
+          width: 48, height: 48, borderRadius: 24,
+          backgroundColor: currentQuestionIndex === 0 ? '#CCCCCC' : '#4B7C7B',
+          alignItems: 'center', justifyContent: 'center',
+          marginHorizontal: 10,
+        }}
+      >
+        <AntDesign name="left" size={24} color="white" />
+      </TouchableOpacity>
+  
+      <TouchableOpacity
+        onPress={handleNext}
+        style={{
+          backgroundColor: '#4B7C7B',
+          height: height * 0.06,
+          width: width * 0.5,
+          borderRadius: 30,
+          alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <Text style={{ color: 'white', fontFamily: 'Baloo2-Bold', fontSize: 18 }}>
+          Submit
+        </Text>
+      </TouchableOpacity>
+  
+      <TouchableOpacity
+        onPress={handleNextQuestion}
+        disabled={currentQuestionIndex === allQuestions.length - 1}
+        style={{
+          width: 48, height: 48, borderRadius: 24,
+          backgroundColor:
+            currentQuestionIndex === allQuestions.length - 1 ? '#CCCCCC' : '#4B7C7B',
+          alignItems: 'center', justifyContent: 'center',
+          marginHorizontal: 10,
+        }}
+      >
+        <AntDesign name="right" size={24} color="white" />
+      </TouchableOpacity>
+    </View>
+  )
+  
 
     return (
         <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
@@ -844,12 +875,13 @@ export default function Question_Combined({ navigation, route }) {
                             See options
                         </Text>
                         <View style = {{
-                            shadowColor: '#000',
-                            shadowOffset: {width: 0, height: 2},
-                            shadowOpacity: 0.3,
-                            shadowRadius: 4,
-                            elevation: 3,
-                            backgroundColor: mode === QuestionMode.VOICE ? '#FFFFFF' : '#FADADD', // light pink background
+                            //shadowColor: '#000',
+                            //shadowOffset: {width: 0, height: 2},
+                            //shadowOpacity: 0.3,
+                            //shadowRadius: 4,
+                            //elevation: 3,
+                            //possible colors #F8F8F8 #F7F7F7, #EFEFEF
+                            backgroundColor: mode === QuestionMode.VOICE ? '#EFEFEF' : '#FADADD', // light pink background
                             borderRadius: 16,
                         }}>
                             <SwitchButton
@@ -864,7 +896,8 @@ export default function Question_Combined({ navigation, route }) {
                     //spacing= {-32}
                     activeColor = "#E28089"
                     inactiveColor = "#E28089"
-                    backgroundColor={mode === 0 ? '#FFFFFF' : '#F9DADA'} 
+                    //possible colors #F8F8F8 #F7F7F7, #EFEFEF (old #FFFFFF)
+                    backgroundColor={mode === 0 ? '#F8F8F8' : '#F9DADA'} 
                   />
 
                         </View>

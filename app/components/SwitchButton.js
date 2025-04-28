@@ -1,8 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { View, TouchableOpacity, Text, Animated } from 'react-native';
 
+//possible colors #F8F8F8 #F7F7F7, #EFEFEF
+
 export default function SwitchButton(
-    {FirstText, SecondText, width, height, mode, setMode, activeColor = '#E28089', inactiveColor = '#E28089', backgroundColor = '#FFFFFF',}
+    {FirstText, SecondText, width, height, mode, setMode, activeColor = '#E28089', inactiveColor = '#E28089', backgroundColor = '#EFEFEF',}
 ) {
     const transformX = useRef(new Animated.Value(0)).current;
 
