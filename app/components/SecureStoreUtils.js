@@ -1,15 +1,15 @@
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export async function saveLoginInfo(uid, username, password) {
   const loginInfo = JSON.stringify({ uid, username, password });
-  await SecureStore.setItemAsync('login-info', loginInfo);
+  await AsyncStorage.setItem('login-info', loginInfo);
 }
 
 export async function getLoginInfo() {
-  const loginInfo = await SecureStore.getItemAsync('login-info');
+  const loginInfo = await AsyncStorage.getItem('login-info');
   return loginInfo ? JSON.parse(loginInfo) : null;
 }
 
 export async function deleteLoginInfo() {
-  await SecureStore.deleteItemAsync('login-info');
+  await AsyncStorage.removeItem('login-info');
 }

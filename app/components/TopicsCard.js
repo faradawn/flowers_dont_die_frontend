@@ -63,8 +63,8 @@ export default function Card({ index, title, id, height, width, pressHandler, it
             <Image 
                 style={{
                     marginLeft: width * 0.05,
-                    height: width * 0.1,
-                    width: width * 0.1,
+                    height: height * 0.7,
+                    width: height * 0.7,
                     marginLeft: 10,
                     resizeMode: 'contain'
                 }}

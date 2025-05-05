@@ -100,7 +100,11 @@ export default function SignUp({ navigation, route }) {
                 params={route.params}
             />
 
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <TouchableWithoutFeedback onPress={(event) => {
+                if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
+                    Keyboard.dismiss();
+                }
+            }}>
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center"}}>
                 
                     <View

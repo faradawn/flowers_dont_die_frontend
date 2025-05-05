@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, Text, View, Dimensions, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView } from 'react-native';
+import { ScrollView, Text, View, TouchableOpacity, Modal, ActivityIndicator, TextInput, Image, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, useWindowDimensions} from 'react-native';
 import { Ionicons, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
@@ -17,9 +17,6 @@ import LottieView from 'lottie-react-native';
 import TopBar from '../components/TopBar';
 import { getQuestionSet, storeSubmission } from '../components/localDb';
 
-const height = Dimensions.get('window').height * 0.95;
-const width = Dimensions.get('window').width;
-
 // At the top of your file, add this enum
 const QuestionMode = {
     VOICE: 0,
@@ -27,8 +24,15 @@ const QuestionMode = {
 };
 
 export default function Question_Combined({ navigation, route }) {
+    // define height and width
+    const {height, width} = useWindowDimensions();
+
     const [text, setText] = useState('');
-    const [data, setData] = useState([]);
+    const [data, setData] = useState({
+        message: "",
+        options: [],
+        answer: "",
+    });
     const [isLoading, setIsLoading] = useState(true);
     const { state } = useUser();
     const [mode, setMode] = useState(QuestionMode.VOICE);
@@ -58,6 +62,10 @@ export default function Question_Combined({ navigation, route }) {
 
     const [allQuestions, setAllQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(route.params.index);
+
+    const mediaRecorderRef = useRef(null);
+    const [audioChunks, setAudioChunks] = useState([]);
+    const [audioBlob, setAudioBlob] = useState(null)
 
     useEffect(() => {
         fetchQuestionSet();
@@ -142,32 +150,78 @@ export default function Question_Combined({ navigation, route }) {
 
     // === Voice recording functions
     const startRecording = async () => {
-        if(outputURI != ''){
-            await FileSystem.deleteAsync(outputURI, { idempotent: true });
-        }
-        try {
-            if (permissionResponse.status !== 'granted') {
-                await requestPermission();
+        if (Platform.OS !== 'web') {
+            if (outputURI !== '') {
+                await FileSystem.deleteAsync(outputURI, { idempotent: true });
             }
-            await Audio.setAudioModeAsync({
-                allowsRecordingIOS: true,
-                playsInSilentModeIOS: true,
-            });
-            const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-            setRecording(recording);
-        } catch (err) {
-            console.error('Failed to start recording', err);
+            try {
+                if (permissionResponse.status !== 'granted') {
+                    await requestPermission();
+                }
+                await Audio.setAudioModeAsync({
+                    allowsRecordingIOS: true,
+                    playsInSilentModeIOS: true,
+                });
+                const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+                setRecording(recording);
+            } catch (err) {
+                console.error('Failed to start recording', err);
+            }
+        } else {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const options = { mimeType: 'audio/webm' };
+                const mediaRecorder = new MediaRecorder(stream, options);
+    
+                let chunks = [];
+    
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        chunks.push(event.data);
+                    }
+                };
+    
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
+                    const url = URL.createObjectURL(blob);
+                    setAudioBlob(blob);
+                    setOutputURI(url);
+                    setVoiceLoading(true);
+                    setRecording(null);
+                };
+    
+                mediaRecorderRef.current = mediaRecorder;
+                setAudioChunks(chunks);
+                setRecording(true);
+                mediaRecorder.start();
+            } catch (err) {
+                console.error('Error starting web recorder:', err);
+            }
         }
     };
 
     const stopRecording = async () => {
-        setRecording(undefined);
-        await recording.stopAndUnloadAsync();
-        await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
-        const uri = recording.getURI();
-        setVoiceLoading(true);
-        setOutputURI(uri);
+        if (Platform.OS !== 'web') {
+            setRecording(undefined);
+            await recording.stopAndUnloadAsync();
+            await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+            const uri = recording.getURI();
+            setVoiceLoading(true);
+            setOutputURI(uri);
+        } else {
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                mediaRecorderRef.current.stop(); // Triggers `onstop` and sets outputURI
+            }
+        }
     };
+
+    useEffect(() => {
+        return () => {
+            if (mediaRecorderRef.current?.stream) {
+                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, []);
 
     const handleRecord = () => {
         if(recording) stopRecording();
@@ -175,35 +229,42 @@ export default function Question_Combined({ navigation, route }) {
     };
 
     const transcribeText = async () => {
-        const file = {
-            uri: outputURI,
-            name: 'user_recording.m4a',
-            type: 'audio/m4a'
-        };
+        let file;
+        if (Platform.OS === 'web') {
+            // Fetch blob from the output URI
+            file = new File([audioBlob], 'user_recording.webm', { type: 'audio/webm' });
+        } else {
+            // Native platforms (iOS/Android)
+            file = {
+                uri: outputURI,
+                name: 'user_recording.m4a',
+                type: 'audio/m4a'
+            };
+        }
+    
         const formData = new FormData();
         formData.append('uid', state.uid);
         formData.append('question_id', data.question_id);
         formData.append('course_id', state.course_id);
         formData.append('audio_file', file);
+    
         try {
             const response = await fetch('https://backend.faradawn.site:8001/transcribe_and_grade', {
                 method: 'POST',
-                headers: { "Content-Type": "multipart/form-data" },
-                body: formData
+                body: formData,
             });
+    
             const response_data = await response.json();
-            
-            // Set transcribed text as before
+    
             setTranscribedText(response_data);
             setText(response_data.transcribed_text);
-            
-            // Store submission details and show feedback modal
+    
             await storeSubmission(response_data.submission_details);
             setAnswerResponse(response_data);
             setModalContent('submission');
             setModalOpen(true);
             setVoiceSubmitted(true);
-        } catch(error) {
+        } catch (error) {
             console.log('Error transcribing and grading text: ', error);
         }
     };
@@ -323,10 +384,14 @@ export default function Question_Combined({ navigation, route }) {
         useEffect(() => {
             if (modalOpen) {
                 if ((mode === QuestionMode.MULTIPLE_CHOICE && currentPressed === data.answer) || (mode === QuestionMode.VOICE && answerResponse && answerResponse.grade > 1)) {
-                    triggerLongHapticFeedback();
+                    if (Platform.OS === 'ios') {
+                        triggerLongHapticFeedback();
+                    }
                     triggerConfetti();
                 } else {
-                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                    if (Platform.OS === 'ios') {
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                    }
                 } 
             }
         }, [modalOpen]);
@@ -348,6 +413,7 @@ export default function Question_Combined({ navigation, route }) {
                 }}>
                     <View style={{
                         width: width * 0.8,
+                        height: height * 0.8,
                         paddingVertical: height * 0.05,
                         paddingHorizontal: width * 0.05,
                         borderRadius: 10,
@@ -374,7 +440,7 @@ export default function Question_Combined({ navigation, route }) {
 
                         {modalContent === 'submission' ? (
                             <View style = {{
-                                alignItems: 'center'
+                                alignItems: 'center',
                             }}>
                                 <LottieView
                                     ref={animation}
@@ -389,16 +455,19 @@ export default function Question_Combined({ navigation, route }) {
                                     <Image
                                         source={stars.grade[answerResponse.grade]}
                                         style={{
-                                            height: height * 0.04,
-                                            width: width * 0.3,
-                                            marginVertical: height * 0.01,
-                                            resizeMode: 'stretch'
+                                            position: 'fixed',
+                                            top: height*0.2,
+                                            width: height * 0.45,
+                                            height: height * 0.15,
+                                            resizeMode: 'stretch',
                                         }}
                                     />
 
                                 
                                 {/* 2. Title */}
                                 <Text style={{
+                                    position: 'fixed',
+                                    top: height*0.4,
                                     fontFamily: 'Baloo2-Bold',
                                     fontSize: 30,
                                     textAlign: 'center',
@@ -409,6 +478,9 @@ export default function Question_Combined({ navigation, route }) {
                                 
                                 {/* 3. Body */}
                                 <Text style={{
+                                    position: 'fixed',
+                                    top: height*0.6,
+                                    width: width*0.6,
                                     fontFamily: 'Baloo2-Regular',
                                     fontSize: 16,
                                     textAlign: 'center',
@@ -530,8 +602,8 @@ export default function Question_Combined({ navigation, route }) {
             <TouchableOpacity 
                 onPress={handleRecord}
                 style={{
-                    width: 64,
-                    height: 64,
+                    width: height*0.07,
+                    height: height*0.07,
                     borderRadius: 32,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -544,7 +616,7 @@ export default function Question_Combined({ navigation, route }) {
                 ) : (
                     <Feather 
                     name={recording ? "square" : "mic"} 
-                    size={32} 
+                    size={height*0.04} 
                     color="white" 
                 />
                 )}
@@ -695,7 +767,7 @@ export default function Question_Combined({ navigation, route }) {
     );
 
     return (
-        <View style={{display: 'flex', justifyContent: 'center', alignItems:'center'}}>
+        <View style={{display: 'flex', justifyContent: 'center', alignItems:'stretch'}}>
 
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{alignItems: "center", justifyContent: "center", width: width, height: height}}>
 
@@ -747,7 +819,11 @@ export default function Question_Combined({ navigation, route }) {
                     <View style={{height: 0.01 * height}} />
 
                 
-                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <TouchableWithoutFeedback onPress={(event) => {
+                        if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
+                            Keyboard.dismiss();
+                        }
+                    }}>
 
                   {/* Bottom component */}
                   {mode === QuestionMode.VOICE ? ( 
