@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
     View, 
     Text, 
@@ -7,7 +7,10 @@ import {
     ScrollView, 
     TouchableOpacity,
     SafeAreaView,
-    Image 
+    Image,
+    Modal,
+    TouchableWithoutFeedback,
+    Platform
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '../components/UserContext';
@@ -36,19 +39,93 @@ const mockData = {
         { type: 'Sorting', percentage: 30, correctness: 30, color: '#6BAEAE' },
         { type: 'Backtracking', percentage: 15, correctness: 15, color: '#E0E9E9' },
         { type: 'Other', percentage: 5, correctness: 5, color: '#F0F5F5' }
+    ],
+    monthlyStats: {
+        problemsFinished: 112,
+        correctnessRate: 82
+    },
+    monthlyProgress: {
+        thisMonth: [15, 22, 30, 25],
+        lastMonth: [12, 18, 26, 20]
+    },
+    monthlyDifficultyBreakdown: [
+        { type: 'Easy', completed: 42, total: 60, color: '#4b7c7b' },
+        { type: 'Medium', completed: 30, total: 60, color: '#6BAEAE' },
+        { type: 'Hard', completed: 15, total: 60, color: '#E0E9E9' }
+    ],
+    monthlyQuestionTypeBreakdown: [
+        { type: 'BFS/DFS', percentage: 45, correctness: 55, color: '#4b7c7b' },
+        { type: 'Sorting', percentage: 25, correctness: 35, color: '#6BAEAE' },
+        { type: 'Backtracking', percentage: 20, correctness: 25, color: '#E0E9E9' },
+        { type: 'Other', percentage: 10, correctness: 18, color: '#F0F5F5' }
     ]
 };
 
 export default function Dashboard({ navigation }) {
     const { state } = useUser();
-    const [timeFrame, setTimeFrame] = useState('Weekly');
+    const [timeFrame, setTimeFrame] = useState('Monthly');
+    const [dropdownVisible, setDropdownVisible] = useState(false);
+    const [dropdownLayout, setDropdownLayout] = useState({
+        x: 0, y: 0, width: 0, height: 0, pageX: 0, pageY: 0
+    });
+    const dropdownRef = useRef(null);
     const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+    
+    // Get the current data based on timeFrame
+    const getStatsData = () => {
+        return timeFrame === 'Monthly' ? mockData.monthlyStats : mockData.weeklyStats;
+    };
+    
+    const getProgressData = () => {
+        if (timeFrame === 'Weekly') {
+            return {
+                labels: days,
+                current: mockData.weeklyProgress.thisWeek,
+                previous: mockData.weeklyProgress.lastWeek,
+                currentLabel: 'This week',
+                previousLabel: 'Last week'
+            };
+        } else {
+            return {
+                labels: weeks,
+                current: mockData.monthlyProgress.thisMonth,
+                previous: mockData.monthlyProgress.lastMonth,
+                currentLabel: 'This month',
+                previousLabel: 'Last month'
+            };
+        }
+    };
+    
+    const getDifficultyData = () => {
+        return timeFrame === 'Weekly' ? mockData.difficultyBreakdown : mockData.monthlyDifficultyBreakdown;
+    };
+    
+    const getQuestionTypeData = () => {
+        return timeFrame === 'Weekly' ? mockData.questionTypeBreakdown : mockData.monthlyQuestionTypeBreakdown;
+    };
     
     // Calculate the maximum value for the chart
+    const progressData = getProgressData();
     const maxValue = Math.max(
-        ...mockData.weeklyProgress.thisWeek,
-        ...mockData.weeklyProgress.lastWeek
+        ...progressData.current,
+        ...progressData.previous
     );
+    
+    const handleSelectTimeFrame = (selected) => {
+        console.log('Changing timeFrame to:', selected);
+        setTimeFrame(selected);
+        setDropdownVisible(false);
+    };
+    
+    const measureDropdown = () => {
+        if (dropdownRef.current) {
+            dropdownRef.current.measure((x, y, width, height, pageX, pageY) => {
+                setDropdownLayout({x, y, width, height, pageX, pageY});
+                setDropdownVisible(true);
+            });
+        }
+    };
     
     return (
         <SafeAreaView style={styles.container}>
@@ -56,21 +133,25 @@ export default function Dashboard({ navigation }) {
                 {/* Dashboard Header */}
                 <View style={styles.headerContainer}>
                     <Text style={styles.dashboardTitle}>Dashboard</Text>
-                    <TouchableOpacity style={styles.selectorButton}>
+                    <TouchableOpacity 
+                        ref={dropdownRef}
+                        style={styles.selectorButton} 
+                        onPress={measureDropdown}
+                    >
                         <Text style={styles.selectorText}>{timeFrame}</Text>
-                        <Ionicons name="chevron-down-outline" size={16} color="#333" />
+                        <Ionicons name={dropdownVisible ? "chevron-up-outline" : "chevron-down-outline"} size={16} color="#004643" />
                     </TouchableOpacity>
                 </View>
                 
-                {/* Weekly Summary Section */}
+                {/* Summary Section */}
                 <View style={styles.summaryContainer}>
-                    <Text style={styles.weeklySummaryTitle}>Weekly Summary</Text>
+                    <Text style={styles.weeklySummaryTitle}>{timeFrame} Summary</Text>
                     
                     <View style={styles.statsContainer}>
                         <View style={styles.statCard}>
                             <View style={styles.iconTextGroup}>
                                 <Ionicons name="document-text-outline" size={24} color="#FF6B6B" />
-                                <Text style={styles.statNumber}>{mockData.weeklyStats.problemsFinished}</Text>
+                                <Text style={styles.statNumber}>{getStatsData().problemsFinished}</Text>
                             </View>
                             <Text style={styles.statLabel}>problems finished</Text>
                         </View>
@@ -78,7 +159,7 @@ export default function Dashboard({ navigation }) {
                         <View style={styles.statCard}>
                             <View style={styles.iconTextGroup}>
                                 <Ionicons name="checkmark-circle-outline" size={24} color="#4b7c7b" />
-                                <Text style={styles.statNumber}>{mockData.weeklyStats.correctnessRate}%</Text>
+                                <Text style={styles.statNumber}>{getStatsData().correctnessRate}%</Text>
                             </View>
                             <Text style={styles.statLabel}>correctness rate</Text>
                         </View>
@@ -94,26 +175,26 @@ export default function Dashboard({ navigation }) {
                         <View style={styles.chartLegend}>
                             <View style={styles.legendItem}>
                                 <View style={[styles.legendLine, {backgroundColor: '#333'}]} />
-                                <Text style={styles.legendText}>This week</Text>
+                                <Text style={styles.legendText}>{progressData.currentLabel}</Text>
                             </View>
                             <View style={styles.legendItem}>
                                 <View style={[styles.legendLine, {backgroundColor: '#ccc', borderStyle: 'dashed'}]} />
-                                <Text style={styles.legendText}>Last week</Text>
+                                <Text style={styles.legendText}>{progressData.previousLabel}</Text>
                             </View>
                         </View>
                         
                         <View style={styles.chartWrapper}>
                             <LineChart
                                 data={{
-                                    labels: days,
+                                    labels: progressData.labels,
                                     datasets: [
                                         {
-                                            data: mockData.weeklyProgress.thisWeek,
+                                            data: progressData.current,
                                             color: (opacity = 1) => `rgba(51, 51, 51, ${opacity})`,
                                             strokeWidth: 2
                                         },
                                         {
-                                            data: mockData.weeklyProgress.lastWeek,
+                                            data: progressData.previous,
                                             color: (opacity = 1) => `rgba(204, 204, 204, ${opacity})`,
                                             strokeWidth: 2,
                                             strokeDashArray: [5, 5]
@@ -165,13 +246,13 @@ export default function Dashboard({ navigation }) {
                     <Text style={styles.sectionTitle}>Difficulty Breakdown</Text>
                     
                     <View style={styles.progressBarContainer}>
-                        {mockData.difficultyBreakdown.map((item, index) => (
+                        {getDifficultyData().map((item, index) => (
                             <View 
                                 key={index} 
                                 style={[
                                     styles.progressBarSegment, 
                                     { 
-                                        flex: item.completed / 15, 
+                                        flex: item.completed / item.total, 
                                         backgroundColor: item.color 
                                     }
                                 ]} 
@@ -182,16 +263,16 @@ export default function Dashboard({ navigation }) {
                     <View style={styles.breakdownTable}>
                         <View style={styles.tableHeaderRow}>
                             <Text style={styles.tableHeaderLeft}>Type</Text>
-                            <Text style={styles.difficultyBreakdownTableHeaderRight}>Completed Number</Text>
+                            <Text style={styles.tableCompletedHeader}>Completed Number</Text>
                         </View>
                         
-                        {mockData.difficultyBreakdown.map((item, index) => (
+                        {getDifficultyData().map((item, index) => (
                             <View key={index} style={styles.tableRow}>
                                 <View style={styles.typeLabelContainer}>
                                     <View style={[styles.colorDot, { backgroundColor: item.color }]} />
                                     <Text style={styles.typeLabel}>{item.type}</Text>
                                 </View>
-                                <Text style={styles.typeValueRight}>{item.completed}/{item.total}</Text>
+                                <Text style={styles.completedValue}>{item.completed}/{item.total}</Text>
                             </View>
                         ))}
                     </View>
@@ -202,7 +283,7 @@ export default function Dashboard({ navigation }) {
                     <Text style={styles.sectionTitle}>Question Type Breakdown</Text>
                     
                     <View style={styles.progressBarContainer}>
-                        {mockData.questionTypeBreakdown.map((item, index) => (
+                        {getQuestionTypeData().map((item, index) => (
                             <View 
                                 key={index} 
                                 style={[
@@ -219,18 +300,18 @@ export default function Dashboard({ navigation }) {
                     <View style={styles.breakdownTable}>
                         <View style={styles.tableHeaderRow}>
                             <Text style={styles.tableHeaderLeft}>Type</Text>
-                            <Text style={styles.tableHeaderCenter}>Percentage</Text>
-                            <Text style={styles.tableHeaderRight}>Correctness</Text>
+                            <Text style={styles.tablePercentageHeader}>Percentage</Text>
+                            <Text style={styles.tableCorrectnessHeader}>Correctness</Text>
                         </View>
                         
-                        {mockData.questionTypeBreakdown.map((item, index) => (
+                        {getQuestionTypeData().map((item, index) => (
                             <View key={index} style={styles.tableRow}>
                                 <View style={styles.typeLabelContainer}>
                                     <View style={[styles.colorDot, { backgroundColor: item.color }]} />
                                     <Text style={styles.typeLabel}>{item.type}</Text>
                                 </View>
-                                <Text style={styles.typeValueCenter}>{item.percentage}%</Text>
-                                <Text style={styles.typeValueRight}>{item.correctness}%</Text>
+                                <Text style={styles.percentageValue}>{item.percentage}%</Text>
+                                <Text style={styles.correctnessValue}>{item.correctness}%</Text>
                             </View>
                         ))}
                     </View>
@@ -239,6 +320,46 @@ export default function Dashboard({ navigation }) {
                 {/* Spacer to ensure all content is visible above the tab bar */}
                 <View style={{ height: 80 }} />
             </ScrollView>
+            
+            {/* Dropdown Menu Modal */}
+            <Modal
+                visible={dropdownVisible}
+                transparent={true}
+                animationType="none"
+                onRequestClose={() => setDropdownVisible(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setDropdownVisible(false)}>
+                    <View style={styles.modalOverlay}>
+                        <TouchableWithoutFeedback>
+                            <View 
+                                style={[
+                                    styles.dropdownMenu,
+                                    {
+                                        position: 'absolute',
+                                        top: dropdownLayout.pageY + dropdownLayout.height,
+                                        left: Platform.OS === 'ios' ? dropdownLayout.pageX : dropdownLayout.x,
+                                        width: dropdownLayout.width,
+                                    }
+                                ]}
+                            >
+                                <TouchableOpacity 
+                                    style={[styles.dropdownItem, timeFrame === 'Weekly' && styles.dropdownItemActive]}
+                                    onPress={() => handleSelectTimeFrame('Weekly')}
+                                >
+                                    <Text style={[styles.dropdownItemText, timeFrame === 'Weekly' && styles.dropdownItemTextActive]}>Weekly</Text>
+                                </TouchableOpacity>
+                                <View style={styles.dropdownDivider} />
+                                <TouchableOpacity 
+                                    style={[styles.dropdownItem, timeFrame === 'Monthly' && styles.dropdownItemActive]}
+                                    onPress={() => handleSelectTimeFrame('Monthly')}
+                                >
+                                    <Text style={[styles.dropdownItemText, timeFrame === 'Monthly' && styles.dropdownItemTextActive]}>Monthly</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -262,17 +383,20 @@ const styles = StyleSheet.create({
     },
     dashboardTitle: {
         fontFamily: 'Baloo2-Bold',
-        fontSize: 28,
+        fontSize: 26,
         color: '#333',
     },
     selectorButton: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         borderWidth: 1,
         borderColor: '#ccc',
-        borderRadius: 8,
+        borderRadius: 5,
         paddingHorizontal: 12,
-        paddingVertical: 6,
+        paddingVertical: height * 0.01,
+        zIndex: 1,
+        backgroundColor: '#fff',
     },
     selectorText: {
         fontFamily: 'Nunito-Regular',
@@ -281,9 +405,10 @@ const styles = StyleSheet.create({
         marginRight: 5,
     },
     summaryContainer: {
-        marginBottom: 25,
+        marginBottom: height * 0.02,
     },
     weeklySummaryTitle: {
+        paddingTop: height * 0.01,
         fontFamily: 'Montserrat',
         fontSize: 22,
         color: 'black',
@@ -406,19 +531,28 @@ const styles = StyleSheet.create({
         width: '40%',
         textAlign: 'left',
     },
-    tableHeaderCenter: {
+    tablePercentageHeader: {
         fontFamily: 'Baloo2-Bold',
         fontSize: 14,
         color: '#333',
         width: '30%',
         textAlign: 'left',
+        paddingLeft: width * 0.05,
     },
-    difficultyBreakdownTableHeaderRight: {
+    tableCorrectnessHeader: {
         fontFamily: 'Baloo2-Bold',
         fontSize: 14,
         color: '#333',
-        width: '40%',
+        width: '30%',
         textAlign: 'right',
+    },
+    tableCompletedHeader: {
+        fontFamily: 'Baloo2-Bold',
+        fontSize: 14,
+        color: '#333',
+        width: '60%',
+        textAlign: 'right',
+        paddingRight: width * 0.01,
     },
     tableRow: {
         flexDirection: 'row',
@@ -442,18 +576,65 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#333',
     },
-    typeValueCenter: {
+    percentageValue: {
         fontFamily: 'Baloo2-Regular',
         fontSize: 15,
         color: '#333',
         width: '30%',
         textAlign: 'left',
+        paddingLeft: width * 0.09,
     },
-    typeValueRight: {
+    correctnessValue: {
         fontFamily: 'Baloo2-Regular',
         fontSize: 15,
         color: '#333',
         width: '30%',
         textAlign: 'right',
+    },
+    completedValue: {
+        fontFamily: 'Baloo2-Regular',
+        fontSize: 15,
+        color: '#333',
+        width: '60%',
+        textAlign: 'right',
+        paddingRight: width * 0.03,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
+    dropdownMenu: {
+        backgroundColor: '#fff',
+        borderRadius: 5,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 5,
+        overflow: 'hidden',
+    },
+    dropdownItem: {
+        paddingVertical: height * 0.01,
+        paddingHorizontal: 12,
+        width: '100%',
+    },
+    dropdownDivider: {
+        height: 1,
+        backgroundColor: '#E0E0E0',
+        width: '100%',
+    },
+    dropdownItemActive: {
+        backgroundColor: '#f9f9f9',
+    },
+    dropdownItemText: {
+        fontFamily: 'Baloo2-Regular',
+        fontSize: 14,
+        color: '#333',
+    },
+    dropdownItemTextActive: {
+        color: '#004643',
+        fontFamily: 'Baloo2-Bold',
     },
 }); 
