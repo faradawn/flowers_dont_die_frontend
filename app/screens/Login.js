@@ -55,6 +55,7 @@ export default function Login({ navigation }){
                 updateState('uid', data.uid);
                 updateState('username', username);
                 updateState('is_signed_in', true);
+                updateState('course_id', null);
 
                 setUsername('');
                 setPassword('');

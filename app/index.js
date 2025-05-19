@@ -145,6 +145,10 @@ export default function App() {
         await Font.loadAsync({
             'Baloo2-Regular': require('../assets/fonts/Baloo2-Regular.ttf'),
             'Baloo2-Bold': require('../assets/fonts/Baloo2-Bold.ttf'),
+            'Montserrat-SemiBold': require('../assets/fonts/Montserrat-SemiBold.ttf'),
+            'Montserrat-Medium': require('../assets/fonts/Montserrat-Medium.ttf'),
+            'Nunito-Regular': require('../assets/fonts/Nunito-Regular.ttf'),
+            'Nunito-SemiBold': require('../assets/fonts/Nunito-SemiBold.ttf')
         });
     };
 
