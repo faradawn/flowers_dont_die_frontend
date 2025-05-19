@@ -15,6 +15,8 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.0.0",
+    "@ant-design/icons-react-native": "^2.3.2",
     "@expo/vector-icons": "^14.0.3",
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@react-native-async-storage/async-storage": "1.23.1",
@@ -47,7 +49,9 @@
     "react-dom": "18.2.0",
     "react-native": "0.74.5",
     "react-native-chart-kit": "^6.12.0",
+    "react-native-circular-progress": "^1.4.1",
     "react-native-dropdown-select-list": "^2.0.5",
+    "react-native-element-dropdown": "^2.12.4",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-modal": "^13.0.1",

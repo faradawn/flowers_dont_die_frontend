@@ -3,8 +3,18 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-const TopBar = ({ navigateTo, backText = 'Back', backgroundColor = '#fff', textColor = '#004643', params = {} }) => {
+const TopBar = ({ navigateTo, backText = 'Back', backgroundColor = '#f6f6f6', textColor = '#141917', params = {} }) => {
   const navigation = useNavigation();
+  let destination = navigateTo;
+  let parameters = params;
+  if (navigateTo === 'Courses') {
+    destination = 'HomeTab';
+    parameters = {
+      screen: 'Courses',
+      params: params
+    }
+    console.log("TopBar is passing params as ", params);
+  }
 
   return (
     <View style={{
@@ -22,21 +32,21 @@ const TopBar = ({ navigateTo, backText = 'Back', backgroundColor = '#fff', textC
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 16,
+          paddingHorizontal: 14,
           paddingVertical: 8,
         }}
-        onPress={() => navigation.navigate(navigateTo, params)}
+        onPress={() => navigation.navigate(destination, parameters)}
       >
         <Ionicons
           name="chevron-back"
-          size={17} 
-          color={textColor}
+          size={28} 
+          color="#11403B"
         />
         <Text
           style={{
-            marginLeft: 4,
-            fontSize: 18,
-            fontFamily: 'Baloo2-Bold',
+            marginLeft: 8,
+            fontSize: 16,
+            fontFamily: 'Nunito-Regular',
             color: textColor,
           }}
         >
