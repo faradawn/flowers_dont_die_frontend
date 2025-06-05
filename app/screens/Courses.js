@@ -35,7 +35,7 @@ export default function Courses({ navigation, route }) {
 
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [topics, setTopics] = useState({ topics: [] });
-    const [currentTopic, setCurrentTopic] = useState(0);
+    const [currentTopic, setCurrentTopic] = useState(-1);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -150,7 +150,8 @@ export default function Courses({ navigation, route }) {
                     if (route?.params?.course_id) {
                         console.log("params passed as", route.params.course_id);
                         updateState('course_id', route.params.course_id);
-                        const matched = courses.find(c => c.value === state.course_id);
+
+                        const matched = courses.find(c => c.value === route.params.course_id);
                         if (matched) {
                             setSelectedCourse(matched);
                         }                    
@@ -169,7 +170,7 @@ export default function Courses({ navigation, route }) {
             }
 
             checkAndSetupUser().then(() => fetchCourses());
-        }, [state.uid, state.username])
+        }, [state.uid, state.username, route.params])
     );
 
     // navigation through clicking a specific topic
@@ -325,7 +326,6 @@ export default function Courses({ navigation, route }) {
                             onChange={item => {
                                 updateState('course_id', item.value)
                                 setSelectedCourse(item);
-                                navigation.setParams({ course_id: item.value });
                                 fetchTopics();
                             }}
                             renderRightIcon = {() => (

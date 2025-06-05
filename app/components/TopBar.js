@@ -13,7 +13,6 @@ const TopBar = ({ navigateTo, backText = 'Back', backgroundColor = '#f6f6f6', te
       screen: 'Courses',
       params: params
     }
-    console.log("TopBar is passing params as ", params);
   }
 
   return (
