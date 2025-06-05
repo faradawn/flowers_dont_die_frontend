@@ -22,7 +22,7 @@ export default function Topics({ navigation, route }){
     const [isLoading, setIsLoading] = useState(true);
     const [assignments, setAssignments] = useState([]);
     const { state } = useUser();
-    const [currentQuestion, setCurrentQuestion] = useState(0);
+    const [currentQuestion, setCurrentQuestion] = useState(-1);
 
     const topic = route.params?.topic;
 
@@ -69,6 +69,18 @@ export default function Topics({ navigation, route }){
             question_id: null,
         });
     }
+
+    // update current question
+    useEffect(() => {
+        if (assignments?.question_arr?.length > 0) {
+            for (let i = 0; i < assignments.question_arr.length; i++) {
+                if (assignments.question_arr[i].score < 3) {
+                    setCurrentQuestion(i);
+                    break;
+                }
+            }
+        }
+    }, [assignments]);
 
     return (
         <View
