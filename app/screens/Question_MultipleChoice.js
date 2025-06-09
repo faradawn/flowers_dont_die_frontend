@@ -35,7 +35,7 @@ const CustomHeaderBar = ({navigation, fromScreen, currentQuestionIndex, totalQue
     return (
         <View style = {{
             width,
-            backgroundColor: 'white',
+            backgroundColor: '#EFEFEF',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -50,7 +50,7 @@ const CustomHeaderBar = ({navigation, fromScreen, currentQuestionIndex, totalQue
                 fontFamily: 'Baloo2-Bold', 
                 fontSize: 16
             }}>
-                {`${currentQuestionIndex + 1} / ${totalQuestions}`}
+                 {`${currentQuestionIndex + 1} / ${totalQuestions}`}
             </Text>
             <Text style = {{
                 color: 'black', 
@@ -588,12 +588,12 @@ export default function Question_Combined({ navigation, route }) {
                                 <TouchableOpacity
                                     style={{
                                         flex: 1,
-                                        backgroundColor: 'green',
+                                        backgroundColor: '#4B7C7B',
                                         borderRadius: 8,
                                         height: 45,
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        marginRight: 5
+                                        marginRight: 10
                                     }}
                                     onPress={handleTryAgain}
                                 >
@@ -665,7 +665,12 @@ export default function Question_Combined({ navigation, route }) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginHorizontal: 4,
-                    backgroundColor: recording ? '#ef4444' : '#4B7C7B'
+                    backgroundColor: recording ? '#ef4444' : '#4B7C7B',
+                    elevation: 0,               
+                    shadowColor: 'transparent',
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0,
+                    shadowRadius: 0,
                 }}
             >
                 {voiceLoading ? (
@@ -710,7 +715,7 @@ export default function Question_Combined({ navigation, route }) {
                 //justifyContent: 'center',
                 //alignItems: 'center',
                 paddingHorizontal: 20,
-                marginTop: 10
+                marginTop: 20
             } } 
         >
            
@@ -819,7 +824,7 @@ export default function Question_Combined({ navigation, route }) {
             <View style={{
               width: width,
               height: height,
-              backgroundColor: globalStyles.container.backgroundColor,
+              backgroundColor: '#EFEFEF',
               display: 'flex',
               justifyContent: 'flex-start',
               alignItems: 'center',
@@ -863,7 +868,7 @@ export default function Question_Combined({ navigation, route }) {
                             flexDirection: 'row',
                             justifyContent: 'flex-end',
                             alignItems: 'center',
-                            marginTop: 8,
+                            marginTop: 16, //here
                             width: '90%'
                         }}>
                     <Text style = {{
