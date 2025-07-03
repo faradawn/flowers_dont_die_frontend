@@ -12,6 +12,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Login from './screens/Login';
 import SignUp from './screens/Signup';
 import Courses from './screens/Courses';
+import EditProfile from './screens/EditProfile'
 import Topics from './screens/Topic';
 import Question_MC from './screens/Question_MultipleChoice';
 import Profile from './screens/Profile';
@@ -90,6 +91,11 @@ function RootStackNavigator() {
                 <RootStack.Screen 
                     name="SignUp" 
                     component={SignUp}
+                    options={{headerShown: false}}
+                />
+                <RootStack.Screen 
+                    name="EditProfile" 
+                    component={EditProfile}
                     options={{headerShown: false}}
                 />
                 <RootStack.Screen 

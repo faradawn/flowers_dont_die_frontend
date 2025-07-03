@@ -238,6 +238,24 @@ export default function Login({ navigation }){
                                 > Sign up.</Text>
                             </TouchableOpacity>
                         </View>
+                        <View 
+                            style={{ 
+                                flexDirection: 'row',
+                                marginBottom: 15
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('EditProfile')}
+                            >
+                                <Text
+                                    style= {{
+                                        fontFamily: 'Baloo2-Bold',
+                                        fontSize: 16,
+                                        color: '#FFD912',
+                                    }}
+                                > Edit Profile.</Text>
+                            </TouchableOpacity>
+                        </View>
 
                         {/* Continue as Guest */}
                         <Text
