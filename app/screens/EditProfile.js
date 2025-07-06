@@ -7,7 +7,7 @@ import { useState } from 'react';
 import * as FileSystem from 'expo-file-system';
 import { SelectList } from 'react-native-dropdown-select-list'
 
-import ProfileViewer from '../components/ProfileViewer';
+import ProfilePicture from '../components/ProfilePicture';
 import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext'
 import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
@@ -74,7 +74,7 @@ export default function EditProfile({ navigation }) {
 
   const { updateState } = useUser();
 
-  let OriginalImage = require('../../assets/images/FlowerIcon.jpg')
+  let OriginalImage = require('../../assets/images/notion_avatars/notion_02.png')
 
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -117,7 +117,7 @@ export default function EditProfile({ navigation }) {
     >
       <TouchableOpacity
           style={{flexDirection: 'row'}}
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.navigate('ProfileView')}
       >
           <Ionicons name="chevron-back" size={24} color="#000000" style={{padding: 15}}/>
           <Text style= {{
@@ -137,7 +137,7 @@ export default function EditProfile({ navigation }) {
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
               style={{flex: 1, alignItems: "center", justifyContent: "center"}}
           >   
-              <ProfileViewer imgSource={OriginalImage} selectedImage={selectedImage} />
+              <ProfilePicture imgSource={OriginalImage} selectedImage={selectedImage} />
               <TouchableOpacity style={styles.upload_button} onPress={() => showImage()}>
                 <Ionicons name='pencil' size={20} color='#515856'/>
                 <Text style={{ fontFamily: 'Baloo2-Regular', color: '#515856', fontSize: 16, margin: 15 }}>Upload New Image</Text>

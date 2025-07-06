@@ -255,6 +255,17 @@ export default function Login({ navigation }){
                                     }}
                                 > Edit Profile.</Text>
                             </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('ProfileView')}
+                            >
+                                <Text
+                                    style= {{
+                                        fontFamily: 'Baloo2-Bold',
+                                        fontSize: 16,
+                                        color: '#FFD912',
+                                    }}
+                                > View Profile.</Text>
+                            </TouchableOpacity>
                         </View>
 
                         {/* Continue as Guest */}

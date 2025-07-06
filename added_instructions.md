@@ -6,3 +6,4 @@ npx expo install @expo/ngrok@latest
 npx expo install @unimodules/react-native-adapter@latest
 npx expo install react-native-web@0.17.7
 npx expo install react-native-screens@3.31.1
+npx expo install react-native-calendars
