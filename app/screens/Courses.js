@@ -236,9 +236,10 @@ export default function Courses({ navigation, route }) {
         for (let i = 0; i < topics.topics.length; i++) {
             if (topics.topics[i].completed_questions < topics.topics[i].total_questions) {
                 setCurrentTopic(i);
-                break;
+                return;
             }
         }
+        setCurrentTopic(-1);
     }, [topics]);
 
     useEffect(() => {
