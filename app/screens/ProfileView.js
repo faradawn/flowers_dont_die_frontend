@@ -1,11 +1,12 @@
 import * as ImagePicker from 'expo-image-picker';
-import { View, Image, ImageBackground, Dimensions, TextInput, Button,
+import { View, Image, ImageBackground, Dimensions, TextInput, Button, SafeAreaView,
     Text, StyleSheet, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SelectList } from 'react-native-dropdown-select-list'
 import {Calendar, LocaleConfig} from 'react-native-calendars';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import ProfilePicture from '../components/ProfilePicture';
 import { globalStyles } from '../globalStyles/globalStyles';
@@ -17,31 +18,57 @@ const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 const adjustedHeight = height / 932
 const adjustedWidth = width / 430
+const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+const username = 'Name Name'
+const joinDate = '2024-01-24'
+
+const joinMonth = months[parseInt(joinDate.slice(5,7))]
+const joinDay = joinDate.slice(8)
+const joinYear = joinDate.slice(0,4)
+
 
 export default function ProfileView({ navigation }) {
-  const [selected, setSelected] = useState('');
-  const [username, setUsername] = useState('Name Name');
-  const [password, setPassword] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [timezone, setTimezone] = useState('GMT-5');
   const [infoCorrect, setInfoCorrect] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [loginData, setLoginData] = useState(null);
-  const [daysPracticed, setDaysPracticed] = useState(30);
-  const [problemsFinished, setProblemsFinished] = useState(28);
-  
-
   const { updateState } = useUser();
-
-  let completedDates = {'2025-02-04': {customStyles: {
-                                  container: styles.completedDate
-                                }},}
-  let startedDates = {'2025-02-05': {customStyles: {
-                                  container: styles.startedDate
-                                }},}
-  let markedDates = completedDates + startedDates
   
-  let Image = require('../../assets/images/notion_avatars/notion_02.png')
+  const username = 'Name Name'
+  const joinDate = '2024-01-24'
+  const problemsPracticed = [
+    {name: 'Test 1', date: '2025-02-04', isCompleted: true},
+    {name: 'Test 2', date: '2025-02-05', isCompleted: false},
+  ]
+
+  const joinMonth = months[parseInt(joinDate.slice(5,7))]
+  const joinDay = joinDate.slice(8)
+  const joinYear = joinDate.slice(0,4)
+
+  let practicedDates = new Set()
+  let completedProblems = new Set()
+  let markedDates = {}
+  for(i=0; i < problemsPracticed.length; i++){
+    // practiced, but not completed problems
+    if (problemsPracticed[i].isCompleted == false) {
+      markedDates[problemsPracticed[i].date] = {customStyles: {
+                                                    container: styles.startedDate
+                                                  }}
+    }
+    // completed problems
+    else if (problemsPracticed[i].isCompleted == true) {
+      completedProblems.add(problemsPracticed[i])
+      // if different problem set has been completed/practiced on that date, then don't override the previous marking
+      if (!practicedDates.has(problemsPracticed[i].date)) {
+        markedDates[problemsPracticed[i].date] = {customStyles: {
+                                                      container: styles.completedDate
+                                                    }}
+      }
+    }
+    practicedDates.add(problemsPracticed[i].date)
+  }
+  
+  const Image = require('../../assets/images/notion_avatars/notion_02.png')
 
   return ( 
     <View
@@ -60,19 +87,19 @@ export default function ProfileView({ navigation }) {
           >   
               <ProfilePicture imgSource={Image} />
               <Text style={[styles.title, {marginTop: 10 * adjustedHeight}]}>{username}</Text>
-              <Text style={styles.text}>Joined on Jan 24, 2024</Text>
+              <Text style={styles.text}>Joined on {joinMonth} {joinDay}, {joinYear}</Text>
               <TouchableOpacity style={styles.upload_button} onPress={() => navigation.navigate('EditProfile')}>
                 <Ionicons name='pencil' size={20} color='#515856' style={{marginRight: 10}}/>
                 <Text style={styles.text}>Edit My Profile</Text>
               </TouchableOpacity>
 
-              <Text style={styles.title}>Achievements</Text>
+              <Text style={[styles.title, {marginRight: 'auto', marginLeft: 15 * adjustedWidth}]}>Achievements</Text>
               <View style={styles.achieveContainer}>
                 <View style={styles.statsContainer}>
                   <Ionicons name="calendar-outline" size={32 * adjustedHeight} color="#FF8C8C" style={{marginHorizontal: 20 * adjustedHeight}}/>
                   <View style={styles.stats}>
-                    <Text style={[styles.title, {fontSize: 32 * adjustedHeight, marginVertical: -5 * adjustedHeight}]}>
-                      {daysPracticed}
+                    <Text style={[styles.title, {fontSize: 32 * adjustedHeight, marginVertical: -10 * adjustedHeight}]}>
+                      {practicedDates.size}
                     </Text>
                     <Text style={styles.text}>Days practiced</Text>
                   </View>
@@ -80,15 +107,15 @@ export default function ProfileView({ navigation }) {
                 <View style={styles.statsContainer}>
                   <Ionicons name="book" size={32 * adjustedHeight} color="#FF8C8C" style={{marginHorizontal: 20 * adjustedHeight}}/>
                   <View style={styles.stats}>
-                    <Text style={[styles.title, {fontSize: 32 * adjustedHeight, marginVertical: -5 * adjustedHeight}]}>
-                      {problemsFinished}
+                    <Text style={[styles.title, {fontSize: 32 * adjustedHeight, marginVertical: -10 * adjustedHeight}]}>
+                      {completedProblems.size}
                     </Text>
                     <Text style={styles.text}>Problems finished</Text>
                   </View>
                 </View>
               </View>
 
-              <Text style={styles.title}>Practice Record</Text>
+              <Text style={[styles.title, {marginRight: 'auto', marginLeft: 15 * adjustedWidth}]}>Practice Record</Text>
               <View style={styles.calendarContainer}>
                 <Calendar
                   // Customize the appearance of the calendar
@@ -113,14 +140,7 @@ export default function ProfileView({ navigation }) {
                     console.log('selected day', day);
                   }}
                   markingType={'custom'}
-                  markedDates={{
-                    '2025-02-04': {customStyles: {
-                                  container: styles.completedDate
-                                }},
-                    '2025-02-05': {customStyles: {
-                                  container: styles.startedDate
-                                }},
-                  }}
+                  markedDates={markedDates}
                 />
               </View>
           </KeyboardAvoidingView>
@@ -133,7 +153,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#141917',
     fontFamily: 'Baloo2-Regular',
-    fontSize: 28 * adjustedHeight,
+    fontSize: 25 * adjustedHeight,
   },
   upload_button: {
     flexDirection: 'row',
@@ -170,12 +190,13 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#515856', 
-    fontSize: 17 * adjustedHeight, 
+    fontSize: 15 * adjustedHeight, 
     fontFamily: 'Baloo2-Regular',
   },
   stats: {
     flexDirection: 'column',
     justifyContent: 'flex-start',
+    marginLeft: -5 * adjustedHeight,
   },
   completedDate: {
       borderWidth: 1,

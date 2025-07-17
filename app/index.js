@@ -41,8 +41,12 @@ function HomeTabNavigator() {
 
                     if (route.name === 'Courses') {
                         iconName = focused ? 'home' : 'home-outline';
-                    } else if (route.name === 'Profile') {
-                        iconName = focused ? 'settings' : 'settings-outline';
+                    // } else if (route.name === 'Profile') {
+                    //     iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+                    } else if (route.name === 'EditProfile') {
+                        iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+                    } else if (route.name === 'ProfileView') {
+                        iconName = focused ? 'person-circle' : 'person-circle-outline';
                     }
 
                     // You can return any component that you like here!
@@ -69,7 +73,9 @@ function HomeTabNavigator() {
                 initialRouteName='Courses'
             >
             <HomeTab.Screen name='Courses' component={Courses}/>
-            <HomeTab.Screen name='Profile' component={Profile}/>
+            {/* <HomeTab.Screen name='Profile' component={Profile}/> */}
+            <HomeTab.Screen name='EditProfile' component={EditProfile}/>
+            <HomeTab.Screen name='ProfileView' component={ProfileView}/>
         </HomeTab.Navigator>
       </SafeAreaView>
     );

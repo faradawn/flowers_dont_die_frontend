@@ -1,11 +1,13 @@
-import * as ImagePicker from 'expo-image-picker';
-import { View, Image, ImageBackground, Dimensions, TextInput, Button,
+import { View, Image, ImageBackground, Dimensions, TextInput, Button, SafeAreaView,
     Text, StyleSheet, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import * as FileSystem from 'expo-file-system';
+import React, { useState, useEffect } from 'react';
 import { SelectList } from 'react-native-dropdown-select-list'
+import {Calendar, LocaleConfig} from 'react-native-calendars';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
 
 import ProfilePicture from '../components/ProfilePicture';
 import { globalStyles } from '../globalStyles/globalStyles';
@@ -13,11 +15,18 @@ import { useUser } from '../components/UserContext'
 import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
 import { mergeProgress } from '../components/localDb';
 
-const ProfilePath = FileSystem.documentDirectory + "username" + "pfp"
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 const adjustedHeight = height / 932
 const adjustedWidth = width / 430
+const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+const username = 'Name Name'
+const joinDate = '2024-01-24'
+
+const joinMonth = months[parseInt(joinDate.slice(5,7))]
+const joinDay = joinDate.slice(8)
+const joinYear = joinDate.slice(0,4)
 
 const timezones = [
   {key: '1', value: 'GMT-12'},
@@ -60,19 +69,199 @@ const timezones = [
   {key: '38', value: 'GMT+14'},
   ]
 
+// const ProfileTab = createBottomTabNavigator();
+// function ProfileTabNavigator() {
+//     return (
+//         <SafeAreaView style={{ width: width, height: height}}>
+//             <ProfileTab.Navigator
+//                 screenOptions={({ route }) => ({
+//                     tabBarIcon: ({ focused, color }) => {
+//                     let iconName;
+
+//                     if (route.name === 'Edit Profile') {
+//                         iconName = focused ? 'home' : 'home-outline';
+//                     } else if (route.name === 'View Profile') {
+//                         iconName = focused ? 'settings' : 'settings-outline';
+//                     }
+
+//                     // You can return any component that you like here!
+//                     return <Ionicons name={iconName} size={30} color={color} />;
+//                     },
+
+//                     tabBarActiveTintColor: '#004643',
+//                     tabBarInactiveTintColor: 'grey',
+//                     headerShown: false,
+
+//                     tabBarStyle: { 
+//                         height: 0.1 * height + 10,
+//                         marginBottom: 5,
+//                     },
+                    
+//                     tabBarIconStyle: {
+//                         marginTop: 7,
+//                     },
+//                     tabBarLabelStyle: {
+//                         fontSize: 12,
+//                         paddingBottom: 15,
+//                     },
+//                 })}
+//                 initialRouteName='Edit Profile'
+//             >
+//             <ProfileTab.Screen name='Edit Profile' component={EditProfile}/>
+//             <ProfileTab.Screen name='View Profile' component={ProfileView}/>
+//         </ProfileTab.Navigator>
+//       </SafeAreaView>
+//     );
+// }
+
 export default function EditProfile({ navigation }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [timezone, setTimezone] = useState('GMT-5');
+  const defaultUsername = 'Willa'
+  const defaultPassword = '123456789'
+  const [phoneNumber, setPhoneNumber] = useState('999-999-9999');
+  const [timezone, setTimezone] = useState({key: '9', value: 'GMT-5'});
+
   const [infoCorrect, setInfoCorrect] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [loginData, setLoginData] = useState(null);
+
   const [passwordLength, setPasswordLength] = useState(78 * adjustedWidth);
   const [phoneLength, setPhoneLength] = useState(99 * adjustedWidth);
   const [usernameLength, setUsernameLength] = useState(36 * adjustedWidth);
 
-  const { updateState } = useUser();
+  const { state, updateState } = useUser();
+  const [newUsername, setNewUsername] = useState(state.username);
+  const [newPassword, setNewPassword] = useState(state.password);
+
+  console.log("Debug - Profile Component state:", state);
+  console.log("Debug - Profile Component state.uid:", state?.uid);
+  console.log("Debug - Is showing login screen:", !state?.uid);
+  useEffect(() => {
+      console.log("Profile: Current user state:", state);
+  }, [state]);
+  const isLoggedIn = state.is_signed_in; 
+  
+  const handleDelete = async () => {
+      try {
+          // Clear local submissions for this user
+          const result = await clearSubmissions(state.uid);
+          if (result.status !== "success") {
+              throw new Error(result.message);
+          }
+
+          // Clear login info from secure storage
+          await deleteLoginInfo();
+
+          // Clear uid from state
+          updateState('uid', '');
+          updateState('username', '');
+
+          Alert.alert("Account Deleted", "Your account has been successfully deleted.");
+          
+          // Navigate to Courses screen
+          navigation.navigate('Courses');
+      } catch (error) {
+          console.log('Error deleting account: ', error);
+          Alert.alert("Error", "Failed to delete account. Please try again.");
+      }
+  };
+
+  const handleLogout = async () => {
+    try {
+        // 1. 清理安全存储
+        await deleteLoginInfo();
+        
+        // 2. 更新状态
+        updateState('username', '');
+        updateState('uid', '');
+        updateState('is_signed_in', false);
+        
+        // 3. 立即导航到登录页面
+        navigation.replace('Login'); 
+        
+    } catch (error) {
+        console.error('Logout error:', error);
+        Alert.alert("Error", "Failed to sign out. Please try again.");
+    }
+  };
+
+  const handleResetProgress = async () => {
+      try {
+          const result = await clearSubmissions();
+          if (result.status === "success") {
+              Alert.alert("Success", result.message);
+              // Optionally, you can update any relevant state or trigger a refresh here
+          } else {
+              Alert.alert("Error", result.message);
+          }
+      } catch (error) {
+          console.log('Error resetting progress:', error);
+          Alert.alert("Error", "An unexpected error occurred while resetting progress");
+      }
+  };
+
+  const handleUsernameUpdate = async () => {
+      if (newUsername.trim() === '') {
+          Alert.alert('Error', 'Username cannot be empty');
+          return;
+      }
+
+      try {
+          await updateState('username', newUsername);
+          const currentLoginInfo = await getLoginInfo();
+          if (currentLoginInfo) {
+              await saveLoginInfo(state.uid, newUsername, currentLoginInfo.password);
+          } else {
+              await saveLoginInfo(state.uid, newUsername, null);
+          }
+
+          const newlogin = await getLoginInfo();
+          console.log('[Profile] Updated useranme and saved to state and secure storage', newlogin);
+      } catch (error) {
+          console.error('[Profile] Error updating username:', error);
+      }
+  };
+
+  const handlePasswordUpdate = async () => {
+      if (newPassword.trim() === '') {
+          Alert.alert('Error', 'Password cannot be empty');
+          return;
+      }
+
+      try {
+          await updateState('password', newPassword);
+          const currentLoginInfo = await getLoginInfo();
+          if (currentLoginInfo) {
+              await saveLoginInfo(state.uid, currentLoginInfo.username, newPassword);
+          } else {
+              await saveLoginInfo(state.uid, newPassword, null);
+          }
+
+          const newlogin = await getLoginInfo();
+          console.log('[Profile] Updated useranme and saved to state and secure storage', newlogin);
+      } catch (error) {
+          console.error('[Profile] Error updating password:', error);
+      }
+
+  };
+
+
+  const handleContinueAsGuest = async () => {
+      try {
+          // 生成访客 ID
+          const guestId = `guest_${Date.now()}`;
+          
+          // 更新状态
+          updateState('username', `Guest_${guestId}`);
+          updateState('uid', guestId);
+          updateState('is_signed_in', false);
+          
+          // 导航到主页
+          navigation.navigate('HomeTab');
+      } catch (error) {
+          console.error('Guest mode error:', error);
+          Alert.alert("Error", "Failed to continue as guest. Please try again.");
+      }
+  }
 
   let OriginalImage = require('../../assets/images/notion_avatars/notion_02.png')
 
@@ -122,9 +311,10 @@ export default function EditProfile({ navigation }) {
           <Ionicons name="chevron-back" size={24} color="#000000" style={{padding: 15}}/>
           <Text style= {{
               fontFamily: 'Baloo2-Regular',
-              fontSize: 20 * adjustedHeight,
+              fontSize: 22 * adjustedHeight,
               color: '#000000',
-              marginTop: 10
+              marginTop: 10,
+              marginHorizontal: -8
           }}> 
               Back
           </Text>
@@ -140,26 +330,28 @@ export default function EditProfile({ navigation }) {
               <ProfilePicture imgSource={OriginalImage} selectedImage={selectedImage} />
               <TouchableOpacity style={styles.upload_button} onPress={() => showImage()}>
                 <Ionicons name='pencil' size={20} color='#515856'/>
-                <Text style={{ fontFamily: 'Baloo2-Regular', color: '#515856', fontSize: 16, margin: 15 }}>Upload New Image</Text>
+                <Text style={{ fontFamily: 'Baloo2-Regular', color: '#515856', fontSize: 15, margin: 15 }}>Upload New Image</Text>
               </TouchableOpacity>
 
               <View style={styles.settingsContainer}>
                 <View style={styles.setContainer}>
-                  <Text style={styles.text}>Username</Text>
+                  <Text style={[styles.text, {marginTop: 25 * adjustedHeight}]}>Username</Text>
 
                   <View style={styles.setButton}>
                     <TextInput
-                        placeholder='Willa'
+                        placeholder={defaultUsername}
                         placeholderTextColor='#515856'
-                        onChangeText={(val) => setUsername(val)}
-                        value={username}
+                        value={newUsername}
                         multiline
                         onContentSizeChange={(event) =>
                           setUsernameLength(event.nativeEvent.contentSize.width)
                         }
-                        style={{ width: usernameLength, fontSize: 16 * adjustedHeight, marginLeft: 10 }}
+                        style={{ width: usernameLength, fontSize: 15 * adjustedHeight, marginLeft: 10, color: "#515856" }}
                         autoCapitalize="none"
                         autoCorrect={false}
+                        onChangeText={setNewUsername}
+                        autoFocus
+                        onSubmitEditing={handleUsernameUpdate}
                     />
                     <Ionicons name="pencil" size={20} color="#515856" style={{padding: 10}}/>
                   </View>
@@ -171,17 +363,19 @@ export default function EditProfile({ navigation }) {
 
                   <View style={styles.setButton}>
                     <TextInput 
-                        placeholder='123456789'
+                        placeholder={defaultPassword}
                         placeholderTextColor='#515856'
-                        onChangeText={(val) => setPassword(val)}
-                        value={password}
+                        value={newPassword}
                         multiline
                         onContentSizeChange={(event) =>
                           setPasswordLength(event.nativeEvent.contentSize.width)
                         }
-                        style={{ width: passwordLength, fontSize: 16 * adjustedHeight, marginLeft: 10 }}
+                        style={{ width: passwordLength, fontSize: 15 * adjustedHeight, marginLeft: 10, color: "#515856" }}
                         autoCapitalize="none"
                         autoCorrect={false}
+                        onChangeText={setNewPassword}
+                        autoFocus
+                        onSubmitEditing={handlePasswordUpdate}
                     />
                     <Ionicons name="pencil" size={20} color="#515856" style={{padding: 10}}/>
                   </View>
@@ -193,7 +387,7 @@ export default function EditProfile({ navigation }) {
 
                   <View style={styles.setButton}>
                     <TextInput 
-                        placeholder='999-999-9999'
+                        placeholder={phoneNumber}
                         placeholderTextColor='#515856'
                         onChangeText={(val) => setPhoneNumber(val)}
                         value={phoneNumber}
@@ -201,7 +395,7 @@ export default function EditProfile({ navigation }) {
                         onContentSizeChange={(event) =>
                           setPhoneLength(event.nativeEvent.contentSize.width)
                         }
-                        style={{ width: phoneLength, fontSize: 16 * adjustedHeight, marginLeft: 10}}
+                        style={{ width: phoneLength, fontSize: 15 * adjustedHeight, marginLeft: 10, color: "#515856" }}
                         autoCapitalize="none"
                         autoCorrect={false}
                     />
@@ -217,9 +411,12 @@ export default function EditProfile({ navigation }) {
                       setSelected={(val) => setTimezone(val)} 
                       data={timezones} 
                       save="value"
-                      defaultOption={{timezone}}
-                      boxStyles={[styles.setButton, {fontFamily: 'Baloo2-Regular',}]}
-                      dropdownStyles={[styles.setButton, {fontFamily: 'Baloo2-Regular',}]}
+                      color="#515856"
+                      fontFamily='Baloo2-Regular'
+                      arrowicon={<Ionicons name="chevron-down" size={20} color="#000000" style={{padding: 10}}/>}
+                      defaultOption={timezone}
+                      boxStyles={[styles.setButton, styles.text]}
+                      dropdownStyles={[styles.setButton, styles.text]}
                   />
                 </View>
                 <View style={styles.line}></View>
@@ -252,9 +449,10 @@ const styles = StyleSheet.create({
   title: {
     color: '#141917',
     fontFamily: 'Baloo2-Regular',
-    fontSize: 24 * adjustedHeight,
+    fontSize: 25 * adjustedHeight,
     justifyContent: 'flex-start',
-    padding: 15
+    padding: 15,
+    marginBottom: 30 * adjustedHeight
   },
   upload_button: {
     flexDirection: 'row',
@@ -267,7 +465,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginVertical: 30 * adjustedHeight,
     height: 40 * adjustedHeight,
-    width: 177 * adjustedWidth,
+    width: 172 * adjustedWidth,
   },
   line: {
     borderColor: '#dcdcdc',
@@ -276,10 +474,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 2,
     marginHorizontal: 15 * adjustedWidth,
-    marginVertical: 7 * adjustedHeight, // Adds vertical spacing around the line
+    marginVertical: 6 * adjustedHeight, // Adds vertical spacing around the line
   },
   settingsContainer: {
-    flex: 3,
     backgroundColor: '#fff',
     borderRadius: 8,
     width: 0.91 * width,
@@ -293,7 +490,7 @@ const styles = StyleSheet.create({
     marginLeft: 20 * adjustedWidth,
     marginVertical: 10 * adjustedHeight,
     color: '#141917', 
-    fontSize: 20 * adjustedHeight, 
+    fontSize: 22 * adjustedHeight, 
     fontFamily: 'Baloo2-Regular',
   },
   setButton: {

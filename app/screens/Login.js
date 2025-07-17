@@ -245,7 +245,7 @@ export default function Login({ navigation }){
                             }}
                         >
                             <TouchableOpacity
-                                onPress={() => navigation.navigate('EditProfile')}
+                                onPress={() => navigation.navigate('HomeTab')}
                             >
                                 <Text
                                     style= {{
