@@ -244,28 +244,6 @@ export default function Login({ navigation }){
                                 marginBottom: 15
                             }}
                         >
-                            <TouchableOpacity
-                                onPress={() => navigation.navigate('HomeTab')}
-                            >
-                                <Text
-                                    style= {{
-                                        fontFamily: 'Baloo2-Bold',
-                                        fontSize: 16,
-                                        color: '#FFD912',
-                                    }}
-                                > Edit Profile.</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => navigation.navigate('ProfileView')}
-                            >
-                                <Text
-                                    style= {{
-                                        fontFamily: 'Baloo2-Bold',
-                                        fontSize: 16,
-                                        color: '#FFD912',
-                                    }}
-                                > View Profile.</Text>
-                            </TouchableOpacity>
                         </View>
 
                         {/* Continue as Guest */}

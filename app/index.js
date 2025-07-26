@@ -43,9 +43,9 @@ function HomeTabNavigator() {
                         iconName = focused ? 'home' : 'home-outline';
                     // } else if (route.name === 'Profile') {
                     //     iconName = focused ? 'bar-chart' : 'bar-chart-outline';
-                    } else if (route.name === 'EditProfile') {
-                        iconName = focused ? 'bar-chart' : 'bar-chart-outline';
                     } else if (route.name === 'ProfileView') {
+                        iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+                    } else if (route.name === 'EditProfile') {
                         iconName = focused ? 'person-circle' : 'person-circle-outline';
                     }
 
@@ -72,10 +72,10 @@ function HomeTabNavigator() {
                 })}
                 initialRouteName='Courses'
             >
-            <HomeTab.Screen name='Courses' component={Courses}/>
+            <HomeTab.Screen name='Courses' component={Courses} options={{tabBarShowLabel: false,}}/>
             {/* <HomeTab.Screen name='Profile' component={Profile}/> */}
-            <HomeTab.Screen name='EditProfile' component={EditProfile}/>
-            <HomeTab.Screen name='ProfileView' component={ProfileView}/>
+            <HomeTab.Screen name='ProfileView' component={ProfileView} options={{tabBarShowLabel: false,}}/>
+            <HomeTab.Screen name='EditProfile' component={EditProfile} options={{tabBarShowLabel: false,}}/>
         </HomeTab.Navigator>
       </SafeAreaView>
     );

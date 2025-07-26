@@ -13,10 +13,9 @@ export default function ProfilePicture({ imgSource, selectedImage }) {
 
 const styles = StyleSheet.create({
   profile: {
-    width: 150,
-    height: 150,
-    borderRadius: (150) / 2,
+    width: 155,
+    height: 155,
+    borderRadius: (155) / 2,
     overflow: "hidden",
-    marginTop: 15
   },
 });

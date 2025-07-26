@@ -11,6 +11,8 @@ export const UserProvider = ({ children }) => {
         username: '',
         course_id: '',
         password: '',        // Added for auth
+        phone_number: '',
+        join_date: '',
         is_signed_in: false  // Added for auth status
     });
 
@@ -44,6 +46,8 @@ export const UserProvider = ({ children }) => {
                 uid: userData.uid,
                 username: userData.username,
                 password: userData.password,
+                phone_number: userData.phone_number,
+                join_date: userData.join_date,
                 is_signed_in: true
             }));
 
@@ -52,6 +56,8 @@ export const UserProvider = ({ children }) => {
                 uid: userData.uid,
                 username: userData.username,
                 password: userData.password,
+                phone_number: userData.phone_number,
+                join_date: userData.join_date,
                 is_signed_in: true
             }));
         } catch (error) {
@@ -62,6 +68,8 @@ export const UserProvider = ({ children }) => {
 
     // New method for handling sign up
     const signUp = async (userData) => {
+        const today = new Date()
+        const dateToday = today.toISOString().slice(0, 10)
         try {
             // Create user document in backend
             await createUserDoc(userData);
@@ -75,6 +83,8 @@ export const UserProvider = ({ children }) => {
                 uid: userData.uid,
                 username: userData.username,
                 password: userData.password,
+                phone_number: userData.phone_number,
+                join_date: dateToday,
                 is_signed_in: true
             }));
 
@@ -83,6 +93,8 @@ export const UserProvider = ({ children }) => {
                 uid: userData.uid,
                 username: userData.username,
                 password: userData.password,
+                phone_number: userData.phone_number,
+                join_date: dateToday,
                 is_signed_in: true
             }));
         } catch (error) {
@@ -106,7 +118,9 @@ export const UserProvider = ({ children }) => {
                 uid: guestId,
                 username: `Guest_${guestId}`,
                 password: '',
+                phone_number: '',
                 is_signed_in: false,
+                join_date: '',
                 course_id: ''
             }));
 
@@ -115,7 +129,9 @@ export const UserProvider = ({ children }) => {
                 uid: guestId,
                 username: `Guest_${guestId}`,
                 password: '',
+                phone_number: '',
                 is_signed_in: false,
+                join_date: '',
                 course_id: ''
             }));
 
@@ -134,6 +150,8 @@ export const UserProvider = ({ children }) => {
             uid: guestId,
             username: `Guest_${guestId}`,
             password: '',
+            phone_number: '',
+            join_date: '',
             is_signed_in: false
         }));
     };

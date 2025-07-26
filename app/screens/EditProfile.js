@@ -1,11 +1,9 @@
-import { View, Image, ImageBackground, Dimensions, TextInput, Button, SafeAreaView,
+import { View, Image, ImageBackground, Dimensions, TextInput, Button, SafeAreaView, Modal, ScrollView,
     Text, StyleSheet, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import { SelectList } from 'react-native-dropdown-select-list'
-import {Calendar, LocaleConfig} from 'react-native-calendars';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -17,16 +15,10 @@ import { mergeProgress } from '../components/localDb';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
+
+// adjusted values are for easier pixel scaling with the figma
 const adjustedHeight = height / 932
 const adjustedWidth = width / 430
-const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-const username = 'Name Name'
-const joinDate = '2024-01-24'
-
-const joinMonth = months[parseInt(joinDate.slice(5,7))]
-const joinDay = joinDate.slice(8)
-const joinYear = joinDate.slice(0,4)
 
 const timezones = [
   {key: '1', value: 'GMT-12'},
@@ -69,68 +61,25 @@ const timezones = [
   {key: '38', value: 'GMT+14'},
   ]
 
-// const ProfileTab = createBottomTabNavigator();
-// function ProfileTabNavigator() {
-//     return (
-//         <SafeAreaView style={{ width: width, height: height}}>
-//             <ProfileTab.Navigator
-//                 screenOptions={({ route }) => ({
-//                     tabBarIcon: ({ focused, color }) => {
-//                     let iconName;
-
-//                     if (route.name === 'Edit Profile') {
-//                         iconName = focused ? 'home' : 'home-outline';
-//                     } else if (route.name === 'View Profile') {
-//                         iconName = focused ? 'settings' : 'settings-outline';
-//                     }
-
-//                     // You can return any component that you like here!
-//                     return <Ionicons name={iconName} size={30} color={color} />;
-//                     },
-
-//                     tabBarActiveTintColor: '#004643',
-//                     tabBarInactiveTintColor: 'grey',
-//                     headerShown: false,
-
-//                     tabBarStyle: { 
-//                         height: 0.1 * height + 10,
-//                         marginBottom: 5,
-//                     },
-                    
-//                     tabBarIconStyle: {
-//                         marginTop: 7,
-//                     },
-//                     tabBarLabelStyle: {
-//                         fontSize: 12,
-//                         paddingBottom: 15,
-//                     },
-//                 })}
-//                 initialRouteName='Edit Profile'
-//             >
-//             <ProfileTab.Screen name='Edit Profile' component={EditProfile}/>
-//             <ProfileTab.Screen name='View Profile' component={ProfileView}/>
-//         </ProfileTab.Navigator>
-//       </SafeAreaView>
-//     );
-// }
-
 export default function EditProfile({ navigation }) {
   const defaultUsername = 'Willa'
   const defaultPassword = '123456789'
-  const [phoneNumber, setPhoneNumber] = useState('999-999-9999');
+  const defaultPhoneNumber = '999-999-9999'
   const [timezone, setTimezone] = useState({key: '9', value: 'GMT-5'});
 
-  const [infoCorrect, setInfoCorrect] = useState(true);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [loginData, setLoginData] = useState(null);
-
-  const [passwordLength, setPasswordLength] = useState(78 * adjustedWidth);
-  const [phoneLength, setPhoneLength] = useState(99 * adjustedWidth);
-  const [usernameLength, setUsernameLength] = useState(36 * adjustedWidth);
+  // const [infoCorrect, setInfoCorrect] = useState(true);
+  // const [errorMessage, setErrorMessage] = useState('');
+  // const [loginData, setLoginData] = useState(null);
 
   const { state, updateState } = useUser();
   const [newUsername, setNewUsername] = useState(state.username);
   const [newPassword, setNewPassword] = useState(state.password);
+  const [newPhoneNumber, setNewPhoneNumber] = useState(state.phone_number);
+  const [modalVisible, setModalVisible] = useState(!state.is_signed_in);
+
+  const [passwordLength, setPasswordLength] = useState(78 * adjustedWidth);
+  const [phoneLength, setPhoneLength] = useState(99 * adjustedWidth);
+  const [usernameLength, setUsernameLength] = useState(36 * adjustedWidth);
 
   console.log("Debug - Profile Component state:", state);
   console.log("Debug - Profile Component state.uid:", state?.uid);
@@ -244,6 +193,29 @@ export default function EditProfile({ navigation }) {
 
   };
 
+  const handlePhoneUpdate = async () => {
+      if (newPhoneNumber.trim() === '') {
+          Alert.alert('Error', 'PhoneNumber cannot be empty');
+          return;
+      }
+
+      try {
+          await updateState('phone_number', newPhoneNumber);
+          const currentLoginInfo = await getLoginInfo();
+          if (currentLoginInfo) {
+              await saveLoginInfo(state.uid, currentLoginInfo.username, newPhoneNumber);
+          } else {
+              await saveLoginInfo(state.uid, newPhoneNumber, null);
+          }
+
+          const newlogin = await getLoginInfo();
+          console.log('[Profile] Updated useranme and saved to state and secure storage', newlogin);
+      } catch (error) {
+          console.error('[Profile] Error updating PhoneNumber:', error);
+      }
+
+  };
+
 
   const handleContinueAsGuest = async () => {
       try {
@@ -263,7 +235,7 @@ export default function EditProfile({ navigation }) {
       }
   }
 
-  let OriginalImage = require('../../assets/images/notion_avatars/notion_02.png')
+  let OriginalImage = require('../../assets/images/DefaultAvatar.png')
 
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -293,8 +265,13 @@ export default function EditProfile({ navigation }) {
     } else {
       alert('You did not select any image.');
     }
-  };
-  
+  }; 
+  if (state.is_signed_in == false) {
+
+  }
+  else {
+    // insert code below into here later
+  }
   return ( 
     <View
       style={{
@@ -302,18 +279,19 @@ export default function EditProfile({ navigation }) {
           width: width,
           ...globalStyles.container,
           flexDirection: 'column',
+          overflow: 'hidden'
       }}
     >
       <TouchableOpacity
-          style={{flexDirection: 'row'}}
-          onPress={() => navigation.navigate('ProfileView')}
+          style={{flexDirection: 'row', marginLeft: 10 * adjustedWidth}}
+          onPress={() => navigation.goBack()}
       >
-          <Ionicons name="chevron-back" size={24} color="#000000" style={{padding: 15}}/>
+          <Ionicons name="chevron-back-outline" size={28 * adjustedHeight} color="#11403B" style={{padding: 15}}/>
           <Text style= {{
               fontFamily: 'Baloo2-Regular',
               fontSize: 22 * adjustedHeight,
               color: '#000000',
-              marginTop: 10,
+              marginTop: 12 * adjustedHeight,
               marginHorizontal: -8
           }}> 
               Back
@@ -322,22 +300,57 @@ export default function EditProfile({ navigation }) {
 
       <Text style={styles.title}>Edit Your Profile</Text>
 
+      <SafeAreaView style={styles.centeredView}>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+          >
+            <View style={styles.modalView}>
+              <Text style={[styles.text, {marginHorizontal: 0}]}>Guests cannot edit their profile.</Text>
+              <Text style={[styles.text, {marginHorizontal: 0}]}>Please login to access this page.</Text>
+
+              <TouchableOpacity
+                  style={{flexDirection: 'row'}}
+                  onPress={() => {
+                    setModalVisible(false);
+                    navigation.goBack(); 
+                  }}
+              >
+                  <Ionicons name="chevron-back-outline" size={28 * adjustedHeight} color="#11403B" style={{padding: 15}}/>
+                  <Text style= {{
+                      fontFamily: 'Baloo2-Regular',
+                      fontSize: 22 * adjustedHeight,
+                      color: '#000000',
+                      marginTop: 12 * adjustedHeight,
+                      marginHorizontal: -8
+                  }}> 
+                      Back
+                  </Text>
+              </TouchableOpacity>
+          </View>
+        </Modal>
+      </SafeAreaView>
+
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <KeyboardAvoidingView 
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-              style={{flex: 1, alignItems: "center", justifyContent: "center"}}
+              style={{alignItems: "center", justifyContent: "center"}}
           >   
               <ProfilePicture imgSource={OriginalImage} selectedImage={selectedImage} />
               <TouchableOpacity style={styles.upload_button} onPress={() => showImage()}>
-                <Ionicons name='pencil' size={20} color='#515856'/>
-                <Text style={{ fontFamily: 'Baloo2-Regular', color: '#515856', fontSize: 15, margin: 15 }}>Upload New Image</Text>
+                <Image source={require('../../assets/images/pencil.svg')}/>
+                <Text style={{ fontFamily: 'Baloo2-Regular', color: '#515856', fontSize: 15 * adjustedWidth, margin: 7 * adjustedWidth }}>Upload New Image</Text>
               </TouchableOpacity>
 
               <View style={styles.settingsContainer}>
                 <View style={styles.setContainer}>
-                  <Text style={[styles.text, {marginTop: 25 * adjustedHeight}]}>Username</Text>
+                  <Text style={[styles.text, {marginTop: 16 * adjustedHeight}]}>Username</Text>
 
-                  <View style={styles.setButton}>
+                  <View style={[styles.setButton, {height: 36 * adjustedHeight}]}>
                     <TextInput
                         placeholder={defaultUsername}
                         placeholderTextColor='#515856'
@@ -346,14 +359,14 @@ export default function EditProfile({ navigation }) {
                         onContentSizeChange={(event) =>
                           setUsernameLength(event.nativeEvent.contentSize.width)
                         }
-                        style={{ width: usernameLength, fontSize: 15 * adjustedHeight, marginLeft: 10, color: "#515856" }}
+                        style={{fontSize: 15 * adjustedHeight, marginLeft: 10 * adjustedWidth, color: "#515856" }}
                         autoCapitalize="none"
                         autoCorrect={false}
                         onChangeText={setNewUsername}
                         autoFocus
                         onSubmitEditing={handleUsernameUpdate}
                     />
-                    <Ionicons name="pencil" size={20} color="#515856" style={{padding: 10}}/>
+                    <Image style={{marginHorizontal: 8 * adjustedWidth}} source={require('../../assets/images/pencil.svg')}/>
                   </View>
                 </View>
                 <View style={styles.line}></View>
@@ -361,7 +374,7 @@ export default function EditProfile({ navigation }) {
                 <View style={styles.setContainer}>
                   <Text style={styles.text}>Password</Text>
 
-                  <View style={styles.setButton}>
+                  <View style={[styles.setButton, {height: 36 * adjustedHeight}]}>
                     <TextInput 
                         placeholder={defaultPassword}
                         placeholderTextColor='#515856'
@@ -370,14 +383,14 @@ export default function EditProfile({ navigation }) {
                         onContentSizeChange={(event) =>
                           setPasswordLength(event.nativeEvent.contentSize.width)
                         }
-                        style={{ width: passwordLength, fontSize: 15 * adjustedHeight, marginLeft: 10, color: "#515856" }}
+                        style={{fontSize: 15 * adjustedHeight, marginLeft: 10 * adjustedWidth, color: "#515856" }}
                         autoCapitalize="none"
                         autoCorrect={false}
                         onChangeText={setNewPassword}
                         autoFocus
                         onSubmitEditing={handlePasswordUpdate}
                     />
-                    <Ionicons name="pencil" size={20} color="#515856" style={{padding: 10}}/>
+                    <Image style={{marginHorizontal: 8 * adjustedWidth}} source={require('../../assets/images/pencil.svg')}/>
                   </View>
                 </View>
                 <View style={styles.line}></View>
@@ -385,38 +398,42 @@ export default function EditProfile({ navigation }) {
                 <View style={styles.setContainer}>
                   <Text style={styles.text}>Phone Number</Text>
 
-                  <View style={styles.setButton}>
+                  <View style={[styles.setButton, {height: 36 * adjustedHeight}]}>
                     <TextInput 
-                        placeholder={phoneNumber}
+                        placeholder={defaultPhoneNumber}
                         placeholderTextColor='#515856'
-                        onChangeText={(val) => setPhoneNumber(val)}
-                        value={phoneNumber}
+                        value={newPhoneNumber}
                         multiline
                         onContentSizeChange={(event) =>
                           setPhoneLength(event.nativeEvent.contentSize.width)
                         }
-                        style={{ width: phoneLength, fontSize: 15 * adjustedHeight, marginLeft: 10, color: "#515856" }}
+                        style={{fontSize: 15 * adjustedHeight, marginLeft: 10 * adjustedWidth, color: "#515856" }}
                         autoCapitalize="none"
                         autoCorrect={false}
+                        onChangeText={setNewPhoneNumber}
+                        autoFocus
+                        onSubmitEditing={handlePhoneUpdate}
                     />
-                    <Ionicons name="pencil" size={20} color="#515856" style={{padding: 10}}/>
+                    <Image style={{marginHorizontal: 8 * adjustedWidth}} source={require('../../assets/images/pencil.svg')}/>
+                    {/* <Ionicons name="pencil" size={20} color="#515856" style={{padding: 10}}/> */}
                   </View>
                 </View>
                 <View style={styles.line}></View>
 
                 <View style={styles.setContainer}>
                   <Text style={styles.text}>Time Zone</Text>
-
                   <SelectList 
-                      setSelected={(val) => setTimezone(val)} 
-                      data={timezones} 
-                      save="value"
-                      color="#515856"
-                      fontFamily='Baloo2-Regular'
-                      arrowicon={<Ionicons name="chevron-down" size={20} color="#000000" style={{padding: 10}}/>}
-                      defaultOption={timezone}
-                      boxStyles={[styles.setButton, styles.text]}
-                      dropdownStyles={[styles.setButton, styles.text]}
+                    setSelected={(val) => setTimezone(val)} 
+                    data={timezones} 
+                    save="value"
+                    color="#515856"
+                    fontFamily='Baloo2-Regular'
+                    arrowicon={<Ionicons name="chevron-down" size={20} color="#515856" style={{padding: 10, marginRight: -17 * adjustedWidth}}/>}
+                    defaultOption={{key: '9', value: 'GMT-5'}}
+                    boxStyles={[styles.setButton, {height: 36 * adjustedHeight}]}
+                    inputStyles={[styles.button_text, {marginLeft: -7 * adjustedWidth}]}
+                    dropdownStyles={{backgroundColor: "#f6f6f6"}}
+                    dropdownTextStyles={styles.button_text}
                   />
                 </View>
                 <View style={styles.line}></View>
@@ -437,7 +454,7 @@ export default function EditProfile({ navigation }) {
                   <Text style={styles.text}>Other</Text>
                   <Ionicons name="chevron-forward" size={20} color="#11403B" style={{padding: 15}}/>
                 </View>
-                <View style={styles.line}></View>
+                <View style={[styles.line, {borderColor: 'white', borderBottomColor: 'white'}]}></View>
               </View>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
@@ -449,10 +466,11 @@ const styles = StyleSheet.create({
   title: {
     color: '#141917',
     fontFamily: 'Baloo2-Regular',
-    fontSize: 25 * adjustedHeight,
+    fontSize: 24.5 * adjustedHeight,
     justifyContent: 'flex-start',
-    padding: 15,
-    marginBottom: 30 * adjustedHeight
+    marginLeft: 20 * adjustedWidth,
+    marginTop: 11 * adjustedHeight,
+    marginBottom: 17 * adjustedHeight
   },
   upload_button: {
     flexDirection: 'row',
@@ -463,18 +481,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderWidth: 1, 
     borderRadius: 15,
-    marginVertical: 30 * adjustedHeight,
+    marginVertical: 20 * adjustedHeight,
     height: 40 * adjustedHeight,
     width: 172 * adjustedWidth,
   },
   line: {
-    borderColor: '#dcdcdc',
-    borderBottomColor: '#dcdcdc', // Or any color you prefer
+    borderColor: '#eeeeee',
+    borderBottomColor: '#eeeeee', // Or any color you prefer
     borderBottomWidth: StyleSheet.hairlineWidth, // Creates a thin line
     borderWidth: 1,
     borderRadius: 2,
     marginHorizontal: 15 * adjustedWidth,
-    marginVertical: 6 * adjustedHeight, // Adds vertical spacing around the line
+    marginVertical: 2 * adjustedHeight, // Adds vertical spacing around the line
   },
   settingsContainer: {
     backgroundColor: '#fff',
@@ -488,9 +506,9 @@ const styles = StyleSheet.create({
   },
   text: {
     marginLeft: 20 * adjustedWidth,
-    marginVertical: 10 * adjustedHeight,
+    marginVertical: 12 * adjustedHeight,
     color: '#141917', 
-    fontSize: 22 * adjustedHeight, 
+    fontSize: 21 * adjustedHeight, 
     fontFamily: 'Baloo2-Regular',
   },
   setButton: {
@@ -503,7 +521,19 @@ const styles = StyleSheet.create({
     borderWidth: 1, 
     borderRadius: 5,
     marginRight: 20 * adjustedWidth,
-    marginVertical: 10 * adjustedHeight,
-    height: 36 * adjustedHeight
+  },
+  button_text: {
+    fontSize: 15 * adjustedHeight, 
+    color: "#515856" 
+  },
+  modalView: {
+    margin: 20 * adjustedHeight,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35 * adjustedHeight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 5,
+    
   }
 });
