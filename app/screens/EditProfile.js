@@ -266,12 +266,7 @@ export default function EditProfile({ navigation }) {
       alert('You did not select any image.');
     }
   }; 
-  if (state.is_signed_in == false) {
 
-  }
-  else {
-    // insert code below into here later
-  }
   return ( 
     <View
       style={{
@@ -352,8 +347,6 @@ export default function EditProfile({ navigation }) {
 
                   <View style={[styles.setButton, {height: 36 * adjustedHeight}]}>
                     <TextInput
-                        placeholder={defaultUsername}
-                        placeholderTextColor='#515856'
                         value={newUsername}
                         multiline
                         onContentSizeChange={(event) =>
@@ -376,8 +369,6 @@ export default function EditProfile({ navigation }) {
 
                   <View style={[styles.setButton, {height: 36 * adjustedHeight}]}>
                     <TextInput 
-                        placeholder={defaultPassword}
-                        placeholderTextColor='#515856'
                         value={newPassword}
                         multiline
                         onContentSizeChange={(event) =>
@@ -390,7 +381,9 @@ export default function EditProfile({ navigation }) {
                         autoFocus
                         onSubmitEditing={handlePasswordUpdate}
                     />
-                    <Image style={{marginHorizontal: 8 * adjustedWidth}} source={require('../../assets/images/pencil.svg')}/>
+                    <TouchableOpacity onPress={() => handlePasswordUpdate()}>
+                      <Image style={{marginHorizontal: 8 * adjustedWidth}} source={require('../../assets/images/pencil.svg')}/>
+                    </TouchableOpacity>
                   </View>
                 </View>
                 <View style={styles.line}></View>
@@ -414,11 +407,12 @@ export default function EditProfile({ navigation }) {
                         autoFocus
                         onSubmitEditing={handlePhoneUpdate}
                     />
-                    <Image style={{marginHorizontal: 8 * adjustedWidth}} source={require('../../assets/images/pencil.svg')}/>
-                    {/* <Ionicons name="pencil" size={20} color="#515856" style={{padding: 10}}/> */}
+                    <TouchableOpacity onPress={() => handlePhoneUpdate()}>
+                      <Image style={{marginHorizontal: 8 * adjustedWidth}} source={require('../../assets/images/pencil.svg')}/>
+                    </TouchableOpacity>                   
                   </View>
                 </View>
-                <View style={styles.line}></View>
+                {/* <View style={styles.line}></View>
 
                 <View style={styles.setContainer}>
                   <Text style={styles.text}>Time Zone</Text>
@@ -436,9 +430,9 @@ export default function EditProfile({ navigation }) {
                     dropdownTextStyles={styles.button_text}
                   />
                 </View>
-                <View style={styles.line}></View>
+                <View style={styles.line}></View> */}
 
-                <View style={styles.setContainer}>
+                {/* <View style={styles.setContainer}>
                   <Text style={styles.text}>Other</Text>
                   <Ionicons name="chevron-forward" size={20} color="#11403B" style={{padding: 15}}/>
                 </View>
@@ -453,7 +447,7 @@ export default function EditProfile({ navigation }) {
                 <View style={styles.setContainer}>
                   <Text style={styles.text}>Other</Text>
                   <Ionicons name="chevron-forward" size={20} color="#11403B" style={{padding: 15}}/>
-                </View>
+                </View>  */}
                 <View style={[styles.line, {borderColor: 'white', borderBottomColor: 'white'}]}></View>
               </View>
           </KeyboardAvoidingView>

@@ -70,7 +70,7 @@ export default function ProfileView({ navigation }) {
   const joinDay = state.join_date.slice(8)
   const joinYear = state.join_date.slice(0,4)
 
-  let joinString = `Join on ${joinMonth} ${joinDay}, ${joinYear}`
+  let joinString = `Joined on ${joinMonth} ${joinDay}, ${joinYear}`
   if ( state.is_signed_in == false) {
     joinString = ''
   }
