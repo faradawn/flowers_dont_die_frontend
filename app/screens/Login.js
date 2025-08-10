@@ -54,7 +54,10 @@ export default function Login({ navigation }){
                 // Update user context
                 updateState('uid', data.uid);
                 updateState('username', username);
+                updateState('password', password);
+                updateState('phone_number', data.phone_number);
                 updateState('is_signed_in', true);
+                updateState('join_date', data.join_date)
 
                 setUsername('');
                 setPassword('');

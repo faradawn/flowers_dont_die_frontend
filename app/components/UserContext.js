@@ -13,7 +13,7 @@ export const UserProvider = ({ children }) => {
         password: '',        // Added for auth
         phone_number: '',
         join_date: '',
-        is_signed_in: false  // Added for auth status
+        is_signed_in: false,  // Added for auth status
     });
 
     const updateState = (key, value) => {
@@ -48,7 +48,7 @@ export const UserProvider = ({ children }) => {
                 password: userData.password,
                 phone_number: userData.phone_number,
                 join_date: userData.join_date,
-                is_signed_in: true
+                        is_signed_in: true
             }));
 
             // Store user data in AsyncStorage
@@ -58,7 +58,7 @@ export const UserProvider = ({ children }) => {
                 password: userData.password,
                 phone_number: userData.phone_number,
                 join_date: userData.join_date,
-                is_signed_in: true
+                        is_signed_in: true
             }));
         } catch (error) {
             console.error('Error during sign in:', error);
@@ -85,7 +85,7 @@ export const UserProvider = ({ children }) => {
                 password: userData.password,
                 phone_number: userData.phone_number,
                 join_date: dateToday,
-                is_signed_in: true
+                        is_signed_in: true
             }));
 
             // Store user data in AsyncStorage
@@ -95,7 +95,7 @@ export const UserProvider = ({ children }) => {
                 password: userData.password,
                 phone_number: userData.phone_number,
                 join_date: dateToday,
-                is_signed_in: true
+                        is_signed_in: true
             }));
         } catch (error) {
             console.error('Error during sign up:', error);
@@ -121,7 +121,7 @@ export const UserProvider = ({ children }) => {
                 phone_number: '',
                 is_signed_in: false,
                 join_date: '',
-                course_id: ''
+                        course_id: ''
             }));
 
             // Update AsyncStorage with guest data
@@ -132,7 +132,7 @@ export const UserProvider = ({ children }) => {
                 phone_number: '',
                 is_signed_in: false,
                 join_date: '',
-                course_id: ''
+                        course_id: ''
             }));
 
             // Navigate to HomeTab
@@ -152,7 +152,7 @@ export const UserProvider = ({ children }) => {
             password: '',
             phone_number: '',
             join_date: '',
-            is_signed_in: false
+                is_signed_in: false
         }));
     };
 

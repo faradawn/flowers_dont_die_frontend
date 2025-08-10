@@ -29,8 +29,10 @@ import { getLoginInfo } from './components/SecureStoreUtils';
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
+
 // Creating Home Tab Navigator
 const HomeTab = createBottomTabNavigator();
+
 function HomeTabNavigator() {
     return (
         <SafeAreaView style={{ width: width, height: height}}>
@@ -72,12 +74,11 @@ function HomeTabNavigator() {
                 })}
                 initialRouteName='Courses'
             >
-            <HomeTab.Screen name='Courses' component={Courses} options={{tabBarShowLabel: false,}}/>
-            {/* <HomeTab.Screen name='Profile' component={Profile}/> */}
-            <HomeTab.Screen name='ProfileView' component={ProfileView} options={{tabBarShowLabel: false,}}/>
-            <HomeTab.Screen name='EditProfile' component={EditProfile} options={{tabBarShowLabel: false,}}/>
-        </HomeTab.Navigator>
-      </SafeAreaView>
+                <HomeTab.Screen name='Courses' component={Courses} options={{tabBarShowLabel: false,}}/>
+                <HomeTab.Screen name='ProfileView' component={ProfileView} options={{tabBarShowLabel: false,}}/>
+                <HomeTab.Screen name='EditProfile' component={EditProfile} options={{tabBarShowLabel: false,}}/>
+            </HomeTab.Navigator>
+        </SafeAreaView>
     );
 }
 
