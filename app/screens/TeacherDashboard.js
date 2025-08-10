@@ -171,7 +171,7 @@ export default function TeacherDashboard() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`https://backend.faradawn.site:8001/get_course_statistics?course_id=${encodeURIComponent(selectedCourse)}`, {
+            const response = await fetch(`https://backend.codingflora.com:8001/get_course_statistics?course_id=${encodeURIComponent(selectedCourse)}`, {
                 method: 'GET',
                 headers: { "Content-Type": "application/json" },
             });

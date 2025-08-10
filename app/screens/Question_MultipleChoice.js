@@ -186,7 +186,7 @@ export default function Question_Combined({ navigation, route }) {
         formData.append('course_id', state.course_id);
         formData.append('audio_file', file);
         try {
-            const response = await fetch('https://backend.faradawn.site:8001/transcribe_and_grade', {
+            const response = await fetch('https://backend.codingflora.com:8001/transcribe_and_grade', {
                 method: 'POST',
                 headers: { "Content-Type": "multipart/form-data" },
                 body: formData
@@ -230,7 +230,7 @@ export default function Question_Combined({ navigation, route }) {
         }
 
         try {
-            const response = await fetch('https://backend.faradawn.site:8001/submit_text_response', {
+            const response = await fetch('https://backend.codingflora.com:8001/submit_text_response', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
