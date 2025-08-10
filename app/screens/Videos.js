@@ -36,7 +36,7 @@ const Videos = () => {
                 
                 // Fetch both video and questions in parallel
                 const [videoResponse, questionsResponse] = await Promise.all([
-                    fetch('https://backend.faradawn.site:8001/get_video', {
+                    fetch('https://backend.codingflora.com:8001/get_video', {
                         method: 'POST',
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({

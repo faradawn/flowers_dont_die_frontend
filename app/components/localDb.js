@@ -10,7 +10,7 @@ export const STORAGE_KEYS = {
   USER: 'user',
 };
 
-const API_URL = 'https://backend.faradawn.site:8001';
+const API_URL = 'https://backend.codingflora.com:8001';
 const TIMEOUT = 10000; // 10 seconds timeout
 
 const fetchWithTimeout = async (url, options, timeout = TIMEOUT) => {
