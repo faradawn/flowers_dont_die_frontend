@@ -12,6 +12,7 @@ import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext'
 import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
 import { mergeProgress } from '../components/localDb';
+import { doc, updateDoc } from "firebase/firestore";
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -82,21 +83,49 @@ export default function EditProfile({ navigation }) {
           Alert.alert('Error', 'Username cannot be empty');
           return;
       }
-
       try {
-          await updateState('username', newUsername);
-          const currentLoginInfo = await getLoginInfo();
-          if (currentLoginInfo) {
-              await saveLoginInfo(state.uid, newUsername, currentLoginInfo.password);
+          const response = await fetch(
+              'https://backend.codingflora.com:8001/update_user', {
+                  method: 'POST',
+                  headers: {
+                      "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                      username: newUsername,
+                      password: state.password,
+                  }),
+              }
+          )
+          const data = await response.json();
+          console.log("Received login data: ", data);
+          setLoginData(data);
+          if(data.status == 'success') {
+              setInfoCorrect(true);
+              // Update user context
+              updateState('username', newUsername);
+              await saveLoginInfo(data.uid, newUsername, state.password);
+              const newlogin = await getLoginInfo();
+              console.log('[Profile] Updated username and saved to state and secure storage', newlogin);
           } else {
-              await saveLoginInfo(state.uid, newUsername, null);
+              setInfoCorrect(false)
           }
-
-          const newlogin = await getLoginInfo();
-          console.log('[Profile] Updated useranme and saved to state and secure storage', newlogin);
-      } catch (error) {
+      } catch(error) {
           console.error('[Profile] Error updating username:', error);
       }
+      // try {
+      //     await updateState('username', newUsername);
+      //     const currentLoginInfo = await getLoginInfo();
+      //     if (currentLoginInfo) {
+      //         await saveLoginInfo(state.uid, newUsername, currentLoginInfo.password);
+      //     } else {
+      //         await saveLoginInfo(state.uid, newUsername, null);
+      //     }
+
+      //     const newlogin = await getLoginInfo();
+      //     console.log('[Profile] Updated username and saved to state and secure storage', newlogin);
+      // } catch (error) {
+      //     console.error('[Profile] Error updating username:', error);
+      // }
   };
 
   const handlePasswordUpdate = async () => {
@@ -104,43 +133,62 @@ export default function EditProfile({ navigation }) {
           Alert.alert('Error', 'Password cannot be empty');
           return;
       }
-
       try {
-          await updateState('password', newPassword);
-          const currentLoginInfo = await getLoginInfo();
-          if (currentLoginInfo) {
-              await saveLoginInfo(state.uid, currentLoginInfo.username, newPassword);
+          const response = await fetch(
+              'https://backend.codingflora.com:8001/update_user', {
+                  method: 'POST',
+                  headers: {
+                      "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                      username: state.username,
+                      password: newPassword,
+                  }),
+              }
+          )
+          const data = await response.json();
+          console.log("Received login data: ", data);
+          setLoginData(data);
+          if(data.status == 'success') {
+              setInfoCorrect(true);
+              // Update user context
+              updateState('password', newPassword);
+              await saveLoginInfo(data.uid, state.username, newPassword);
+              const newlogin = await getLoginInfo();
+              console.log('[Profile] Updated password and saved to state and secure storage', newlogin);
           } else {
-              await saveLoginInfo(state.uid, newPassword, null);
+              setInfoCorrect(false)
           }
-
-          const newlogin = await getLoginInfo();
-          console.log('[Profile] Updated useranme and saved to state and secure storage', newlogin);
-      } catch (error) {
+      } catch(error) {
           console.error('[Profile] Error updating password:', error);
       }
+      // try {
+      //     await updateState('password', newPassword);
+      //     const currentLoginInfo = await getLoginInfo();
+      //     if (currentLoginInfo) {
+      //         await saveLoginInfo(state.uid, currentLoginInfo.username, newPassword);
+      //     } else {
+      //         await saveLoginInfo(state.uid, currentLoginInfo.username, null);
+      //     }
+
+      //     const newlogin = await getLoginInfo();
+      //     console.log('[Profile] Updated username and saved to state and secure storage', newlogin);
+      // } catch (error) {
+      //     console.error('[Profile] Error updating password:', error);
+      // }
 
   };
 
+  //Not supported by backend yet for git conflict issues.
   const handlePhoneUpdate = async () => {
       if (newPhoneNumber.trim() === '') {
           Alert.alert('Error', 'PhoneNumber cannot be empty');
           return;
       }
-
       try {
           await updateState('phone_number', newPhoneNumber);
-          const currentLoginInfo = await getLoginInfo();
-          if (currentLoginInfo) {
-              await saveLoginInfo(state.uid, currentLoginInfo.username, newPhoneNumber);
-          } else {
-              await saveLoginInfo(state.uid, newPhoneNumber, null);
-          }
-
-          const newlogin = await getLoginInfo();
-          console.log('[Profile] Updated useranme and saved to state and secure storage', newlogin);
       } catch (error) {
-          console.error('[Profile] Error updating PhoneNumber:', error);
+          console.error('[Profile] Error updating Phone Number:', error);
       }
 
   };
