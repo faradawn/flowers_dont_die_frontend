@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { 
     View, 
     Text, 
@@ -15,6 +16,8 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useUser } from '../components/UserContext';
 import { LineChart } from 'react-native-chart-kit';
+import initialWeekly from '../../assets/data/initialWeekly.json';
+import initialMonthly from '../../assets/data/initialMonthly.json';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -63,50 +66,177 @@ const mockData = {
 
 export default function Dashboard({ navigation }) {
     const { state } = useUser();
+    const [chartMode, setChartMode] = useState('Problems');
     const [timeFrame, setTimeFrame] = useState('Monthly');
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const [dropdownLayout, setDropdownLayout] = useState({
         x: 0, y: 0, width: 0, height: 0, pageX: 0, pageY: 0
     });
     const dropdownRef = useRef(null);
-    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+    const generateMonthlyLabels = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const daysInMonth = new Date(year, month, 0).getDate();
+        
+        return Array.from({length: daysInMonth}, (_, i) => {
+            const day = i + 1;
+            return day % 10 === 0 || day === 1 ? day.toString() : '';
+        });
+    };
+    const monthDays = generateMonthlyLabels();
+
+    const generateWeeklyLabels = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        
+        const firstDay = new Date(year, month, 1);
+        const firstDayOfWeek = firstDay.getDay();
+        
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const totalDays = daysInMonth + firstDayOfWeek;
+        const numberOfWeeks = Math.ceil(totalDays / 7);
+        
+        return Array.from({ length: numberOfWeeks }, (_, i) => `W${i + 1}`);
+    };
+    const weeks = generateWeeklyLabels();
+
+    const weekly = state.weekly ?? initialWeekly;
+    const monthly = state.monthly ?? initialMonthly;
     
-    // Get the current data based on timeFrame
+    console.log("WEEKLY: ", weekly);
+    console.log("MONTHLY: ", monthly);
+    
     const getStatsData = () => {
-        return timeFrame === 'Monthly' ? mockData.monthlyStats : mockData.weeklyStats;
+        return timeFrame === 'Monthly' ? [monthly.monthly_summary.this_month.problems_completed, monthly.monthly_summary.this_month.average_accuracy]
+         : [weekly.weekly_summary.this_week.problems_completed, weekly.weekly_summary.this_week.average_accuracy];
     };
     
     const getProgressData = () => {
         if (timeFrame === 'Weekly') {
             return {
                 labels: days,
-                current: mockData.weeklyProgress.thisWeek,
-                previous: mockData.weeklyProgress.lastWeek,
+                current: (weekly.weekly_summary.this_week.daily_stats ?? []).map(
+                    day => day?.problems_completed ?? 0
+                ),
+                previous: (weekly.weekly_summary.last_week.daily_stats ?? []).map(
+                    day => day?.problems_completed ?? 0
+                ),
+                currentLabel: 'This week',
+                previousLabel: 'Last week'
+            };
+        } else {
+            return {
+                labels: monthDays,
+                current: (monthly.monthly_summary.this_month.daily_problem_counts ?? []).map(
+                    day => day?.count ?? 0
+                ),
+                previous: (monthly.monthly_summary.last_month.daily_problem_counts ?? []).map(
+                    day => day?.count ?? 0
+                ),
+                currentLabel: 'This month',
+                previousLabel: 'Last month'
+            };
+        }
+    };
+
+    const getCorrectnessData = () => {
+        if (timeFrame === 'Weekly') {
+            return {
+                labels: days,
+                current: (weekly.weekly_summary.this_week.daily_stats ?? []).map(
+                    day => day?.accuracy_rate * 100 ?? 0
+                ),
+                previous: (weekly.weekly_summary.last_week.daily_stats ?? []).map(
+                    day => day?.accuracy_rate * 100 ?? 0
+                ),
                 currentLabel: 'This week',
                 previousLabel: 'Last week'
             };
         } else {
             return {
                 labels: weeks,
-                current: mockData.monthlyProgress.thisMonth,
-                previous: mockData.monthlyProgress.lastMonth,
+                current: (monthly.monthly_summary.this_month.weekly_accuracy_rates ?? []).map(
+                    week => week?.accuracy_rate * 100 ?? 0
+                ),
+                previous: (monthly.monthly_summary.last_month.weekly_accuracy_rates ?? []).map(
+                    week => week?.accuracy_rate * 100 ?? 0
+                ),
                 currentLabel: 'This month',
                 previousLabel: 'Last month'
             };
         }
     };
-    
+
+    const difficultyColors = {
+        Easy: '#4B7C7B',
+        Medium: '#58A6A8',
+        Hard: '#64C0C1',
+    };
+      
+    const difficultyOrder = ['Easy', 'Medium', 'Hard'];
+
+    const typeColors = {
+        R: 55,
+        G: 94,
+        B: 93
+    };
+
     const getDifficultyData = () => {
-        return timeFrame === 'Weekly' ? mockData.difficultyBreakdown : mockData.monthlyDifficultyBreakdown;
+      const rawData = timeFrame === 'Weekly' ? weekly.difficulty_breakdown : monthly.difficulty_breakdown;
+      const rawDataAccuracy = timeFrame === 'Weekly' ? weekly.difficulty_accuracy : monthly.difficulty_accuracy;
+    
+      if (!rawData || !rawDataAccuracy || typeof rawData !== 'object' || typeof rawDataAccuracy != 'object') return [];
+    
+      const total = Object.values(rawData).reduce((acc, val) => acc + val, 0);
+    
+      return difficultyOrder
+        .filter(type => rawData.hasOwnProperty(type))
+        .map(type => ({
+          type,
+          completed: rawData[type],
+          total,
+          correctness: rawDataAccuracy[type] * 100,
+          color: difficultyColors[type],
+        }));
     };
     
     const getQuestionTypeData = () => {
-        return timeFrame === 'Weekly' ? mockData.questionTypeBreakdown : mockData.monthlyQuestionTypeBreakdown;
+        const rawData = timeFrame === 'Weekly' ? weekly.type_breakdown : monthly.type_breakdown;
+        const rawDataAccuracy = timeFrame === 'Weekly' ? weekly.type_accuracy : monthly.type_accuracy;
+      
+        if (!rawData || !rawDataAccuracy || typeof rawData !== 'object' || typeof rawDataAccuracy != 'object') return [];
+      
+        const total = Object.values(rawData).reduce((acc, val) => acc + val, 0);
+      
+        return Object.keys(rawData).sort((a, b) => rawData[b] - rawData[a])
+        .map((type, index) => {
+            let rValue = typeColors['R'];
+            let gValue = typeColors['G'];
+            let bValue = typeColors['B'];
+            
+            for (let i = 0; i <= index; i++) {
+                rValue += 30 * Math.pow(2/3, i);
+                gValue += 45 * Math.pow(2/3, i);
+                bValue += 45 * Math.pow(2/3, i);
+            }
+            
+            return {
+                type,
+                count: rawData[type],
+                percentage: total ? (rawData[type] / total) * 100 : 0,
+                correctness: rawDataAccuracy[type] * 100, 
+                color: `rgba(${Math.round(rValue)}, ${Math.round(gValue)}, ${Math.round(bValue)}, 1)`,
+            };
+        });
     };
     
     // Calculate the maximum value for the chart
-    const progressData = getProgressData();
+    const progressData = chartMode === 'Problems' ? getProgressData() : getCorrectnessData();
     const maxValue = Math.max(
         ...progressData.current,
         ...progressData.previous
@@ -151,7 +281,7 @@ export default function Dashboard({ navigation }) {
                         <View style={styles.statCard}>
                             <View style={styles.iconTextGroup}>
                                 <Ionicons name="document-text-outline" size={24} color="#FF6B6B" />
-                                <Text style={styles.statNumber}>{getStatsData().problemsFinished}</Text>
+                                <Text style={styles.statNumber}>{getStatsData()[0]}</Text>
                             </View>
                             <Text style={styles.statLabel}>problems finished</Text>
                         </View>
@@ -159,7 +289,7 @@ export default function Dashboard({ navigation }) {
                         <View style={styles.statCard}>
                             <View style={styles.iconTextGroup}>
                                 <Ionicons name="checkmark-circle-outline" size={24} color="#4b7c7b" />
-                                <Text style={styles.statNumber}>{getStatsData().correctnessRate}%</Text>
+                                <Text style={styles.statNumber}>{(getStatsData()[1] * 100).toFixed(1)}%</Text>
                             </View>
                             <Text style={styles.statLabel}>correctness rate</Text>
                         </View>
@@ -168,8 +298,22 @@ export default function Dashboard({ navigation }) {
                     {/* Progress Chart */}
                     <View style={styles.chartContainer}>
                         <View style={styles.chartLabels}>
-                            <Text style={styles.questionCompletedChartTitle}>Questions completed</Text>
-                            <Text style={styles.correctnessChartTitle}>% of correctness</Text>
+                            <TouchableOpacity onPress={() => setChartMode('Problems')}>
+                                <Text style={[
+                                    styles.questionCompletedChartTitle,
+                                    chartMode === 'Problems' ? styles.activeChartLabel : styles.inactiveChartLabel
+                                ]}>
+                                    Questions completed
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setChartMode('Correctness')}>
+                                <Text style={[
+                                    styles.correctnessChartTitle,
+                                    chartMode === 'Correctness' ? styles.activeChartLabel : styles.inactiveChartLabel
+                                ]}>
+                                    % of correctness
+                                </Text>
+                            </TouchableOpacity>
                         </View>
                         
                         <View style={styles.chartLegend}>
@@ -178,8 +322,8 @@ export default function Dashboard({ navigation }) {
                                 <Text style={styles.legendText}>{progressData.currentLabel}</Text>
                             </View>
                             <View style={styles.legendItem}>
-                                <View style={[styles.legendLine, {backgroundColor: '#ccc', borderStyle: 'dashed'}]} />
-                                <Text style={styles.legendText}>{progressData.previousLabel}</Text>
+                            <View style={[styles.legendLine, {backgroundColor: '#ccc'}]} />
+                            <Text style={styles.legendText}>{progressData.previousLabel}</Text>
                             </View>
                         </View>
                         
@@ -188,22 +332,24 @@ export default function Dashboard({ navigation }) {
                                 data={{
                                     labels: progressData.labels,
                                     datasets: [
-                                        {
-                                            data: progressData.current,
-                                            color: (opacity = 1) => `rgba(51, 51, 51, ${opacity})`,
-                                            strokeWidth: 2
-                                        },
+                                        // transparent line to update scale when correctness is selected
+                                        { data: [chartMode === 'Correctness' ? 100 : 0, 0], color: () => 'transparent', strokeWidth: 0, withDots: false, },
                                         {
                                             data: progressData.previous,
                                             color: (opacity = 1) => `rgba(204, 204, 204, ${opacity})`,
                                             strokeWidth: 2,
                                             strokeDashArray: [5, 5]
+                                        },
+                                        {
+                                            data: progressData.current,
+                                            color: (opacity = 1) => `rgba(51, 51, 51, ${opacity})`,
+                                            strokeWidth: 2
                                         }
                                     ],
                                 }}
                                 width={width - 40}
                                 height={220}
-                                yAxisSuffix=""
+                                yAxisSuffix={chartMode === 'Correctness' ? '%' : ''}
                                 withShadow={false}
                                 withDots={true}
                                 withInnerLines={true}
@@ -226,10 +372,9 @@ export default function Dashboard({ navigation }) {
                                         stroke: '#E0E0E0',
                                     },
                                     propsForDots: {
-                                        r: '4',
+                                        r: timeFrame === 'Weekly' || chartMode === 'Correctness' ? '4' : '2',
                                     }
                                 }}
-                                bezier
                                 style={{
                                     marginVertical: 8,
                                     borderRadius: 16,
@@ -252,7 +397,7 @@ export default function Dashboard({ navigation }) {
                                 style={[
                                     styles.progressBarSegment, 
                                     { 
-                                        flex: item.completed / item.total, 
+                                        flex: (item.total && item.total !== 0) ? item.completed / item.total : 0, 
                                         backgroundColor: item.color 
                                     }
                                 ]} 
@@ -263,7 +408,7 @@ export default function Dashboard({ navigation }) {
                     <View style={styles.breakdownTable}>
                         <View style={styles.tableHeaderRow}>
                             <Text style={styles.tableHeaderLeft}>Type</Text>
-                            <Text style={styles.tableCompletedHeader}>Completed Number</Text>
+                            <Text style={styles.tableHeaderRight}>{(chartMode === 'Problems') ? 'Completed Number' : 'Accuracy Rate'}</Text>
                         </View>
                         
                         {getDifficultyData().map((item, index) => (
@@ -272,7 +417,7 @@ export default function Dashboard({ navigation }) {
                                     <View style={[styles.colorDot, { backgroundColor: item.color }]} />
                                     <Text style={styles.typeLabel}>{item.type}</Text>
                                 </View>
-                                <Text style={styles.completedValue}>{item.completed}/{item.total}</Text>
+                                <Text style={styles.completedValue}>{chartMode === 'Problems' ? item.completed : item.correctness.toFixed(1) + '%'}</Text>
                             </View>
                         ))}
                     </View>
@@ -300,8 +445,7 @@ export default function Dashboard({ navigation }) {
                     <View style={styles.breakdownTable}>
                         <View style={styles.tableHeaderRow}>
                             <Text style={styles.tableHeaderLeft}>Type</Text>
-                            <Text style={styles.tablePercentageHeader}>Percentage</Text>
-                            <Text style={styles.tableCorrectnessHeader}>Correctness</Text>
+                            <Text style={styles.tableHeaderRight}>{(chartMode === 'Problems') ? 'Completed Number' : 'Accuracy Rate'}</Text>
                         </View>
                         
                         {getQuestionTypeData().map((item, index) => (
@@ -310,8 +454,7 @@ export default function Dashboard({ navigation }) {
                                     <View style={[styles.colorDot, { backgroundColor: item.color }]} />
                                     <Text style={styles.typeLabel}>{item.type}</Text>
                                 </View>
-                                <Text style={styles.percentageValue}>{item.percentage}%</Text>
-                                <Text style={styles.correctnessValue}>{item.correctness}%</Text>
+                                <Text style={styles.completedValue}>{chartMode === 'Problems' ? item.count : item.correctness.toFixed(1) + '%'}</Text>
                             </View>
                         ))}
                     </View>
@@ -461,7 +604,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Nunito',
         fontSize: 14,
         fontStyle: 'normal',
-        fontWeight: '700',
         lineHeight: 20,
         letterSpacing: 0.21,
     },
@@ -469,10 +611,16 @@ const styles = StyleSheet.create({
         fontFamily: 'Nunito',
         fontSize: 14,
         fontStyle: 'normal',
-        fontWeight: '400',
         lineHeight: 20,
         letterSpacing: 0.21,
         color: '#000000',
+    },
+    activeChartLabel: {
+        fontWeight: '700',
+        textDecorationLine: 'underline',
+    },
+    inactiveChartLabel: {
+        fontWeight: '400',
     },
     chartLegend: {
         flexDirection: 'row',
@@ -531,22 +679,7 @@ const styles = StyleSheet.create({
         width: '40%',
         textAlign: 'left',
     },
-    tablePercentageHeader: {
-        fontFamily: 'Baloo2-Bold',
-        fontSize: 14,
-        color: '#333',
-        width: '30%',
-        textAlign: 'left',
-        paddingLeft: width * 0.05,
-    },
-    tableCorrectnessHeader: {
-        fontFamily: 'Baloo2-Bold',
-        fontSize: 14,
-        color: '#333',
-        width: '30%',
-        textAlign: 'right',
-    },
-    tableCompletedHeader: {
+    tableHeaderRight: {
         fontFamily: 'Baloo2-Bold',
         fontSize: 14,
         color: '#333',

@@ -1,0 +1,28 @@
+{
+    "difficulty_accuracy": {
+      "Easy": 0,
+      "Hard": 0,
+      "Medium": 0
+    },
+    "difficulty_breakdown": {
+      "Easy": 0,
+      "Hard": 0,
+      "Medium": 0
+    },
+    "type_accuracy": {},
+    "type_breakdown": {},
+    "monthly_summary": {
+      "last_month": {
+        "daily_problem_counts": [],
+        "weekly_accuracy_rates": [],
+        "problems_completed": 0,
+        "average_accuracy": 0
+      },
+      "this_month": {
+        "daily_problem_counts": [],
+        "weekly_accuracy_rates": [],
+        "problems_completed": 0,
+        "average_accuracy": 0
+      }
+    }
+}
