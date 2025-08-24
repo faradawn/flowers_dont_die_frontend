@@ -19,6 +19,7 @@ import Assignments from './screens/Assignments';
 import Question_Daily from './screens/Question_Daily';
 import Video from './screens/Videos';
 import TeacherDashboard from './screens/TeacherDashboard';
+import Dashboard from './screens/Dashboard';
 
 import { UserProvider, useUser } from './components/UserContext';
 import { getLoginInfo } from './components/SecureStoreUtils';
@@ -39,6 +40,8 @@ function HomeTabNavigator() {
 
                     if (route.name === 'Courses') {
                         iconName = focused ? 'home' : 'home-outline';
+                    } else if (route.name === 'Dashboard') {
+                        iconName = focused ? 'apps' : 'apps-outline';
                     } else if (route.name === 'Profile') {
                         iconName = focused ? 'settings' : 'settings-outline';
                     }
@@ -67,6 +70,7 @@ function HomeTabNavigator() {
                 initialRouteName='Courses'
             >
             <HomeTab.Screen name='Courses' component={Courses}/>
+            <HomeTab.Screen name='Dashboard' component={Dashboard}/>
             <HomeTab.Screen name='Profile' component={Profile}/>
         </HomeTab.Navigator>
       </SafeAreaView>

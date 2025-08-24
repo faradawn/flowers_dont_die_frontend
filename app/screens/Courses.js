@@ -10,7 +10,7 @@ import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
 import { getLoginInfo, saveLoginInfo } from '../components/SecureStoreUtils';
 import { getTopics } from '../components/localDb';
-import { getCourses, initializeLocalDatabase } from '../components/localDb';
+import { getCourses, initializeLocalDatabase, getWeekly, getMonthly } from '../components/localDb';
 
 import { myImages } from '../globalStyles/globalStyles';
 
@@ -132,6 +132,26 @@ export default function Courses({ navigation, route }) {
                 setGreeting(getGreeting());
             }
 
+            async function fetchData() {
+                const today = new Date().toISOString().split("T")[0];
+    
+                try {
+                    const weekly = await getWeekly(state.uid, today);
+                    updateState("weekly", weekly);
+                    console.log("[Weekly] Received from localDb:", weekly);
+                } catch (err) {
+                    console.error("[Weekly] Error:", err);
+                }
+    
+                try {
+                    const monthly = await getMonthly(state.uid, today);
+                    updateState("monthly", monthly);
+                    console.log("[Monthly] Received from localDb:", monthly);
+                } catch (err) {
+                    console.error("[Monthly] Error:", err);
+                }
+            }
+
             async function fetchCourses() {
                 if (!state.uid) return;
                 try {
@@ -169,7 +189,13 @@ export default function Courses({ navigation, route }) {
                 }
             }
 
-            checkAndSetupUser().then(() => fetchCourses());
+
+            checkAndSetupUser().then(() => {
+                if (state.uid) {
+                    fetchData();
+                }
+                fetchCourses()
+            });
         }, [state.uid, state.username, route.params])
     );
 

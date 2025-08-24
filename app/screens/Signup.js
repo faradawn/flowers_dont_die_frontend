@@ -44,7 +44,7 @@ export default function SignUp({ navigation, route }) {
 
         try {
             const response = await fetch(
-				'https://backend.faradawn.site:8001/create_user', {
+				'https://backend.codingflora.com:8001/create_user', {
 					method: 'POST',
 					headers: {
 					    "Content-Type": "application/json",

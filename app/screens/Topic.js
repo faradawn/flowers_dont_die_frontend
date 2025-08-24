@@ -195,7 +195,7 @@ const Videos = () => {
     useEffect(() => {
         const fetchVideo = async () => {
             try {
-                const response = await fetch('https://backend.faradawn.site:8001/get_video', {
+                const response = await fetch('https://backend.codingflora.com:8001/get_video', {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
