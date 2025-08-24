@@ -11,6 +11,7 @@ import { useUser } from '../components/UserContext';
 import { getAssignments } from '../components/localDb'; // Import the local getAssignments function
 
 import { Ionicons } from '@expo/vector-icons';
+import { myImages } from '../globalStyles/globalStyles';
 
 import TopBar from '../components/TopBar';
 
@@ -21,6 +22,7 @@ export default function Topics({ navigation, route }){
     const [isLoading, setIsLoading] = useState(true);
     const [assignments, setAssignments] = useState([]);
     const { state } = useUser();
+    const [currentQuestion, setCurrentQuestion] = useState(-1);
 
     const topic = route.params?.topic;
 
@@ -40,10 +42,6 @@ export default function Topics({ navigation, route }){
             setIsLoading(false);
         }
     }
-
-    const progress = assignments.num_total_questions > 0 
-        ? (assignments.num_completed_questions / assignments.num_total_questions)
-        : 0;
 
     useFocusEffect(
         useCallback(() => {
@@ -72,6 +70,18 @@ export default function Topics({ navigation, route }){
         });
     }
 
+    // update current question
+    useEffect(() => {
+        if (assignments?.question_arr?.length > 0) {
+            for (let i = 0; i < assignments.question_arr.length; i++) {
+                if (assignments.question_arr[i].score < 3) {
+                    setCurrentQuestion(i);
+                    break;
+                }
+            }
+        }
+    }, [assignments]);
+
     return (
         <View
             style={{ 
@@ -90,7 +100,7 @@ export default function Topics({ navigation, route }){
                             justifyContent: 'center',
                         }}
                     >
-                        <TopBar navigateTo={'Topics'}/>
+                        <TopBar navigateTo={'Courses'} params={{ course_id: state.course_id }}/>
                     </View>
 
                     <View
@@ -103,53 +113,27 @@ export default function Topics({ navigation, route }){
                             style={{
                                 flex: 1,
                                 alignItems: 'center',
-                                justifyContent: 'center',
+                                justifyContent: 'start',
                             }}
                         >
                             <View
                                 style={{
                                     height: height * 0.06,
                                     width: width,
-                                    alignItems: 'center',
+                                    alignItems: 'flex-start',
                                     justifyContent: 'center',
+                                    paddingHorizontal: 30,
                                 }}
                             >
                                 <Text
                                     style={{
-                                        fontFamily: 'Baloo2-Bold',
-                                        fontSize: 22,
+                                        fontFamily: 'Nunito-Regular',
+                                        fontSize: 20,
+                                        lineHeight: 22,
                                     }}
                                 >
-                                    Nice progress, 
-                                    <Text
-                                        style={{
-                                            color: '#26C250'
-                                        }}
-                                    > {state.username}!
-                                    </Text>
+                                    Choose a problem
                                 </Text>
-                            </View>
-                            
-                            {/* progress bar */}
-                            <View
-                                style={{
-                                    height: 12,
-                                    width: 0.7 * width,
-                                    backgroundColor: 'white',
-                                    borderColor: '#004643',
-                                    borderWidth: 1,
-                                    borderRadius: 5,
-                                }}
-                            >
-                                <View
-                                    style={{
-                                        height: 10,
-                                        width: Math.max(0, Math.min(0.7 * width * progress, 0.7 * width)),
-                                        borderRadius: 5,
-                                        backgroundColor: '#26C250',
-                                    }}
-                                > 
-                                </View>
                             </View>
                         </View>
 
@@ -164,17 +148,26 @@ export default function Topics({ navigation, route }){
                             }}
                         >
                             <FlatList
-                                style={{ flex: 1 }}
+                                style={{ 
+                                    flex: 1,
+                                    position: 'relative',
+                                    top: -70,
+                                }}
                                 data={assignments.question_arr}
                                 keyExtractor={(item) => item.question_id}
                                 showsVerticalScrollIndicator={false}
                                 renderItem={({ item, index }) => (
-                                    <Card 
+                                    <Card
                                         index={index}
-                                        id={item.question_id}
-                                        num_stars={item.score}
                                         title={item.question_title} 
+                                        id={item.question_id}
+                                        height={height * 0.1} 
+                                        width={width * 0.9} 
+                                        num_stars={item.score}
+                                        borderWidth={index === currentQuestion ? 0.7 : 0}
                                         pressHandler={questionPress}
+                                        item={item}
+                                        imageSource={myImages.flowerIcons[(index % 9) + 1]}
                                     />
                                 )}
                             />

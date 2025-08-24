@@ -1,76 +1,145 @@
 import React from 'react';
-import { Text, View, TouchableOpacity, Dimensions} from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { Text, View, Image, ScrollView, TouchableOpacity } from 'react-native';
 
-const height = Dimensions.get('screen').height;
-const width = Dimensions.get('screen').width;
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { AntDesign } from '@expo/vector-icons';
 
-export default function Card({ index, id, title, num_stars, pressHandler }) {
-    const renderStars = () => {
-        if (!num_stars || num_stars <= 0) {
-          return null;
-        }
-        return [...Array(num_stars)].map((_, index) => (
-          <FontAwesome key={index} name="star" size={18} color="#26C250" style={{ marginLeft: 2 }} />
-        ));
-      };
-
+const ProgressIndicator = ({ totalQuestions, numsDone }) => {
+  const stars = [];
+  for (let i = 0; i < totalQuestions; i++) {
+    if (i < numsDone) {
+      stars.push(<AntDesign key={i} name={'star'} size={16} color={'#54A09F'} style={{paddingRight: 3}}/>);
+    }
+    else {
+      stars.push(<AntDesign key={i} name={'staro'} size={16} color={'#8C9391'} style={{paddingRight: 3}}/>)
+    }
+  }
+  
   return (
-    <TouchableOpacity 
-      style={{
-        height: height * 0.08,
-        width: width * 0.8,
-        backgroundColor: 'white',
-        borderRadius: 10,
-        marginVertical: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-        paddingTop: 12,
-        paddingHorizontal: 15,
-      }} 
-      onPress={() => pressHandler(id, index)}
-    >
-
-        {/* Top problem number */}
-      <View style={{
-        marginBottom: 5
-        
-      }}>
-        <Text style={{
-          fontSize: 12,
-          color: '#666',
-        }}>Problem {index}</Text>
-      </View>
-
-        {/* Bottom left and right view */}
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        
-      }}>
-        {/* left text */}
-        <Text 
-          style={{
-            fontSize: 16,
-            fontWeight: 'bold',
-            flex: 1,
-            marginRight: 8,
-          }} 
-          numberOfLines={1} 
-          ellipsizeMode="tail"
-        >
-          {title}
-        </Text>
-
-        {/* right stars */}
-        <View style={{ flexDirection: 'row' }}>
-          {renderStars()}
-        </View>
-      </View>
-    </TouchableOpacity>
+    <View style={{ flexDirection: 'row' }}>
+      {stars}
+    </View>
   );
+};
+
+export default function Card({ index, title, id, height, width, borderWidth, pressHandler, item, imageSource, logoUrl, }){
+    return (
+        <TouchableOpacity
+            style={{
+                height: height,
+                width: width,
+                marginVertical: height * 0.1,
+
+                backgroundColor: 'white',
+                borderColor: '#4B7C7B',
+                borderWidth: borderWidth,
+                borderRadius: 10,
+                shadowColor: '#4B7C7B',
+                shadowOffset: { height: 1, width: 1 },
+                shadowOpacity: 0.8 * borderWidth,
+                shadowRadius: 5,
+                elevation: 2, // for Android shadow
+
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+            onPress={() => pressHandler(id, index)}
+        >
+            {/* Image At the Front */}
+            <View
+              style={{
+                  width: width * 0.11,
+                  height: width * 0.11,
+                  borderRadius: width * 0.11,
+                  backgroundColor: '#54A09F1A',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginLeft: 20
+              }}
+            >
+              <Image
+                  style={{
+                      height: '150%', // Image fills the circle
+                      resizeMode: 'contain',
+                      position: 'absolute',
+                  }}
+                  source={logoUrl ? { uri: logoUrl } : typeof imageSource === 'string' ? { uri: imageSource } : imageSource}
+                  defaultSource={typeof imageSource === 'string' ? { uri: imageSource } : imageSource}
+              />
+            </View>
+
+            {/* Bulk Info of Card */}
+            <View
+                style={{
+                    height: height,
+                    width: width * 0.45,
+
+                    marginLeft: 14,
+
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                }}
+            >
+                {/* Label Text for Question */}
+                <Text 
+                    style={{ 
+                        fontFamily: 'Nunito-Regular',
+                        fontSize: 18,
+                        lineHeight: 20,
+                    }}
+                    numberOfLines={2} 
+                    adjustsFontSizeToFit
+                >
+                    { title }
+                </Text>                
+                <ProgressIndicator totalQuestions={3} numsDone={item.score}/>
+            </View>
+
+            {/* End Icon */}
+            <View style = {{ 
+              height: height,
+              borderRadius: 10,
+              right: 3,
+              overflow: 'hidden', 
+              alignItems: 'flex-end',
+            }}>
+              <View
+                  style={{
+                      height: height * 1.5,
+                      width: height * 1.5,
+                      borderRadius: height * 1.5,
+                      backgroundColor: '#4B7C7B',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      right: -38,
+                      top: -19,
+                      flexDirection: 'row',
+                  }}
+              >
+                <Text
+                  style={{
+                    position: 'absolute',
+                    right: item.score !== 3 ? (item.score > 0 ? 54 : 67) : 63,
+                    top: 45,
+                    color: '#FAFFFD',
+                    fontFamily: 'Nunito-Regular',
+                    fontSize: 14,
+                  }}>
+                  { item.score !== 3 ? (item.score > 0 ? 'Continue' : 'Start') : 'Done!' }
+                </Text>
+                <Ionicons 
+                  size={22}
+                  name={ item.score !== 3 ? 'arrow-forward-outline' : 'checkmark-outline' }
+                  style={{
+                    position: 'absolute',
+                    right: 70,
+                    top: 65,
+                    color: '#FAFFFD',
+                  }}
+                />
+              </View>
+            </View>
+        </TouchableOpacity>
+    );
 }
