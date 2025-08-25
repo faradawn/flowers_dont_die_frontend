@@ -151,12 +151,12 @@ export default function ProfileView({ navigation }) {
                     {
                     if ( direction == 'left') return (
                     <View style={styles.arrow}>
-                      <Ionicons name='chevron-back' size={30} color='#515856'/>
+                      <Ionicons name='chevron-back' size={30} color='#515856' style={{marginLeft: -0.004 * width}}/>
                     </View>
                   );
                     if ( direction == 'right') return (
                     <View style={styles.arrow}>
-                      <Ionicons name='chevron-forward' size={30} color='#515856'/>
+                      <Ionicons name='chevron-forward' size={30} color='#515856' style={{marginRight: -0.004 * width}}/>
                     </View>                  );
                     }
                   }
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   achieveContainer: {
     flex: 1,
     flexDirection: 'row',
-    //marginBottom: -0.02 * height
+    marginBottom: -0.02 * height
   },
   calendarContainer: {
     flex: 4,

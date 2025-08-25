@@ -12,7 +12,6 @@ import { globalStyles } from '../globalStyles/globalStyles';
 import { useUser } from '../components/UserContext'
 import { saveLoginInfo, getLoginInfo } from '../components/SecureStoreUtils'; // Adjust the path as necessary
 import { mergeProgress } from '../components/localDb';
-import { doc, updateDoc } from "firebase/firestore";
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
