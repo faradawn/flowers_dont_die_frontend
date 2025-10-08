@@ -76,9 +76,10 @@ export default function Topics({ navigation, route }){
             for (let i = 0; i < assignments.question_arr.length; i++) {
                 if (assignments.question_arr[i].score < 3) {
                     setCurrentQuestion(i);
-                    break;
+                    return;
                 }
             }
+            setCurrentQuestion(-1);
         }
     }, [assignments]);
 
