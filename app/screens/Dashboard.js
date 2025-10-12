@@ -29,13 +29,13 @@ const mockData = {
         correctnessRate: 78
     },
     weeklyProgress: {
-        thisWeek: [3, 6, 2, 10, 11, 8, 6],
-        lastWeek: [4, 4, 3, 12, 11, 5, 7]
+        current: [3, 6, 2, 10, 11, 8, 6],
+        previous: [4, 4, 3, 12, 11, 5, 7]
     },
     difficultyBreakdown: [
-        { type: 'Easy', completed: 8, total: 15, color: '#4b7c7b' },
-        { type: 'Medium', completed: 5, total: 15, color: '#6BAEAE' },
-        { type: 'Hard', completed: 2, total: 15, color: '#E0E9E9' }
+        { type: 'Easy', completed: 8, total: 15, correctness: 8 / 15, color: '#4b7c7b' },
+        { type: 'Medium', completed: 5, total: 15, correctness: 5 / 15, color: '#6BAEAE' },
+        { type: 'Hard', completed: 2, total: 15, correctness: 2 / 15, color: '#E0E9E9' }
     ],
     questionTypeBreakdown: [
         { type: 'BFS/DFS', percentage: 50, correctness: 50, color: '#4b7c7b' },
@@ -43,25 +43,25 @@ const mockData = {
         { type: 'Backtracking', percentage: 15, correctness: 15, color: '#E0E9E9' },
         { type: 'Other', percentage: 5, correctness: 5, color: '#F0F5F5' }
     ],
-    monthlyStats: {
-        problemsFinished: 112,
-        correctnessRate: 82
-    },
-    monthlyProgress: {
-        thisMonth: [15, 22, 30, 25],
-        lastMonth: [12, 18, 26, 20]
-    },
-    monthlyDifficultyBreakdown: [
-        { type: 'Easy', completed: 42, total: 60, color: '#4b7c7b' },
-        { type: 'Medium', completed: 30, total: 60, color: '#6BAEAE' },
-        { type: 'Hard', completed: 15, total: 60, color: '#E0E9E9' }
-    ],
-    monthlyQuestionTypeBreakdown: [
-        { type: 'BFS/DFS', percentage: 45, correctness: 55, color: '#4b7c7b' },
-        { type: 'Sorting', percentage: 25, correctness: 35, color: '#6BAEAE' },
-        { type: 'Backtracking', percentage: 20, correctness: 25, color: '#E0E9E9' },
-        { type: 'Other', percentage: 10, correctness: 18, color: '#F0F5F5' }
-    ]
+    // monthlyStats: {
+    //     problemsFinished: 112,
+    //     correctnessRate: 82
+    // },
+    // monthlyProgress: {
+    //     current: [15, 22, 30, 25],
+    //     previous: [12, 18, 26, 20]
+    // },
+    // monthlyDifficultyBreakdown: [
+    //     { type: 'Easy', completed: 42, total: 60, color: '#4b7c7b' },
+    //     { type: 'Medium', completed: 30, total: 60, color: '#6BAEAE' },
+    //     { type: 'Hard', completed: 15, total: 60, color: '#E0E9E9' }
+    // ],
+    // monthlyQuestionTypeBreakdown: [
+    //     { type: 'BFS/DFS', percentage: 45, correctness: 55, color: '#4b7c7b' },
+    //     { type: 'Sorting', percentage: 25, correctness: 35, color: '#6BAEAE' },
+    //     { type: 'Backtracking', percentage: 20, correctness: 25, color: '#E0E9E9' },
+    //     { type: 'Other', percentage: 10, correctness: 18, color: '#F0F5F5' }
+    // ]
 };
 
 export default function Dashboard({ navigation }) {
@@ -112,11 +112,23 @@ export default function Dashboard({ navigation }) {
     console.log("MONTHLY: ", monthly);
     
     const getStatsData = () => {
+        if (timeFrame === 'Mock') {
+            return [mockData.weeklyStats.problemsFinished, mockData.weeklyStats.correctnessRate / 100];
+        }
         return timeFrame === 'Monthly' ? [monthly.monthly_summary.this_month.problems_completed, monthly.monthly_summary.this_month.average_accuracy]
          : [weekly.weekly_summary.this_week.problems_completed, weekly.weekly_summary.this_week.average_accuracy];
     };
     
     const getProgressData = () => {
+        if (timeFrame === 'Mock') {
+            return {
+                labels: days,
+                current: mockData.weeklyProgress.current,
+                previous: mockData.weeklyProgress.previous,
+                currentLabel: 'This week',
+                previousLabel: 'Last week'
+            };
+        }
         if (timeFrame === 'Weekly') {
             return {
                 labels: days,
@@ -145,6 +157,19 @@ export default function Dashboard({ navigation }) {
     };
 
     const getCorrectnessData = () => {
+        // if (timeFrame === 'Mock') {
+        //     return {
+        //         labels: days,
+        //         current: (mockData.weeklyProgress.current ?? []).map(
+        //             day => day?.problems_completed ?? 0
+        //         ),
+        //         previous: (mockData.weeklyProgress.previous ?? []).map(
+        //             day => day?.problems_completed ?? 0
+        //         ),
+        //         currentLabel: 'This week',
+        //         previousLabel: 'Last week'
+        //     };
+        // }
         if (timeFrame === 'Weekly') {
             return {
                 labels: days,
@@ -187,13 +212,16 @@ export default function Dashboard({ navigation }) {
     };
 
     const getDifficultyData = () => {
+      if (timeFrame == "Mock") {
+            return mockData.difficultyBreakdown;
+      }
       const rawData = timeFrame === 'Weekly' ? weekly.difficulty_breakdown : monthly.difficulty_breakdown;
       const rawDataAccuracy = timeFrame === 'Weekly' ? weekly.difficulty_accuracy : monthly.difficulty_accuracy;
     
       if (!rawData || !rawDataAccuracy || typeof rawData !== 'object' || typeof rawDataAccuracy != 'object') return [];
     
       const total = Object.values(rawData).reduce((acc, val) => acc + val, 0);
-    
+
       return difficultyOrder
         .filter(type => rawData.hasOwnProperty(type))
         .map(type => ({
@@ -206,6 +234,9 @@ export default function Dashboard({ navigation }) {
     };
     
     const getQuestionTypeData = () => {
+        if (timeFrame == "Mock") {
+            return mockData.questionTypeBreakdown;
+        }
         const rawData = timeFrame === 'Weekly' ? weekly.type_breakdown : monthly.type_breakdown;
         const rawDataAccuracy = timeFrame === 'Weekly' ? weekly.type_accuracy : monthly.type_accuracy;
       
@@ -224,7 +255,6 @@ export default function Dashboard({ navigation }) {
                 gValue += 45 * Math.pow(2/3, i);
                 bValue += 45 * Math.pow(2/3, i);
             }
-            
             return {
                 type,
                 count: rawData[type],
@@ -237,6 +267,8 @@ export default function Dashboard({ navigation }) {
     
     // Calculate the maximum value for the chart
     const progressData = chartMode === 'Problems' ? getProgressData() : getCorrectnessData();
+    // const progressData = mockData;
+    console.log(progressData);
     const maxValue = Math.max(
         ...progressData.current,
         ...progressData.previous
@@ -497,6 +529,12 @@ export default function Dashboard({ navigation }) {
                                     onPress={() => handleSelectTimeFrame('Monthly')}
                                 >
                                     <Text style={[styles.dropdownItemText, timeFrame === 'Monthly' && styles.dropdownItemTextActive]}>Monthly</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={[styles.dropdownItem, timeFrame === 'Mock' && styles.dropdownItemActive]}
+                                    onPress={() => handleSelectTimeFrame('Mock')}
+                                >
+                                    <Text style={[styles.dropdownItemText, timeFrame === 'Mock' && styles.dropdownItemTextActive]}>Mock</Text>
                                 </TouchableOpacity>
                             </View>
                         </TouchableWithoutFeedback>
