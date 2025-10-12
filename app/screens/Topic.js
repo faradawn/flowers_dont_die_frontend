@@ -21,8 +21,10 @@ export default function Topics({ navigation }){
     //add course description state var, default to empty str
     const [courseDescription, setCourseDescription] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const [topics, setTopics] = useState(null);
+    const [topics, setTopics] = useState({ topics: [] });
     const { state } = useUser();
+    const [shadowVisible, setShadowVisible] = useState(false);
+    const [bottomShadowVisible, setBottomShadowVisible] = useState(false);
 
     // fetching the topics from the local database
     const fetchTopics = async() => {
@@ -71,6 +73,23 @@ export default function Topics({ navigation }){
         navigation.navigate('Assignments', { topic: topic })
 
     }
+
+    const handleScroll = (event) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        const contentHeight = event.nativeEvent.contentSize.height;
+        const layoutHeight = event.nativeEvent.layoutMeasurement.height;
+
+        setShadowVisible(offsetY > height*0.07);
+        setBottomShadowVisible(offsetY + layoutHeight < contentHeight - height*0.07);
+    }
+
+    // set initial shadow visibility
+    useEffect(() => {
+        const contentHeight = topics.topics.length * height*0.09;
+        const layoutHeight = height * 0.585;
+
+        setBottomShadowVisible(layoutHeight < contentHeight - height*0.07);
+    }, [topics]);
 
     return (
         <View
@@ -169,6 +188,8 @@ export default function Topics({ navigation }){
                             justifyContent: 'center',
                         }}
                     >
+                    {/* Top Shadow */}
+                    {shadowVisible && <View style = {styles.topShadow} />}
                         <FlatList
                             style={{ flex: 1 }}
                             data={topics.topics}
@@ -186,7 +207,11 @@ export default function Topics({ navigation }){
                                     imageSource={myImages.flowerIcons[index+1]}
                                 />
                             )}
-                            />
+                            onScroll={handleScroll}
+                            scrollEventThrottle={16}
+                        />
+                    {/* Bottom Shadow */}
+                    {bottomShadowVisible && <View style={styles.bottomShadow} />}
                     </View>
                     </View>
                 </View>
@@ -206,7 +231,7 @@ const Videos = () => {
     useEffect(() => {
         const fetchVideo = async () => {
             try {
-                const response = await fetch('https://backend.faradawn.site:8001/get_video', {
+                const response = await fetch('https://backend.codingflora.com:8001/get_video', {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -268,4 +293,24 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '50%',
     },
+    topShadow: {
+        position: 'absolute',
+        top: 0,
+        left: width*0.09,
+        right: width*0.09,
+        height: 13,
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        zIndex: 10,
+        borderRadius: 10
+    },
+    bottomShadow: {
+        position: 'absolute',
+        bottom: 0,
+        left: width*0.09,
+        right: width*0.09,
+        height: 13,
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        zIndex: 10,
+        borderRadius: 10
+    }
 });

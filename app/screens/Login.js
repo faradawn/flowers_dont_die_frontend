@@ -33,7 +33,7 @@ export default function Login({ navigation }){
     const loginAttempt = async () => {
         try {
             const response = await fetch(
-                'https://backend.faradawn.site:8001/login', {
+                'https://backend.codingflora.com:8001/login', {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
@@ -55,6 +55,7 @@ export default function Login({ navigation }){
                 updateState('uid', data.uid);
                 updateState('username', username);
                 updateState('is_signed_in', true);
+                updateState('course_id', null);
 
                 setUsername('');
                 setPassword('');

@@ -1,0 +1,26 @@
+{
+    "difficulty_accuracy": {
+      "Easy": 0,
+      "Hard": 0,
+      "Medium": 0
+    },
+    "difficulty_breakdown": {
+      "Easy": 0,
+      "Hard": 0,
+      "Medium": 0
+    },
+    "type_accuracy": {},
+    "type_breakdown": {},
+    "weekly_summary": {
+      "last_week": {
+        "average_accuracy": 0,
+        "daily_stats": [],
+        "problems_completed": 0
+      },
+      "this_week": {
+        "average_accuracy": 0,
+        "daily_stats": [],
+        "problems_completed": 0
+      }
+    }
+}

@@ -88,6 +88,7 @@ export default function Question_Combined({ navigation, route }) {
     const [voiceSubmitted, setVoiceSubmitted] = useState(false);
     const [mcSubmitted, setMcSubmitted] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
+    const [modalContent, setModalContent] = useState("");
     const [seconds, setSeconds] = useState(90);
     const [intervalId, setIntervalId] = useState(null);
     const [answerResponse, setAnswerResponse] = useState('');
@@ -228,7 +229,7 @@ export default function Question_Combined({ navigation, route }) {
         formData.append('course_id', state.course_id);
         formData.append('audio_file', file);
         try {
-            const response = await fetch('https://backend.faradawn.site:8001/transcribe_and_grade', {
+            const response = await fetch('https://backend.codingflora.com:8001/transcribe_and_grade', {
                 method: 'POST',
                 headers: { "Content-Type": "multipart/form-data" },
                 body: formData
@@ -242,6 +243,7 @@ export default function Question_Combined({ navigation, route }) {
             // Store submission details and show feedback modal
             await storeSubmission(response_data.submission_details);
             setAnswerResponse(response_data);
+            setModalContent('submission');
             setModalOpen(true);
             setVoiceSubmitted(true);
         } catch(error) {
@@ -271,7 +273,7 @@ export default function Question_Combined({ navigation, route }) {
         }
 
         try {
-            const response = await fetch('https://backend.faradawn.site:8001/submit_text_response', {
+            const response = await fetch('https://backend.codingflora.com:8001/submit_text_response', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -320,6 +322,7 @@ export default function Question_Combined({ navigation, route }) {
 
         setIsLoading(false);
         setModalOpen(true);
+        setModalContent('submission');
         if (intervalId) { 
             clearInterval(intervalId);
         }
@@ -939,6 +942,23 @@ export default function Question_Combined({ navigation, route }) {
                         elevation: 10,
                         justifyContent: 'space-between'
                       }}>
+
+                        {/* Light bulb button positioned in the top right */}
+                        <TouchableOpacity
+                            onPress={() => {
+                                setModalContent('hint');
+                                setModalOpen(true);
+                              }}
+                              style={{
+                                position: 'absolute',
+                                top: 15,
+                                right: 15,
+                                zIndex: 2,
+                              }}
+                            >
+                            <MaterialIcons name="lightbulb-outline" size={28} color="orange" />
+                        </TouchableOpacity>
+
                         {/* Text box */}
                         <TextInput
                           style={{
@@ -948,7 +968,7 @@ export default function Question_Combined({ navigation, route }) {
                           }}
                           multiline={true}
                           scrollEnabled={true}
-                          placeholder="Type here or record..."
+                          placeholder="E.g. My idea is to use DFS ..."
                             value={text}
                             onChangeText={setText}
                             keyboardType="default"

@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import initialCourses from '../../assets/data/initialCourses.json';
 import initialQuestions from '../../assets/data/initialQuestions.json';
 import initialSubmissions from '../../assets/data/initialSubmissions.json';
+import initialWeekly from '../../assets/data/initialWeekly.json';
+import initialMonthly from '../../assets/data/initialMonthly.json';
 
 export const STORAGE_KEYS = {
   COURSES: 'courses',
@@ -10,7 +12,7 @@ export const STORAGE_KEYS = {
   USER: 'user',
 };
 
-const API_URL = 'https://backend.faradawn.site:8001';
+const API_URL = 'https://backend.codingflora.com:8001';
 const TIMEOUT = 10000; // 10 seconds timeout
 
 const fetchWithTimeout = async (url, options, timeout = TIMEOUT) => {
@@ -384,3 +386,46 @@ export const getAssignments = async (uid, courseId, topic) => {
     };
   }
 };
+
+export const getWeekly = async (uid, date) => {
+  try {
+    const weeklyResponse = await fetchWithTimeout(`${API_URL}/get_weekly`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: uid, 
+        date: date
+      })
+    });
+    const weeklyJson = await weeklyResponse.json();
+
+    const weekly = weeklyJson ?? initialWeekly;
+
+    return weekly;
+  } catch (error) {
+    console.error('Error fetching weekly stats', error)
+    return initialWeekly;
+  }
+}
+
+export const getMonthly = async (uid, date) => {
+  try {
+    const monthlyResponse = await fetchWithTimeout(`${API_URL}/get_monthly`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: uid, 
+        date: date
+      })
+    });
+    const monthlyJson = await monthlyResponse.json();
+
+    const monthly = monthlyJson ?? initialMonthly;
+
+    return monthly
+  } catch (error) {
+    console.error('Error fetching monthly stats', error)
+    return initialMonthly;
+  }
+}
+

@@ -11,7 +11,9 @@ export const UserProvider = ({ children }) => {
         username: '',
         course_id: '',
         password: '',        // Added for auth
-        is_signed_in: false  // Added for auth status
+        is_signed_in: false,  // Added for auth status
+        weekly: {},
+        monthly: {}
     });
 
     const updateState = (key, value) => {

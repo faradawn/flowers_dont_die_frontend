@@ -1,33 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { useCallback } from 'react';
 import {
     View, Dimensions, Text, FlatList, ActivityIndicator,
-    TouchableOpacity, Image, StyleSheet
+    TouchableOpacity, Image, StyleSheet, NativeScrollEvent, NativeSyntheticEvent
 } from 'react-native';
 
-import { globalStyles } from '../globalStyles/globalStyles';
-import SwitchButton from '../components/SwitchButton';
 import Card from '../components/CourseCard';
 import { useUser } from '../components/UserContext';
 import { getLoginInfo, saveLoginInfo } from '../components/SecureStoreUtils';
-import { getCourses, initializeLocalDatabase } from '../components/localDb';
+import { getTopics } from '../components/localDb';
+import { getCourses, initializeLocalDatabase, getWeekly, getMonthly } from '../components/localDb';
 
 import { myImages } from '../globalStyles/globalStyles';
-import { Button } from 'react-native-web';
+
+import { Dropdown } from 'react-native-element-dropdown';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { ConsoleSqlOutlined } from '@ant-design/icons';
 
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
 
-export default function Courses({ navigation }) {
+export default function Courses({ navigation, route }) {
     const [isLoading, setIsLoading] = useState(true);
     const [courses, setCourses] = useState([]);
     const [dailyQuestionId, setDailyQuestionId] = useState(null); // daily random question
     const { state, updateState } = useUser();
     const [greeting, setGreeting] = useState('');
     const [containerHeight, setContainerHeight] = useState(height * 0.6);
+    const [shadowVisible, setShadowVisible] = useState(false);
+    const [bottomShadowVisible, setBottomShadowVisible] = useState(false);
 
+    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [topics, setTopics] = useState({ topics: [] });
+    const [currentTopic, setCurrentTopic] = useState(-1);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -88,6 +96,16 @@ export default function Courses({ navigation }) {
         return greetings[dayOfWeek % greetings.length];
     };
 
+    useEffect(() => {
+        if (courses.length > 0 && state.course_id) {
+            const matched = courses.find(c => c.value === state.course_id);
+            if (matched) {
+                setSelectedCourse(matched);
+            }
+        }
+        fetchTopics();
+    }, []);
+
     useFocusEffect(
         useCallback(() => {
             async function checkAndSetupUser() {
@@ -107,11 +125,31 @@ export default function Courses({ navigation }) {
                         console.log("[Courses] No secure store login info. Created and stored guest info", guestUsername, guestUid);
                     }
                 } else {
-                    
                     console.log("[Courses] User info already in state:", state);
+                    console.log("route.params is", route.params);
                 }
 
                 setGreeting(getGreeting());
+            }
+
+            async function fetchData() {
+                const today = new Date().toISOString().split("T")[0];
+    
+                try {
+                    const weekly = await getWeekly(state.uid, today);
+                    updateState("weekly", weekly);
+                    console.log("[Weekly] Received from localDb:", weekly);
+                } catch (err) {
+                    console.error("[Weekly] Error:", err);
+                }
+    
+                try {
+                    const monthly = await getMonthly(state.uid, today);
+                    updateState("monthly", monthly);
+                    console.log("[Monthly] Received from localDb:", monthly);
+                } catch (err) {
+                    console.error("[Monthly] Error:", err);
+                }
             }
 
             async function fetchCourses() {
@@ -119,9 +157,31 @@ export default function Courses({ navigation }) {
                 try {
                     await initializeLocalDatabase(); // Initialize database before fetching
                     const data = await getCourses(state.uid);
-                    console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses, );
-                    setCourses(data.courses);
+                    console.log("[Courses] Received from localDb: ", "uid", state.uid, "courses", data.courses);
+                    const mappedCourses = data.courses.map(course => ({
+                        label: course.course_title,
+                        value: course.course_id,
+                        num_total_questions: course.num_total_questions,
+                        num_completed_questions: course.num_completed_questions,
+                    }))
+                    setCourses(mappedCourses);
                     setDailyQuestionId(data.daily_question_id);
+
+                    if (route?.params?.course_id) {
+                        console.log("params passed as", route.params.course_id);
+                        updateState('course_id', route.params.course_id);
+
+                        const matched = courses.find(c => c.value === route.params.course_id);
+                        if (matched) {
+                            setSelectedCourse(matched);
+                        }                    
+                    }
+                    else {
+                        console.log("no params passed");
+                        updateState('course_id', mappedCourses[0].value);
+                        setSelectedCourse(mappedCourses[0]);
+                    }
+                    fetchTopics();
                 } catch (error) {
                     console.error('[Courses] Error fetching or parsing data:', error);
                 } finally {
@@ -129,14 +189,19 @@ export default function Courses({ navigation }) {
                 }
             }
 
-            checkAndSetupUser().then(() => fetchCourses());
-        }, [state.uid, state.username])
+
+            checkAndSetupUser().then(() => {
+                if (state.uid) {
+                    fetchData();
+                }
+                fetchCourses()
+            });
+        }, [state.uid, state.username, route.params])
     );
 
     // navigation through clicking a specific topic
-    const coursePress = (course_id) => {
-        updateState('course_id', course_id)
-        navigation.navigate('Topics')
+    const topicPress = (topic) => {
+        navigation.navigate('Assignments', { topic: topic })    
     }
 
     // Navigation when selecting the random question
@@ -163,7 +228,7 @@ export default function Courses({ navigation }) {
         const padding = height * 0.01; // Extra padding
         
         if (courses.length >= 3) {
-            setContainerHeight(height * 0.35);
+            setContainerHeight(height * 0.4);
         } else {
             setContainerHeight((courses.length * itemHeight) + padding);
         }
@@ -174,19 +239,156 @@ export default function Courses({ navigation }) {
         calculateContainerHeight();
     }, [courses, calculateContainerHeight]);
 
+
+    const handleScroll = (event) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        const contentHeight = event.nativeEvent.contentSize.height;
+        const layoutHeight = event.nativeEvent.layoutMeasurement.height;
+
+        setShadowVisible(offsetY > height*0.07);
+        setBottomShadowVisible(offsetY + layoutHeight < contentHeight - height*0.07);
+    }
+
+    // update shadow visibility
+    useEffect(() => {
+        if (!topics || topics.topics.length === 0) return;    
+
+        const contentHeight = topics.topics.length * height * 0.09;
+        setBottomShadowVisible(containerHeight < contentHeight - height * 0.07);
+    }, [topics, state.course_id]);
+
+    // update current course
+    useEffect(() => {
+        for (let i = 0; i < topics.topics.length; i++) {
+            if (topics.topics[i].completed_questions < topics.topics[i].total_questions) {
+                setCurrentTopic(i);
+                return;
+            }
+        }
+        setCurrentTopic(-1);
+    }, [topics]);
+
+    useEffect(() => {
+        console.log("course_id: ", state.course_id);
+        if (courses.length > 0 && state.course_id) {
+            const matched = courses.find(c => c.value === state.course_id);
+            if (matched) {
+                setSelectedCourse(matched);
+            }
+        }
+        fetchTopics();
+    }, [state.course_id]);
+
+    const calculateProgress = (totalQuestions, completedQuestions) => {
+        if (totalQuestions > 0) {
+          return (completedQuestions / totalQuestions) * 100;
+        }
+        return 0;
+      };
+
+    // fetching the topics from the local database
+    const fetchTopics = async() => {
+        try {
+            const result = await getTopics(state.uid, state.course_id);
+            console.log("Got topics", result);
+            if (result.status === "success") {
+                setTopics(result);
+            } else {
+                console.log('Error fetching topics:', result.message);
+            }
+        } catch(error) {
+            console.log('Error fetching data: ', error)
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
         <View style={styles.container}>
-            {isLoading ? (<ActivityIndicator />) :
+            {isLoading || courses.length === 0 ? (<ActivityIndicator />) :
                 (
                     <View >
+                        {/* progress bar for selected courses */}
+                        <AnimatedCircularProgress
+                            style={{
+                                position: 'absolute',
+                                top: 20,
+                                right: 20,
+                                zIndex: 100,
+                            }}
+                            size={60}
+                            width={9}
+                            fill={selectedCourse ? calculateProgress(selectedCourse.num_total_questions, selectedCourse.num_completed_questions) : 0}
+                            rotation={0}
+                            tintColor="#4B7C7B"
+                            backgroundColor="#DEE5E5">
+                            {
+                                (fill) => (
+                                    <Text style={{ fontFamily: 'Nunito-Regular', fontSize: 14 }}>
+                                        { `${Math.round(fill)}%` }
+                                    </Text>
+                                )
+                            }
+                        </AnimatedCircularProgress>
+                        
+                        {/* course selector dropdown */}
+                        <Dropdown 
+                            style={{
+                                marginTop: 30,
+                                marginLeft: 20,
+                                height: 45,
+                                width: width*0.5,
+                                borderWidth:0.5,
+                                borderRadius: 8,
+                                borderColor: 'gray',
+                                borderBottomWidth: 0.5,
+                                backgroundColor: 'white',
+                            }}
+                            data={courses}
+                            value={state.course_id}
+                            maxHeight={300}
+                            labelField="label"
+                            valueField="value"
+                            selectedTextStyle = {{ fontFamily: 'Nunito-Regular', fontSize: 14, paddingHorizontal: 10, lineHeight: 16, }}
+                            onChange={item => {
+                                updateState('course_id', item.value)
+                                setSelectedCourse(item);
+                                fetchTopics();
+                            }}
+                            renderRightIcon = {() => (
+                                <Ionicons name="caret-down-outline" size={20} color="black" style={{ marginRight: 10 }} />
+                            )}
+                            renderItem={(item) => {
+                                const isSelected = item.value === state.course_id;
+                                return (
+                                    <View>
+                                        <Text style={{
+                                            padding: 12,
+                                            fontFamily: 'Nunito-Regular',
+                                            fontSize: 14,
+                                            lineHeight: 16,
+                                            backgroundColor: isSelected ? '#EBF2F0' : "white",
+                                        }}>
+                                            {item.label}
+                                        </Text>
+                                        <View style={{
+                                            height: 1,
+                                            backgroundColor: '#515856s',
+                                        }} />
+                                    </View>
+                                );
+                            }}
+                            containerStyle = {{
+                                borderWidth: 0.5,
+                                borderColor: '#515856',
+                                borderRadius: 12,
+                                overflow: 'hidden'
+                            }}
+                        />
 
                         {/* Message At The Top */}
                         <View style={styles.greetingContainer}>
-                            <Text
-                                style={styles.greetingText}
-                                numberOfLines={2}
-                                adjustsFontSizeToFit={true}
-                            >
+                            <Text style={styles.greetingText} numberOfLines={1} adjustsFontSizeToFit>
                                 {greeting}{' '}
                                 <Text style={styles.usernameText}>
                                     {state.username}!
@@ -194,31 +396,37 @@ export default function Courses({ navigation }) {
                             </Text>
                         </View>
 
-                        <View style={{ height: 20 }}></View>
                         {/* FlatList Containing Topic Information */}
                         <View
-                            style={{ ...styles.flatListContainer, height: containerHeight }}
+                            style={{ ...styles.flatListContainer }}
                         >
+                        {/* Top Shadow */}
+                        {shadowVisible && <View style = {styles.topShadow} />}
+                        
                             <FlatList
                                 style={styles.flatList}
                                 contentContainerStyle={styles.flatListContent}
-                                data={courses}
-                                keyExtractor={(item) => item.course_id}
+                                data={topics.topics}
+                                keyExtractor={(item) => item.topic}
                                 showsVerticalScrollIndicator={false}
                                 renderItem={({ item, index }) => (
                                     <Card
                                         index={index}
-                                        title={item.course_title}
-                                        id={item.course_id}
-                                        height={height * 0.09}
-                                        width={width * 0.8}
-                                        pressHandler={coursePress}
+                                        title={item.topic}
+                                        id={item.topic}
+                                        height={height * 0.1} 
+                                        width={width * 0.9} 
+                                        borderWidth={index === currentTopic ? 0.7 : 0}
+                                        pressHandler={topicPress}
                                         item={item}
-                                        imageSource={myImages.courseIcons[item.course_title]}
-                                        logoUrl={item.logo_url}
+                                        imageSource={myImages.flowerIcons[(index % 9) + 1]}
                                     />
                                 )}
+                                onScroll={handleScroll}
+                                scrollEventThrottle={16}
                             />
+                            {/* Bottom Shadow */}
+                            {bottomShadowVisible && <View style={styles.bottomShadow} />}
                         </View>
                         { !state.is_signed_in && (
                             <View style={styles.signInContainer}>
@@ -248,9 +456,7 @@ export default function Courses({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: '#f6f6f6',
         flexDirection: 'column'
     },
     contentContainer: {
@@ -268,23 +474,24 @@ const styles = StyleSheet.create({
         marginTop: height * 0.06,
     },
     greetingText: {
-        fontFamily: 'Baloo2-Bold',
-        fontSize: 22,
-        textAlign: 'center',
+        fontFamily: 'Nunito-Regular',
+        fontSize: 20,
+        lineHeight: 22,
     },
     usernameText: {
         color: '#26C250',
     },
     flatListContainer: {
         width: width,
+        height: height * 0.6,
         justifyContent: 'center',
-
     },
     flatList: {
+        top: -28,
         width: '100%',
     },
     flatListContent: {
-        paddingBottom: height * 0.1, 
+        paddingBottom: height * 0.05, 
         alignItems: 'center',
     },
     signInContainer: {
@@ -328,4 +535,24 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Baloo2-Bold',
     },
+    topShadow: {
+        position: 'absolute',
+        top: -28,
+        left: width*0.05,
+        right: width*0.05,
+        height: 13,
+        backgroundColor: '#51585633',
+        zIndex: 10,
+        borderRadius: 10
+    },
+    bottomShadow: {
+        position: 'absolute',
+        bottom: 28,
+        left: width*0.05,
+        right: width*0.05,
+        height: 13,
+        backgroundColor: '#51585633',
+        zIndex: 10,
+        borderRadius: 10
+    }
 });
