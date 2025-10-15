@@ -21,6 +21,7 @@ import Assignments from './screens/Assignments';
 import Question_Daily from './screens/Question_Daily';
 import Video from './screens/Videos';
 import TeacherDashboard from './screens/TeacherDashboard';
+import Dashboard from './screens/Dashboard';
 
 import { UserProvider, useUser } from './components/UserContext';
 import { getLoginInfo } from './components/SecureStoreUtils';
@@ -160,6 +161,10 @@ export default function App() {
         await Font.loadAsync({
             'Baloo2-Regular': require('../assets/fonts/Baloo2-Regular.ttf'),
             'Baloo2-Bold': require('../assets/fonts/Baloo2-Bold.ttf'),
+            'Montserrat-SemiBold': require('../assets/fonts/Montserrat-SemiBold.ttf'),
+            'Montserrat-Medium': require('../assets/fonts/Montserrat-Medium.ttf'),
+            'Nunito-Regular': require('../assets/fonts/Nunito-Regular.ttf'),
+            'Nunito-SemiBold': require('../assets/fonts/Nunito-SemiBold.ttf')
         });
     };
 

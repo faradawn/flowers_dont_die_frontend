@@ -1,105 +1,49 @@
 import React, { useRef, useEffect } from 'react';
 import { View, TouchableOpacity, Text, Animated } from 'react-native';
 
+//possible colors #F8F8F8 #F7F7F7, #EFEFEF
+
 export default function SwitchButton(
-    {FirstText, SecondText, width, height, mode, setMode}
+    {FirstText, SecondText, width, height, mode, setMode, activeColor = '#E28089', inactiveColor = '#E28089', backgroundColor = '#EFEFEF',}
 ) {
-    let transformX = useRef(new Animated.Value(0)).current;
+    const transformX = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        if(mode == 0) {
             Animated.timing(transformX, {
-                toValue: 0,
-                duration: 300,
+                toValue: mode === 0 ? 0 : 1,
+                duration: 250,
                 useNativeDriver: true
-            }).start()
-        } else {
-            Animated.timing(transformX, {
-                toValue: 1,
-                duration: 300,
-                useNativeDriver: true
-            }).start()
-        }
+            }).start()  
     }, [mode])
 
     const translationX = transformX.interpolate({
         inputRange: [0, 1],
-        outputRange: [2, width / 2]
+        outputRange: [2, width - height + 2]
     })
 
     return (
-        <View
-            style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-
-                width: width,
-                height: height,
-
-                borderRadius: 12,
-                backgroundColor: 'white',
-            }}
-        >
-            {/* Sliding Sign */}
-            <Animated.View
-                style={{
-                    position: 'absolute',
-                    height: height - 2 * 2,
-                    width: width / 2 - 2 * 2,
-
-                    top: 2,
-                    bottom: 2,
-                    left: 1,
-                    borderRadius: 10,
-
-                    backgroundColor: '#5f967c',
-
-                    transform: [
-                        {
-                            translateX: translationX
-                        }
-                    ],
-                }}
-            >
-            </Animated.View>
-
-            {/* First Toggle Button */}
-            <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-                onPress={() => setMode(0)}
-            >
-                <Text
-                    style={{
-                        fontFamily: 'Baloo2-Regular'
-                    }}
-                >
-                    { FirstText }
-                </Text>
-            </TouchableOpacity>
-
-            {/* Second Toggle Button */}
-            <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-                onPress={() => setMode(1)}
-            >
-                <Text
-                    style={{
-                        fontFamily: 'Baloo2-Regular'
-                    }}
-                >
-                    { SecondText }
-                </Text>
-            </TouchableOpacity>
-        </View>
-    )
+        <TouchableOpacity onPress={() => setMode(mode === 0 ? 1 : 0)} activeOpacity={0.8}>
+      <View
+        style={{
+          width,
+          height,
+          borderRadius: height / 2,      
+          backgroundColor: backgroundColor,  
+          justifyContent: 'center',
+          padding: 2,                    
+        }}
+      >
+        <Animated.View
+          style={{
+            width: height - 4,           
+            height: height - 4,
+            borderRadius: (height - 4) / 2,
+            backgroundColor: mode === 0 ? inactiveColor : activeColor, 
+            transform: [{ translateX: translationX }],
+          }}
+        />
+      </View>
+    </TouchableOpacity>
+  );
 }
+        

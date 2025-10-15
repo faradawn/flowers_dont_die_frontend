@@ -1,10 +1,14 @@
-# Flowers Don't Die - Ace Coding Interview with AI
+# Coding Flora - Ace Coding Interview with AI
 
 ### Getting Started
-- Install [Expo React Native](https://docs.expo.dev/tutorial/create-your-first-app/) (need to install Node js first)
-- Download XCode from App Store
-- Clone this repo and run the following commands
+- Install [Node.js](https://nodejs.org/en/download). E.g. `brew install node@22`.
+- Install [Expo React Native](https://docs.expo.dev/tutorial/create-your-first-app/).
+- Download XCode from Mac App Store.
+
+Then, clone this project
 ```
+git clone https://github.com/faradawn/flowers_dont_die_frontend.git
+cd flowers_dont_die_frontend
 npx npm install
 npx expo start
 ```

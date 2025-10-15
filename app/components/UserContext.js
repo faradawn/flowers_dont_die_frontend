@@ -14,6 +14,8 @@ export const UserProvider = ({ children }) => {
         phone_number: '',
         join_date: '',
         is_signed_in: false,  // Added for auth status
+        weekly: {},
+        monthly: {}
     });
 
     const updateState = (key, value) => {

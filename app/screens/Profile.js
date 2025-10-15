@@ -272,7 +272,7 @@ export default function Profile({ navigation }){
                         <TouchableOpacity
                             style={[
                                 { 
-                                    backgroundColor: '#004643',
+                                    backgroundColor: 'red',
                                     height: 0.06 * height,
                                     width: 0.8 * width,
                                     marginBottom: 0.01 * height,
