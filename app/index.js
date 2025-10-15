@@ -12,6 +12,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Login from './screens/Login';
 import SignUp from './screens/Signup';
 import Courses from './screens/Courses';
+import EditProfile from './screens/EditProfile'
+import ProfileView from './screens/ProfileView'
 import Topics from './screens/Topic';
 import Question_MC from './screens/Question_MultipleChoice';
 import Profile from './screens/Profile';
@@ -28,8 +30,10 @@ import { getLoginInfo } from './components/SecureStoreUtils';
 const height = Dimensions.get('screen').height;
 const width = Dimensions.get('screen').width;
 
+
 // Creating Home Tab Navigator
 const HomeTab = createBottomTabNavigator();
+
 function HomeTabNavigator() {
     return (
         <SafeAreaView style={{ width: width, height: height}}>
@@ -40,10 +44,12 @@ function HomeTabNavigator() {
 
                     if (route.name === 'Courses') {
                         iconName = focused ? 'home' : 'home-outline';
-                    } else if (route.name === 'Dashboard') {
-                        iconName = focused ? 'apps' : 'apps-outline';
-                    } else if (route.name === 'Profile') {
-                        iconName = focused ? 'settings' : 'settings-outline';
+                    // } else if (route.name === 'Profile') {
+                    //     iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+                    } else if (route.name === 'ProfileView') {
+                        iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+                    } else if (route.name === 'EditProfile') {
+                        iconName = focused ? 'person-circle' : 'person-circle-outline';
                     }
 
                     // You can return any component that you like here!
@@ -69,11 +75,11 @@ function HomeTabNavigator() {
                 })}
                 initialRouteName='Courses'
             >
-            <HomeTab.Screen name='Courses' component={Courses}/>
-            <HomeTab.Screen name='Dashboard' component={Dashboard}/>
-            <HomeTab.Screen name='Profile' component={Profile}/>
-        </HomeTab.Navigator>
-      </SafeAreaView>
+                <HomeTab.Screen name='Courses' component={Courses} options={{tabBarShowLabel: false,}}/>
+                <HomeTab.Screen name='ProfileView' component={ProfileView} options={{tabBarShowLabel: false,}}/>
+                <HomeTab.Screen name='EditProfile' component={EditProfile} options={{tabBarShowLabel: false,}}/>
+            </HomeTab.Navigator>
+        </SafeAreaView>
     );
 }
 
@@ -94,6 +100,16 @@ function RootStackNavigator() {
                 <RootStack.Screen 
                     name="SignUp" 
                     component={SignUp}
+                    options={{headerShown: false}}
+                />
+                <RootStack.Screen 
+                    name="EditProfile" 
+                    component={EditProfile}
+                    options={{headerShown: false}}
+                />
+                <RootStack.Screen 
+                    name="ProfileView" 
+                    component={ProfileView}
                     options={{headerShown: false}}
                 />
                 <RootStack.Screen 

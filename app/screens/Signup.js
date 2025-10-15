@@ -59,10 +59,13 @@ export default function SignUp({ navigation, route }) {
             const data = await response.json();
 
             if (data.status == 'success') {
-                
+                today = new Date()
+                const dateToday = today.toISOString().slice(0, 10)
                 setInfoCorrect(true);
                 updateState( 'uid', data.uid )
                 updateState( 'username', username )
+                updateState( 'password', password )
+                updateState( 'join_date', dateToday)
                 updateState('is_signed_in', true)
 
                 await saveLoginInfo(data.uid, username, password);
