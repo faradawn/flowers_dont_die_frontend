@@ -29,7 +29,6 @@ export default function Card({ index, title, id, height, width, borderWidth, pre
                 height: height,
                 width: width,
                 marginVertical: height * 0.1,
-
                 backgroundColor: "white",
                 borderColor: '#4B7C7B',
                 borderWidth: borderWidth,
@@ -55,7 +54,7 @@ export default function Card({ index, title, id, height, width, borderWidth, pre
                   backgroundColor: '#54A09F1A',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginLeft: 20
+                  marginLeft: 0,
               }}
             >
               <Image
@@ -73,7 +72,7 @@ export default function Card({ index, title, id, height, width, borderWidth, pre
             <View
                 style={{
                     height: height,
-                    width: width * 0.45,
+                    width: width * 0.80,
 
                     marginLeft: 14,
 
@@ -100,6 +99,7 @@ export default function Card({ index, title, id, height, width, borderWidth, pre
             <View style = {{ 
               height: height,
               borderRadius: 10,
+              marginRight: 0,
               right: 3,
               overflow: 'hidden', 
               alignItems: 'flex-end',

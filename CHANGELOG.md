@@ -1,6 +1,10 @@
 # CHANGELOG
 Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [5.0.0] New design from Charlotte
+
+## [4.0.0] Improve backend question bank
+
 ## [3.0.0] Add voice Feature
 - Change icon to fat flower
 

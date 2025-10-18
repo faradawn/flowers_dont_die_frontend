@@ -65,7 +65,7 @@ export default function Card({ index, title, id, height, width, pressHandler, it
                     marginLeft: width * 0.05,
                     height: width * 0.1,
                     width: width * 0.1,
-                    marginLeft: 10,
+                    // marginLeft: 10,
                     resizeMode: 'contain'
                 }}
                 source={typeof imageSource === 'string' ? { uri: imageSource } : imageSource}
