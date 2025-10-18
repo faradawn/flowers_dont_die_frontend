@@ -1,7 +1,11 @@
 # Coding Flora - Ace Coding Interview with AI
 
+![](assets/images/app-store-screenshot.jpg)
+
+Download for free [on App Store](https://apps.apple.com/us/app/coding-flora/id6504419644)!
+
 ### Getting Started
-- Install [Node.js](https://nodejs.org/en/download). E.g. `brew install node@22`.
+- Install [Node.js](https://nodejs.org/en/download) with `brew install node@22`.
 - Install [Expo React Native](https://docs.expo.dev/tutorial/create-your-first-app/).
 - Download XCode from Mac App Store.
 
@@ -17,7 +21,7 @@ npx expo start
 - Create a branch such as `feature/leaderboard`
 - Submit a pull request
 
-### App submission 
+### App Store submission 
 ```
 increase the app version in app.json and commit
 

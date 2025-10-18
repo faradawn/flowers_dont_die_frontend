@@ -14,7 +14,8 @@
       "ios": {
         "buildConfiguration": "Release",
         "distribution": "store",
-        "credentialsSource": "remote"
+        "credentialsSource": "remote",
+        "image": "macos-sequoia-15.3-xcode-16.2"
       },
       "android": {
         "buildType": "app-bundle",

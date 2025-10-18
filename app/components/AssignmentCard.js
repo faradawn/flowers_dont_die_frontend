@@ -73,7 +73,7 @@ export default function Card({ index, title, id, height, width, borderWidth, pre
             <View
                 style={{
                     height: height,
-                    width: width * 0.45,
+                    width: width * 0.775,
 
                     marginLeft: 14,
 
